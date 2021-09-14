@@ -1,2 +1,3 @@
 # ubademy
-Trabajo Grupal de la materia taller de programacion 2. 
+##Trabajo Grupal de la materia "Taller de Programacion 2".
+##Grupo 9.
