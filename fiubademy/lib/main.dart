@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'src/login.dart';
+import 'src/signup.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -16,7 +17,7 @@ class FiubademyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+      home: const SignUpPage(),
     );
   }
 }
