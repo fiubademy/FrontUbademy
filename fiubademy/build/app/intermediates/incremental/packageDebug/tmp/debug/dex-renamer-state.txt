@@ -1,4 +1,0 @@
-#Mon Oct 11 01:10:32 ART 2021
-base.0=/home/santiagoczop/Facultad/20212C/Taller2/FrontUbademy/fiubademy/build/app/intermediates/dex/debug/mergeDexDebug/classes.dex
-renamed.0=classes.dex
-path.0=classes.dex
