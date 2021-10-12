@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'src/login.dart';
 import 'src/signup.dart';
 import 'src/home.dart';
+import 'src/my_courses.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -18,7 +19,7 @@ class FiubademyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LogInPage(),
+      home: const MyCoursesPage(),
     );
   }
 }

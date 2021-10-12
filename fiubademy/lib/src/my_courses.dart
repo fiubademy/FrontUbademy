@@ -28,139 +28,86 @@ class MyCoursesPage extends StatelessWidget {
 Widget _buildCourse(BuildContext context) {
   return Column(children: [
     Card(
-      child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                          'How to Flutter 101 - Ep. 3 - The Widget Tree Structure and ',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: Theme.of(context).textTheme.headline6),
+                    ),
+                    IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
+                  ],
+                ),
+                Divider(),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Standard',
+                  style: Theme.of(context).textTheme.subtitle1,
+                ),
+                Text(
+                  'Closed',
+                  style: Theme.of(context).textTheme.subtitle1,
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            title: Text(
+              'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderas sobre los Widgets.',
+            ),
+          ),
+          ListTile(
+            title: Text('Sillicon Valley, USA'),
+            leading: Icon(Icons.location_pin),
+            minLeadingWidth: 16,
+          ),
+          SizedBox(
+            width: double.maxFinite,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.start,
+                alignment: WrapAlignment.start,
+
                 children: [
-                  Expanded(
-                    child: Text('How to Flutter 101 - Ep. 1',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.headline6),
+                  Chip(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    label: Text('Flutter'),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap
                   ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
+                  Chip(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    label: Text('Programming'),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap
+                  ),
                 ],
               ),
-              const Divider(),
-              const SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderás a instalar Flutter y crear un proyecto.',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ],
-          )),
-    ),
-    Card(
-      child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('How to Flutter 101 - Ep. 2 - The main.dart file',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.headline6),
-                  ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
-                ],
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderas sobre el archivo main.',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ],
-          )),
-    ),
-    Card(
-      child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('How to Flutter 101 - Ep. 3 - The Widget Tree Structure and ',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.headline6),
-                  ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
-                ],
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderas sobre los Widgets.',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ],
-          )),
-    ),
-    Card(
-      child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('How to Flutter 101 - Ep. 4 - How To Create Your Own Widgets',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.headline6),
-                  ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
-                ],
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderas sobre los Widgets.',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ],
-          )),
-    ),
-    Card(
-      child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('How to Flutter 101 - Ep. 2',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.headline6),
-                  ),
-                  IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
-                ],
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8.0,
-              ),
-              Text(
-                'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderas sobre los Widgets.',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ],
-          )),
+            ),
+          ),
+        ],
+      ),
     ),
   ]);
 }
