@@ -13,7 +13,7 @@ class MyCoursesPage extends StatelessWidget {
         body: Scrollbar(
           child: ListView.builder(
             padding: const EdgeInsets.all(16.0),
-            itemCount: 1,
+            itemCount: 2,
             itemBuilder: (context, index) => _buildCourse(context),
           ),
         ),
@@ -26,8 +26,7 @@ class MyCoursesPage extends StatelessWidget {
 }
 
 Widget _buildCourse(BuildContext context) {
-  return Column(children: [
-    Card(
+  return Card(
       child: Column(
         children: [
           Padding(
@@ -43,7 +42,28 @@ Widget _buildCourse(BuildContext context) {
                           maxLines: 2,
                           style: Theme.of(context).textTheme.headline6),
                     ),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
+                    PopupMenuButton(
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          child: Text('View'),
+                        ),
+                        const PopupMenuItem(
+                          child: Text('Edit'),
+                        ),
+                        const PopupMenuItem(
+                          child: Text('Exams'),
+                        ),
+                        const PopupMenuItem(
+                          child: Text('Colaborators'),
+                        ),
+                        const PopupMenuItem(
+                          child: Text('Metrics'),
+                        ),
+                        const PopupMenuItem(
+                          child: Text('Forum'),
+                        ),
+                      ],
+                    )
                   ],
                 ),
                 Divider(),
@@ -85,29 +105,25 @@ Widget _buildCourse(BuildContext context) {
                 runSpacing: 6,
                 crossAxisAlignment: WrapCrossAlignment.start,
                 alignment: WrapAlignment.start,
-
                 children: [
                   Chip(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    label: Text('Flutter'),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap
-                  ),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      label: Text('Flutter'),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
                   Chip(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(7),
-                    ),
-                    label: Text('Programming'),
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap
-                  ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      label: Text('Programming'),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
                 ],
               ),
             ),
           ),
         ],
       ),
-    ),
-  ]);
+    );
 }
