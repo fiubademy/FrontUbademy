@@ -1,5 +1,7 @@
+import 'package:fiubademy/src/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'server.dart';
 
 class LogInPage extends StatefulWidget {
   const LogInPage({Key? key}) : super(key: key);
@@ -10,6 +12,33 @@ class LogInPage extends StatefulWidget {
 
 class _LogInPageState extends State<LogInPage> {
   bool _passwordObscured = true;
+  bool _buttonEnabled = false;
+  final _loginFormKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty || !Server.isValidEmail(value)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password';
+    }
+    return null;
+  }
+
+  void _login() async {
+    if (_loginFormKey.currentState!.validate()) {
+      String? userToken = await Server.login(_emailController.text, _passwordController.text);
+      if (userToken != null) {
+        Session.setToken(userToken);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +52,15 @@ class _LogInPageState extends State<LogInPage> {
               const Image(image: AssetImage('images/ubademy.png')),
               const SizedBox(height: 16.0),
               Form(
+                key: _loginFormKey,
+                onChanged: () => setState(() {
+                  _buttonEnabled = _loginFormKey.currentState!.validate();
+                }),
                 child: Column(
                   children: [
                     TextFormField(
+                      controller: _emailController,
+                      validator: _validateEmail,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
                         hintText: 'example@email.com',
@@ -35,6 +70,9 @@ class _LogInPageState extends State<LogInPage> {
                     ),
                     const SizedBox(height: 16.0),
                     TextFormField(
+                      controller: _passwordController,
+                      validator: _validatePassword,
+                      obscureText: _passwordObscured,
                       decoration: InputDecoration(
                           labelText: 'Password',
                           filled: true,
@@ -47,12 +85,11 @@ class _LogInPageState extends State<LogInPage> {
                               icon: Icon(_passwordObscured
                                   ? Icons.visibility_off
                                   : Icons.visibility))),
-                      obscureText: _passwordObscured,
                     ),
                     const SizedBox(height: 16.0),
-                    const ElevatedButton(
-                      onPressed: null,
-                      child: Text('Sign in'),
+                    ElevatedButton(
+                      onPressed: _buttonEnabled ? _login : null,
+                      child: const Text('Sign in'),
                     ),
                   ],
                 ),

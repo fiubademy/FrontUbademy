@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.fiubademy">
-   <uses-permission android:name="android.permission.INTERNERT"/>
+   <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="fiubademy"
         android:icon="@mipmap/ic_launcher">
