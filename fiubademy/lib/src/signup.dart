@@ -19,10 +19,10 @@ class _SignUpPageState extends State<SignUpPage> {
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
             child: Column(
-              children: [
-                const Image(image: AssetImage('images/ubademy.png')),
-                const SizedBox(height: 16.0),
-                const SignUpForm(),
+              children: const [
+                Image(image: AssetImage('images/ubademy.png')),
+                SizedBox(height: 16.0),
+                SignUpForm(),
               ],
             ),
           ),
@@ -43,6 +43,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final _signUpFormKey = GlobalKey<FormState>();
   bool _passwordObscured = true;
   bool _passwordConfirmationObscured = true;
+  bool isLoading = false;
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -83,15 +84,32 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   void _signUp() async {
+    setState(() {
+      isLoading = true;
+    });
     FocusScope.of(context).unfocus();
     if (_signUpFormKey.currentState!.validate()) {
-      bool signedUp = await Server.signup(_usernameController.text,
+      String? result = await Server.signup(_usernameController.text,
           _emailController.text, _passwordController.text);
-      if (signedUp) {
-        Auth auth = Provider.of<Auth>(context, listen: false);
-        await Server.login(
-            auth, _emailController.text, _passwordController.text);
+      if (result == null) {
+        _login();
+      } else {
+        final snackBar = SnackBar(content: Text(result));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _login() async {
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result = await Server.login(
+        auth, _emailController.text, _passwordController.text);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -169,10 +187,12 @@ class _SignUpFormState extends State<SignUpForm> {
                 child: const Text('I already have an account'),
               ),
               const Spacer(),
-              ElevatedButton(
-                onPressed: () => _signUp(),
-                child: Text('Sign up'),
-              ),
+              isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () => _signUp(),
+                      child: const Text('Sign up'),
+                    ),
             ],
           ),
         ],

@@ -33,11 +33,11 @@ class Server {
       case HttpStatus.forbidden:
         return 'The account has been blocked blocked';
       default:
-        return 'Failed to login. Please try again in a few minutes';
+        return 'Failed to log in. Please try again in a few minutes';
     }
   }
 
-  static Future<bool> signup(
+  static Future<String?> signup(
       String username, String email, String password) async {
     final Map<String, String> queryParams = {
       'username': username,
@@ -51,11 +51,13 @@ class Server {
       },
     );
 
-    print(response.statusCode);
-    if (response.statusCode == HttpStatus.created) {
-      print(response.body);
-      return true;
+    switch (response.statusCode) {
+      case HttpStatus.created:
+        return null;
+      case HttpStatus.notAcceptable:
+        return 'The account already exists';
+      default:
+        return 'Failed to sign up. Please try again in a few minutes';
     }
-    return false;
   }
 }
