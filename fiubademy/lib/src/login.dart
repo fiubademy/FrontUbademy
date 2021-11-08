@@ -1,3 +1,5 @@
+import 'package:fiubademy/src/signup.dart';
+
 import 'auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
@@ -98,11 +100,17 @@ class _LogInPageState extends State<LogInPage> {
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text('Don\'t have an account?'),
+                children: [
+                  const Text('Don\'t have an account?'),
                   TextButton(
-                    onPressed: null,
-                    child: Text('Sign up'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SignUpPage()),
+                      );
+                    },
+                    child: const Text('Sign up'),
                   )
                 ],
               ),
