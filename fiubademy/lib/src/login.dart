@@ -6,14 +6,9 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'server.dart';
 import 'package:provider/provider.dart';
 
-class LogInPage extends StatefulWidget {
+class LogInPage extends StatelessWidget {
   const LogInPage({Key? key}) : super(key: key);
 
-  @override
-  _LogInPageState createState() => _LogInPageState();
-}
-
-class _LogInPageState extends State<LogInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
