@@ -24,12 +24,16 @@ class Server {
       },
     );
 
-    print(response.statusCode);
-    if (response.statusCode == HttpStatus.ok) {
-      auth.setToken(response.body);
-      return null;
-    } else {
-      return 'Failed to login';
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        auth.setToken(response.body);
+        return null;
+      case HttpStatus.unauthorized:
+        return 'Invalid credentials';
+      case HttpStatus.forbidden:
+        return 'The account has been blocked blocked';
+      default:
+        return 'Failed to login. Please try again in a few minutes';
     }
   }
 
