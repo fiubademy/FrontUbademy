@@ -45,38 +45,38 @@ Widget buildDrawer(BuildContext context) {
                   accountName: Text('Santiago Czop'),
                   accountEmail: Text('sczop@fi.uba.ar')),
               ListTile(
-                leading: Icon(Icons.account_circle),
-                title: Text('My Profile'),
+                leading: const Icon(Icons.account_circle),
+                title: const Text('My Profile'),
                 onTap: () {
                   Navigator.pop(context);
                 },
               ),
               const Divider(),
               ListTile(
-                leading: Icon(Icons.school),
-                title: Text('My Courses'),
+                leading: const Icon(Icons.school),
+                title: const Text('My Courses'),
                 onTap: () {
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.supervisor_account),
-                title: Text('My Collaborations'),
+                leading: const Icon(Icons.supervisor_account),
+                title: const Text('My Collaborations'),
                 onTap: () {
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.favorite),
-                title: Text('Favourites'),
+                leading: const Icon(Icons.favorite),
+                title: const Text('Favourites'),
                 onTap: () {
                   Navigator.pop(context);
                 },
               ),
               const Divider(),
               ListTile(
-                leading: Icon(Icons.message),
-                title: Text('Messages'),
+                leading: const Icon(Icons.message),
+                title: const Text('Messages'),
                 onTap: () {
                   Navigator.pop(context);
                 },
