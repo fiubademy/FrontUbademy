@@ -7,7 +7,9 @@ class Server {
   static const String url = "api-gateway-fiubademy.herokuapp.com";
 
   static bool isValidEmail(String email) {
-    return RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(email);
+    return RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
   }
 
   static Future<String?> login(String email, String password) async {
@@ -22,6 +24,7 @@ class Server {
       },
     );
 
+    print(response.statusCode);
     if (response.statusCode == HttpStatus.ok) {
       return response.body;
     } else {

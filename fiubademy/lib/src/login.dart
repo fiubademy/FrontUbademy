@@ -1,7 +1,8 @@
-import 'package:fiubademy/src/session.dart';
+import 'auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'server.dart';
+import 'package:provider/provider.dart';
 
 class LogInPage extends StatefulWidget {
   const LogInPage({Key? key}) : super(key: key);
@@ -33,10 +34,10 @@ class _LogInPageState extends State<LogInPage> {
 
   void _login() async {
     if (_loginFormKey.currentState!.validate()) {
-      String? userToken = await Server.login(_emailController.text, _passwordController.text);
-      if (userToken != null) {
-        Session.setToken(userToken);
-      }
+      String? tok =
+          await Server.login(_emailController.text, _passwordController.text);
+      Provider.of<Auth>(context, listen: false)
+          .setToken("8575a03c-a6ab-44e9-912a-c77a85c71377");
     }
   }
 

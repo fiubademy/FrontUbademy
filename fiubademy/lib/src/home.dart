@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
+import 'auth.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,17 +16,21 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       drawer: buildDrawer(context),
       body: FloatingSearchAppBar(
-        body: buildExpandableBody(),
+        body: buildExpandableBody(context),
         title: Text('Ubademy'),
       ),
     );
   }
 }
 
-Widget buildExpandableBody() {
+Widget buildExpandableBody(BuildContext context) {
   return Container(
     color: Colors.white,
-    child: Text('Hello'),
+    child: ElevatedButton(
+      onPressed: () {
+        Provider.of<Auth>(context, listen:false).deleteToken();
+      },
+      child: Text('Erase Token'),)
   );
 }
 
