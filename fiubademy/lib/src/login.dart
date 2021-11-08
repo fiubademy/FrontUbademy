@@ -145,10 +145,12 @@ class _LogInFormState extends State<LogInForm> {
                         : Icons.visibility))),
           ),
           const SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: isLoading ? null : () => _login(),
-            child: const Text('Sign in'),
-          ),
+          isLoading
+              ? CircularProgressIndicator()
+              : ElevatedButton(
+                  onPressed: () => _login(),
+                  child: const Text('Sign in'),
+                ),
         ],
       ),
     );
