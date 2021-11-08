@@ -31,4 +31,25 @@ class Server {
       return null;
     }
   }
+
+  static Future<bool> signup(
+      String username, String email, String password) async {
+    final Map<String, String> queryParams = {
+      'username': username,
+      'email': email,
+      'password': password,
+    };
+    final response = await http.post(
+      Uri.https(url, "/users/", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    print(response.statusCode);
+    if (response.statusCode == HttpStatus.created) {
+      return true;
+    }
+    return false;
+  }
 }
