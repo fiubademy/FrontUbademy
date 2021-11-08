@@ -86,9 +86,16 @@ Widget buildDrawer(BuildContext context) {
         ),
         const Divider(),
         ListTile(
-          onTap: () {},
+          onTap: () {
+            Provider.of<Auth>(context, listen: false).deleteToken();
+          },
           leading: Icon(Icons.logout, color: Colors.red[700]),
-          title: Text('Log Out', style: TextStyle(color: Colors.red[700])),
+          title: Text(
+            'Log Out',
+            style: TextStyle(
+              color: Colors.red[700],
+            ),
+          ),
         ),
       ],
     ),
