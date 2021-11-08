@@ -14,6 +14,59 @@ class LogInPage extends StatefulWidget {
 }
 
 class _LogInPageState extends State<LogInPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const Image(image: AssetImage('images/ubademy.png')),
+              const SizedBox(height: 16.0),
+              const LogInForm(),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Don\'t have an account?'),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SignUpPage()),
+                      );
+                    },
+                    child: const Text('Sign up'),
+                  )
+                ],
+              ),
+              const Divider(),
+              SizedBox(
+                width: double.infinity,
+                child: SignInButton(
+                  Buttons.Google,
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class LogInForm extends StatefulWidget {
+  const LogInForm({Key? key}) : super(key: key);
+
+  @override
+  _LogInFormState createState() => _LogInFormState();
+}
+
+class _LogInFormState extends State<LogInForm> {
   bool _passwordObscured = true;
   bool _buttonEnabled = false;
   final _loginFormKey = GlobalKey<FormState>();
@@ -45,86 +98,47 @@ class _LogInPageState extends State<LogInPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const Image(image: AssetImage('images/ubademy.png')),
-              const SizedBox(height: 16.0),
-              Form(
-                key: _loginFormKey,
-                onChanged: () => setState(() {
-                  _buttonEnabled = _loginFormKey.currentState!.validate();
-                }),
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _emailController,
-                      validator: _validateEmail,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        hintText: 'example@email.com',
-                        labelText: 'Email',
-                        filled: true,
-                      ),
-                    ),
-                    const SizedBox(height: 16.0),
-                    TextFormField(
-                      controller: _passwordController,
-                      validator: _validatePassword,
-                      obscureText: _passwordObscured,
-                      decoration: InputDecoration(
-                          labelText: 'Password',
-                          filled: true,
-                          suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _passwordObscured = !_passwordObscured;
-                                });
-                              },
-                              icon: Icon(_passwordObscured
-                                  ? Icons.visibility_off
-                                  : Icons.visibility))),
-                    ),
-                    const SizedBox(height: 16.0),
-                    ElevatedButton(
-                      onPressed: _buttonEnabled ? _login : null,
-                      child: const Text('Sign in'),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Don\'t have an account?'),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SignUpPage()),
-                      );
-                    },
-                    child: const Text('Sign up'),
-                  )
-                ],
-              ),
-              const Divider(),
-              SizedBox(
-                width: double.infinity,
-                child: SignInButton(
-                  Buttons.Google,
-                  onPressed: () {},
-                ),
-              ),
-            ],
+    return Form(
+      key: _loginFormKey,
+      onChanged: () => setState(() {
+        _buttonEnabled = _loginFormKey.currentState!.validate();
+      }),
+      child: Column(
+        children: [
+          TextFormField(
+            controller: _emailController,
+            validator: _validateEmail,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              hintText: 'example@email.com',
+              labelText: 'Email',
+              filled: true,
+            ),
           ),
-        ),
+          const SizedBox(height: 16.0),
+          TextFormField(
+            controller: _passwordController,
+            validator: _validatePassword,
+            obscureText: _passwordObscured,
+            decoration: InputDecoration(
+                labelText: 'Password',
+                filled: true,
+                suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _passwordObscured = !_passwordObscured;
+                      });
+                    },
+                    icon: Icon(_passwordObscured
+                        ? Icons.visibility_off
+                        : Icons.visibility))),
+          ),
+          const SizedBox(height: 16.0),
+          ElevatedButton(
+            onPressed: _buttonEnabled ? _login : null,
+            child: const Text('Sign in'),
+          ),
+        ],
       ),
     );
   }
