@@ -184,7 +184,7 @@ class _SignUpFormState extends State<SignUpForm> {
             children: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Navigator.pop(context);
                 },
                 child: const Text('I already have an account'),
               ),
