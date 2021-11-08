@@ -17,21 +17,14 @@ class _HomePageState extends State<HomePage> {
       drawer: buildDrawer(context),
       body: FloatingSearchAppBar(
         body: buildExpandableBody(context),
-        title: Text('Ubademy'),
+        title: const Text('Ubademy'),
       ),
     );
   }
 }
 
 Widget buildExpandableBody(BuildContext context) {
-  return Container(
-      color: Colors.white,
-      child: ElevatedButton(
-        onPressed: () {
-          Provider.of<Auth>(context, listen: false).deleteToken();
-        },
-        child: Text('Erase Token'),
-      ));
+  return Container();
 }
 
 Widget buildDrawer(BuildContext context) {
