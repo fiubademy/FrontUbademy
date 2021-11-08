@@ -1,10 +1,10 @@
-import 'package:fiubademy/src/signup.dart';
-
-import 'auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
-import 'server.dart';
 import 'package:provider/provider.dart';
+
+import 'package:fiubademy/src/pages/signup.dart';
+import 'package:fiubademy/src/services/server.dart';
+import 'package:fiubademy/src/services/auth.dart';
 
 class LogInPage extends StatelessWidget {
   const LogInPage({Key? key}) : super(key: key);

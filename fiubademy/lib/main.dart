@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'src/login.dart';
-import 'src/signup.dart';
-import 'src/home.dart';
-import 'src/auth.dart';
+import 'package:fiubademy/src/pages/login.dart';
+import 'package:fiubademy/src/pages/home.dart';
+import 'package:fiubademy/src/services/auth.dart';
 
 void main() {
   runApp(const FiubademyApp());

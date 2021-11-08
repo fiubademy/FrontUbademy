@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:http/http.dart' as http;
-import 'auth.dart';
+
+import 'package:fiubademy/src/services/auth.dart';
 
 class Server {
   static const String url = "api-gateway-fiubademy.herokuapp.com";
