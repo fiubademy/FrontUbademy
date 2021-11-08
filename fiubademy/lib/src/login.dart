@@ -68,9 +68,6 @@ class LogInForm extends StatefulWidget {
 
 class _LogInFormState extends State<LogInForm> {
   bool _passwordObscured = true;
-  bool _buttonEnabled = false;
-  bool _emailInputted = false;
-  bool _passwordInputted = false;
   bool isLoading = false;
   final _loginFormKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -146,7 +143,7 @@ class _LogInFormState extends State<LogInForm> {
           ),
           const SizedBox(height: 16.0),
           isLoading
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : ElevatedButton(
                   onPressed: () => _login(),
                   child: const Text('Sign in'),
