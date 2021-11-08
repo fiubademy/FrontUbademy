@@ -80,12 +80,14 @@ class _SignUpFormState extends State<SignUpForm> {
     return null;
   }
 
-  void _signUp() {
+  void _signUp() async {
     if (_signUpFormKey.currentState!.validate()) {
-      return;
-      // TODO Finish this
+      bool signedUp = await Server.signup(_usernameController.text,
+          _emailController.text, _passwordController.text);
+      if (signedUp) {
+        await Server.login(_emailController.text, _passwordController.text);
+      }
     }
-    return;
   }
 
   @override
