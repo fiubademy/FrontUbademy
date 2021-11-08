@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
+import 'auth.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,65 +16,79 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       drawer: buildDrawer(context),
       body: FloatingSearchAppBar(
-        body: buildExpandableBody(),
-        title: Text('Ubademy'),
+        body: buildExpandableBody(context),
+        title: const Text('Ubademy'),
       ),
     );
   }
 }
 
-Widget buildExpandableBody() {
-  return Container(
-    color: Colors.white,
-    child: Text('Hello'),
-  );
+Widget buildExpandableBody(BuildContext context) {
+  return Container();
 }
 
 Widget buildDrawer(BuildContext context) {
   return Drawer(
-    child: ListView(
-      padding: EdgeInsets.zero,
-      children: <Widget>[
-        const UserAccountsDrawerHeader(
-          accountName: Text('Santiago Czop'),
-          accountEmail: Text('sczop@fi.uba.ar')
-        ),
-        ListTile(
-          leading: Icon(Icons.account_circle),
-          title: Text('My Profile'),
-          onTap: () {
-            Navigator.pop(context);
-          },
+    child: Column(
+      children: [
+        Expanded(
+          child: ListView(
+            children: [
+              const UserAccountsDrawerHeader(
+                  accountName: Text('Santiago Czop'),
+                  accountEmail: Text('sczop@fi.uba.ar')),
+              ListTile(
+                leading: const Icon(Icons.account_circle),
+                title: const Text('My Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.school),
+                title: const Text('My Courses'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.supervisor_account),
+                title: const Text('My Collaborations'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.favorite),
+                title: const Text('Favourites'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.message),
+                title: const Text('Messages'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
         const Divider(),
         ListTile(
-          leading: Icon(Icons.school),
-          title: Text('My Courses'),
           onTap: () {
-            Navigator.pop(context);
+            Provider.of<Auth>(context, listen: false).deleteToken();
           },
-        ),
-        ListTile(
-          leading: Icon(Icons.supervisor_account),
-          title: Text('My Collaborations'),
-          onTap: () {
-            Navigator.pop(context);
-          },
-        ),
-        ListTile(
-          leading: Icon(Icons.favorite),
-          title: Text('Favourites'),
-          onTap: () {
-            Navigator.pop(context);
-          },
-        ),
-        const Divider(),
-        ListTile(
-          leading: Icon(Icons.message),
-          title: Text('Messages'),
-          onTap: () {
-            Navigator.pop(context);
-          },
+          leading: Icon(Icons.logout, color: Colors.red[700]),
+          title: Text(
+            'Log Out',
+            style: TextStyle(
+              color: Colors.red[700],
+            ),
+          ),
         ),
       ],
     ),
