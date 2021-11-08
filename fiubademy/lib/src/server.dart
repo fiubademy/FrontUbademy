@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'auth.dart';
 
 class Server {
   static const String url = "api-gateway-fiubademy.herokuapp.com";
@@ -12,7 +12,7 @@ class Server {
         .hasMatch(email);
   }
 
-  static Future<String?> login(String email, String password) async {
+  static Future<String?> login(Auth auth, String email, String password) async {
     final Map<String, String> queryParams = {
       'email': email,
       'password': password,
@@ -26,9 +26,10 @@ class Server {
 
     print(response.statusCode);
     if (response.statusCode == HttpStatus.ok) {
-      return response.body;
-    } else {
+      auth.setToken(response.body);
       return null;
+    } else {
+      return 'Failed to login';
     }
   }
 
@@ -48,6 +49,7 @@ class Server {
 
     print(response.statusCode);
     if (response.statusCode == HttpStatus.created) {
+      print(response.body);
       return true;
     }
     return false;

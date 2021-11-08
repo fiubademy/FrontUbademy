@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'server.dart';
+import 'auth.dart';
+import 'package:provider/provider.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -81,11 +83,14 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   void _signUp() async {
+    FocusScope.of(context).unfocus();
     if (_signUpFormKey.currentState!.validate()) {
       bool signedUp = await Server.signup(_usernameController.text,
           _emailController.text, _passwordController.text);
       if (signedUp) {
-        await Server.login(_emailController.text, _passwordController.text);
+        Auth auth = Provider.of<Auth>(context, listen: false);
+        await Server.login(
+            auth, _emailController.text, _passwordController.text);
       }
     }
   }

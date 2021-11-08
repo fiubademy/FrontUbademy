@@ -90,11 +90,15 @@ class _LogInFormState extends State<LogInForm> {
   }
 
   void _login() async {
+    FocusScope.of(context).unfocus();
     if (_loginFormKey.currentState!.validate()) {
-      String? tok =
-          await Server.login(_emailController.text, _passwordController.text);
-      Provider.of<Auth>(context, listen: false)
-          .setToken("8575a03c-a6ab-44e9-912a-c77a85c71377");
+      Auth auth = Provider.of<Auth>(context, listen: false);
+      String? result = await Server.login(
+          auth, _emailController.text, _passwordController.text);
+      if (result != null) {
+        final snackBar = SnackBar(content: Text(result));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
   }
 
