@@ -69,6 +69,8 @@ class LogInForm extends StatefulWidget {
 class _LogInFormState extends State<LogInForm> {
   bool _passwordObscured = true;
   bool _buttonEnabled = false;
+  bool _emailInputted = false;
+  bool _passwordInputted = false;
   final _loginFormKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -100,14 +102,11 @@ class _LogInFormState extends State<LogInForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _loginFormKey,
-      onChanged: () => setState(() {
-        _buttonEnabled = _loginFormKey.currentState!.validate();
-      }),
       child: Column(
         children: [
           TextFormField(
             controller: _emailController,
-            validator: _validateEmail,
+            validator: (value) => _validateEmail(value),
             textInputAction: TextInputAction.next,
             decoration: const InputDecoration(
               hintText: 'example@email.com',
@@ -118,8 +117,9 @@ class _LogInFormState extends State<LogInForm> {
           const SizedBox(height: 16.0),
           TextFormField(
             controller: _passwordController,
-            validator: _validatePassword,
+            validator: (value) => _validatePassword(value),
             obscureText: _passwordObscured,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
                 labelText: 'Password',
                 filled: true,
@@ -135,7 +135,7 @@ class _LogInFormState extends State<LogInForm> {
           ),
           const SizedBox(height: 16.0),
           ElevatedButton(
-            onPressed: _buttonEnabled ? _login : null,
+            onPressed: () => _login(),
             child: const Text('Sign in'),
           ),
         ],
