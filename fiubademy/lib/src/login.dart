@@ -71,6 +71,7 @@ class _LogInFormState extends State<LogInForm> {
   bool _buttonEnabled = false;
   bool _emailInputted = false;
   bool _passwordInputted = false;
+  bool isLoading = false;
   final _loginFormKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -90,6 +91,9 @@ class _LogInFormState extends State<LogInForm> {
   }
 
   void _login() async {
+    setState(() {
+      isLoading = true;
+    });
     FocusScope.of(context).unfocus();
     if (_loginFormKey.currentState!.validate()) {
       Auth auth = Provider.of<Auth>(context, listen: false);
@@ -100,6 +104,9 @@ class _LogInFormState extends State<LogInForm> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -139,7 +146,7 @@ class _LogInFormState extends State<LogInForm> {
           ),
           const SizedBox(height: 16.0),
           ElevatedButton(
-            onPressed: () => _login(),
+            onPressed: isLoading ? null : () => _login(),
             child: const Text('Sign in'),
           ),
         ],
