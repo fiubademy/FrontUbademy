@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'server.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -40,15 +41,51 @@ class _SignUpFormState extends State<SignUpForm> {
   final _signUpFormKey = GlobalKey<FormState>();
   bool _passwordObscured = true;
   bool _passwordConfirmationObscured = true;
+  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _passwordConfirmationController = TextEditingController();
 
   String? _validateUsername(value) {
     if (value == null || value.isEmpty) {
       return 'Please enter a username';
     }
-    if (!RegExp(r"\A[^\W\d_]+\z").hasMatch(value)) {
+    if (!RegExp(r"^[A-Za-z]+$").hasMatch(value.toLowerCase())) {
       return 'Please use only alphabetical characters';
     }
     return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty || !Server.isValidEmail(value)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password';
+    }
+    return null;
+  }
+
+  String? _validatePasswordConfirmation(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password';
+    }
+    if (_passwordController.text != value) {
+      return 'Password confirmation must equal password';
+    }
+    return null;
+  }
+
+  void _signUp() {
+    if (_signUpFormKey.currentState!.validate()) {
+      return;
+      // TODO Finish this
+    }
+    return;
   }
 
   @override
@@ -57,33 +94,21 @@ class _SignUpFormState extends State<SignUpForm> {
       key: _signUpFormKey,
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  textInputAction: TextInputAction.next,
-                  validator: (value) => _validateUsername(value),
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    filled: true,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16.0),
-              Expanded(
-                child: TextFormField(
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Last Name',
-                    filled: true,
-                  ),
-                ),
-              ),
-            ],
+          TextFormField(
+            textInputAction: TextInputAction.next,
+            controller: _usernameController,
+            validator: (value) => _validateUsername(value),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            decoration: const InputDecoration(
+              labelText: 'Username',
+              filled: true,
+            ),
           ),
           const SizedBox(height: 16.0),
           TextFormField(
             textInputAction: TextInputAction.next,
+            controller: _emailController,
+            validator: (value) => _validateEmail(value),
             decoration: const InputDecoration(
               hintText: 'example@email.com',
               labelText: 'Email',
@@ -93,6 +118,9 @@ class _SignUpFormState extends State<SignUpForm> {
           const SizedBox(height: 16.0),
           TextFormField(
             textInputAction: TextInputAction.next,
+            controller: _passwordController,
+            obscureText: _passwordObscured,
+            validator: (value) => _validatePassword(value),
             decoration: InputDecoration(
                 labelText: 'Password',
                 filled: true,
@@ -105,11 +133,13 @@ class _SignUpFormState extends State<SignUpForm> {
                     icon: Icon(_passwordObscured
                         ? Icons.visibility_off
                         : Icons.visibility))),
-            obscureText: _passwordObscured,
           ),
           const SizedBox(height: 16.0),
           TextFormField(
             textInputAction: TextInputAction.done,
+            controller: _passwordConfirmationController,
+            obscureText: _passwordConfirmationObscured,
+            validator: (value) => _validatePasswordConfirmation(value),
             decoration: InputDecoration(
                 labelText: 'Password Confirmation',
                 filled: true,
@@ -123,7 +153,6 @@ class _SignUpFormState extends State<SignUpForm> {
                     icon: Icon(_passwordConfirmationObscured
                         ? Icons.visibility_off
                         : Icons.visibility))),
-            obscureText: _passwordConfirmationObscured,
           ),
           const SizedBox(height: 16.0),
           Row(
@@ -133,8 +162,8 @@ class _SignUpFormState extends State<SignUpForm> {
                 child: const Text('I already have an account'),
               ),
               const Spacer(),
-              const ElevatedButton(
-                onPressed: null,
+              ElevatedButton(
+                onPressed: () => _signUp(),
                 child: Text('Sign up'),
               ),
             ],
