@@ -19,6 +19,7 @@ class _SignUpPageState extends State<SignUpPage> {
               children: [
                 const Image(image: AssetImage('images/ubademy.png')),
                 const SizedBox(height: 16.0),
+                const SignUpForm(),
               ],
             ),
           ),
@@ -36,12 +37,24 @@ class SignUpForm extends StatefulWidget {
 }
 
 class _SignUpFormState extends State<SignUpForm> {
+  final _signUpFormKey = GlobalKey<FormState>();
   bool _passwordObscured = true;
   bool _passwordConfirmationObscured = true;
+
+  String? _validateUsername(value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a username';
+    }
+    if (!RegExp(r"\A[^\W\d_]+\z").hasMatch(value)) {
+      return 'Please use only alphabetical characters';
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _signUpFormKey,
       child: Column(
         children: [
           Row(
@@ -49,6 +62,7 @@ class _SignUpFormState extends State<SignUpForm> {
               Expanded(
                 child: TextFormField(
                   textInputAction: TextInputAction.next,
+                  validator: (value) => _validateUsername(value),
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     filled: true,
