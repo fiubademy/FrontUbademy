@@ -1,26 +1,26 @@
 import 'package:flutter/foundation.dart';
 
 class Auth extends ChangeNotifier {
-  String? userID;
-  String? userToken;
+  String? _userID;
+  String? _userToken;
 
-  String? getToken() {
-    return userToken;
+  String? get userToken {
+    return _userToken;
   }
 
-  String? getID() {
-    return userID;
+  String? get userID {
+    return _userID;
   }
 
   void setAuth(String id, String token) {
     bool changed = false;
     if (token != userToken) {
       changed = true;
-      userToken = token;
+      _userToken = token;
     }
     if (id != userID) {
       changed = true;
-      userID = id;
+      _userID = id;
     }
     if (changed) {
       notifyListeners();
@@ -28,8 +28,8 @@ class Auth extends ChangeNotifier {
   }
 
   void deleteAuth() {
-    userID = null;
-    userToken = null;
+    _userID = null;
+    _userToken = null;
     notifyListeners();
   }
 }
