@@ -3,6 +3,7 @@ import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import '../services/auth.dart';
 import 'package:provider/provider.dart';
 import 'package:fiubademy/src/pages/profile.dart';
+import 'package:fiubademy/src/services/user.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -35,10 +36,9 @@ Widget _buildDrawer(BuildContext context) {
         Expanded(
           child: ListView(
             children: [
-              _ProfileDrawerHeader(),
-              const UserAccountsDrawerHeader(
-                  accountName: Text('Santiago Czop'),
-                  accountEmail: Text('sczop@fi.uba.ar')),
+              UserAccountsDrawerHeader(
+                  accountName: Text(Provider.of<User>(context).username),
+                  accountEmail: Text(Provider.of<User>(context).email)),
               ListTile(
                 leading: const Icon(Icons.account_circle),
                 title: const Text('My Profile'),
@@ -100,18 +100,4 @@ Widget _buildDrawer(BuildContext context) {
       ],
     ),
   );
-}
-
-class _ProfileDrawerHeader extends StatefulWidget {
-  const _ProfileDrawerHeader({Key? key}) : super(key: key);
-
-  @override
-  _ProfileDrawerHeaderState createState() => _ProfileDrawerHeaderState();
-}
-
-class _ProfileDrawerHeaderState extends State<_ProfileDrawerHeader> {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
 }
