@@ -4,13 +4,8 @@ class Auth extends ChangeNotifier {
   String? _userID;
   String? _userToken;
 
-  String? get userToken {
-    return _userToken;
-  }
-
-  String? get userID {
-    return _userID;
-  }
+  String? get userToken => _userToken;
+  String? get userID => _userID;
 
   void setAuth(String id, String token) {
     bool changed = false;
