@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:fiubademy/src/services/user.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -41,10 +43,10 @@ class _ProfileBodyState extends State<_ProfileBody> {
                 ),
               ),
               ListTile(
-                title: Text('Santiago Czop'),
+                title: Text(Provider.of<User>(context).username),
               ),
               ListTile(
-                title: Text('sczop@fi.uba.ar'),
+                title: Text(Provider.of<User>(context).email),
               ),
             ],
           ),
@@ -62,7 +64,8 @@ class _ProfileBodyState extends State<_ProfileBody> {
                   ),
                 ),
               ),
-              ListTile(title: Text('Standard')),
+              ListTile(
+                  title: Text(Provider.of<User>(context).subscriptionName)),
               ListTile(title: Text('Expiration: 31/12/2021')),
             ],
           ),
