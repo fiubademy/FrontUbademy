@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import '../services/auth.dart';
 import 'package:provider/provider.dart';
+import 'package:fiubademy/src/pages/profile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,26 +15,27 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: buildDrawer(context),
+      drawer: _buildDrawer(context),
       body: FloatingSearchAppBar(
-        body: buildExpandableBody(context),
+        body: _buildExpandableBody(context),
         title: const Text('Ubademy'),
       ),
     );
   }
 }
 
-Widget buildExpandableBody(BuildContext context) {
+Widget _buildExpandableBody(BuildContext context) {
   return Container();
 }
 
-Widget buildDrawer(BuildContext context) {
+Widget _buildDrawer(BuildContext context) {
   return Drawer(
     child: Column(
       children: [
         Expanded(
           child: ListView(
             children: [
+              _ProfileDrawerHeader(),
               const UserAccountsDrawerHeader(
                   accountName: Text('Santiago Czop'),
                   accountEmail: Text('sczop@fi.uba.ar')),
@@ -41,7 +43,12 @@ Widget buildDrawer(BuildContext context) {
                 leading: const Icon(Icons.account_circle),
                 title: const Text('My Profile'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const ProfilePage();
+                    }),
+                  );
                 },
               ),
               const Divider(),
@@ -80,7 +87,7 @@ Widget buildDrawer(BuildContext context) {
         const Divider(),
         ListTile(
           onTap: () {
-            Provider.of<Auth>(context, listen: false).deleteToken();
+            Provider.of<Auth>(context, listen: false).deleteAuth();
           },
           leading: Icon(Icons.logout, color: Colors.red[700]),
           title: Text(
@@ -93,4 +100,18 @@ Widget buildDrawer(BuildContext context) {
       ],
     ),
   );
+}
+
+class _ProfileDrawerHeader extends StatefulWidget {
+  const _ProfileDrawerHeader({Key? key}) : super(key: key);
+
+  @override
+  _ProfileDrawerHeaderState createState() => _ProfileDrawerHeaderState();
+}
+
+class _ProfileDrawerHeaderState extends State<_ProfileDrawerHeader> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
 }

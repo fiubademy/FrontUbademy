@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
@@ -26,7 +27,8 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.ok:
-        auth.setToken(response.body);
+        Map<String, dynamic> body = jsonDecode(response.body);
+        auth.setAuth(body['userID'], body['sessionToken']);
         return null;
       case HttpStatus.unauthorized:
         return 'Invalid credentials';
