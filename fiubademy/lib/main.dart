@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'src/login.dart';
-import 'src/signup.dart';
-import 'src/home.dart';
+import 'package:fiubademy/src/pages/login.dart';
+import 'package:fiubademy/src/pages/home.dart';
+import 'package:fiubademy/src/services/auth.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -13,12 +14,18 @@ class FiubademyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ubademy',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const LogInPage(),
-    );
+    return ChangeNotifierProvider(
+        create: (context) => Auth(),
+        builder: (context, child) {
+          return MaterialApp(
+            title: 'Ubademy',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            home: Provider.of<Auth>(context).getToken() == null
+                ? const LogInPage()
+                : const HomePage(),
+          );
+        });
   }
 }
