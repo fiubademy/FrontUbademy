@@ -24,7 +24,7 @@ class FiubademyApp extends StatelessWidget {
             create: (context) => User(),
             update: (context, auth, user) {
               if (user == null) throw ArgumentError.notNull('user');
-              user.userID = auth.getID();
+              user.userID = auth.userID;
               return user;
             },
           ),
@@ -35,7 +35,7 @@ class FiubademyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),
-            home: Provider.of<Auth>(context).getToken() == null
+            home: Provider.of<Auth>(context).userToken == null
                 ? const LogInPage()
                 : const HomePage(),
           );
