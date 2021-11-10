@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'server.dart';
-import 'auth.dart';
 import 'package:provider/provider.dart';
+
+import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/server.dart';
 
 class SignUpPage extends StatelessWidget {
   const SignUpPage({Key? key}) : super(key: key);

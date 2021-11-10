@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
-import 'auth.dart';
+import '../services/auth.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
