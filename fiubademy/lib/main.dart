@@ -38,6 +38,8 @@ class FiubademyApp extends StatelessWidget {
             create: (context) => User(),
             update: (context, auth, user) {
               if (user == null) throw ArgumentError.notNull('user');
+              print('Updating user');
+              print(auth.userID);
               if (auth.userID != user.userID) {
                 _updateUser(context, auth, user);
               }
