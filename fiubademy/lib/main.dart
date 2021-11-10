@@ -22,9 +22,9 @@ class FiubademyApp extends StatelessWidget {
 
     Map<String, dynamic>? userData = await Server.getUser(auth, auth.userID!);
     if (userData == null) {
-      final snackBar = SnackBar(content: Text('Failed to update user data'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
     }
+    user.updateData(userData);
   }
 
   @override

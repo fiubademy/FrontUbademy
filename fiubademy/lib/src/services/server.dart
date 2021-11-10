@@ -67,8 +67,8 @@ class Server {
     final Map<String, String> queryParams = {
       'user_id': userID,
     };
-    final response = await http.post(
-      Uri.https(url, "/users/ID/", queryParams),
+    final response = await http.get(
+      Uri.https(url, "/users/ID/$userID"),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },

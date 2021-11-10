@@ -6,8 +6,8 @@ class User extends ChangeNotifier {
   String? _userID;
   String _username;
   String _email;
-  double _latitude;
-  double _longitude;
+  double? _latitude;
+  double? _longitude;
   int _subscriptionLevel;
 
   User()
@@ -51,6 +51,6 @@ class User extends ChangeNotifier {
     _latitude = double.infinity;
     _longitude = double.infinity;
     _subscriptionLevel = 0;
-    return;
+    notifyListeners();
   }
 }
