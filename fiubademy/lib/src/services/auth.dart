@@ -8,7 +8,7 @@ class Auth extends ChangeNotifier {
   Auth() {
     const storage = FlutterSecureStorage();
     storage.read(key: 'userToken').then((value) {
-      userToken = value;
+      _userToken = value;
       if (value != null) notifyListeners();
     });
   }

@@ -54,6 +54,7 @@ class FiubademyApp extends StatelessWidget {
             home: Provider.of<Auth>(context).userToken == null
                 ? const LogInPage()
                 : const HomePage(),
+            // Idea: use anonymous function. if null, also Navigator pop all.
           );
         });
   }
