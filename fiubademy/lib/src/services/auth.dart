@@ -4,8 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class Auth extends ChangeNotifier {
   String? userToken;
 
-  Auth._create();
-
   Auth() {
     const storage = FlutterSecureStorage();
     storage.read(key: 'userToken').then((value) {
@@ -20,12 +18,16 @@ class Auth extends ChangeNotifier {
 
   void setToken(String token) {
     if (token != userToken) {
+      const storage = FlutterSecureStorage();
+      storage.write(key: 'userToken', value: token);
       userToken = token;
       notifyListeners();
     }
   }
 
   void deleteToken() {
+    const storage = FlutterSecureStorage();
+    storage.delete(key: 'userToken');
     userToken = null;
     notifyListeners();
   }
