@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
@@ -26,7 +27,8 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.ok:
-        auth.setToken(response.body);
+        Map<String, dynamic> body = jsonDecode(response.body);
+        auth.setAuth(body['userID'], body['sessionToken']);
         return null;
       case HttpStatus.unauthorized:
         return 'Invalid credentials';
@@ -58,6 +60,25 @@ class Server {
         return 'The account already exists';
       default:
         return 'Failed to sign up. Please try again in a few minutes';
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getUser(Auth auth, String userID) async {
+    final Map<String, String> queryParams = {
+      'user_id': userID,
+    };
+    final response = await http.get(
+      Uri.https(url, "/users/ID/$userID"),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return jsonDecode(response.body);
+      default:
+        return null;
     }
   }
 }

@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class Auth extends ChangeNotifier {
-  String? userToken;
+  String? _userID;
+  String? _userToken;
 
   Auth() {
     const storage = FlutterSecureStorage();
@@ -12,23 +13,31 @@ class Auth extends ChangeNotifier {
     });
   }
 
-  String? getToken() {
-    return userToken;
-  }
+  String? get userToken => _userToken;
+  String? get userID => _userID;
 
-  void setToken(String token) {
-    if (token != userToken) {
+  void setAuth(String id, String token) {
+    bool changed = false;
+    if (token != _userToken) {
       const storage = FlutterSecureStorage();
       storage.write(key: 'userToken', value: token);
-      userToken = token;
+      changed = true;
+      _userToken = token;
+    }
+    if (id != _userID) {
+      changed = true;
+      _userID = id;
+    }
+    if (changed) {
       notifyListeners();
     }
   }
 
-  void deleteToken() {
+  void deleteAuth() {
     const storage = FlutterSecureStorage();
     storage.delete(key: 'userToken');
-    userToken = null;
+    _userID = null;
+    _userToken = null;
     notifyListeners();
   }
 }
