@@ -5,6 +5,7 @@ import 'package:fiubademy/src/pages/login.dart';
 import 'package:fiubademy/src/pages/home.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
+import 'package:fiubademy/src/services/server.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -12,6 +13,19 @@ void main() {
 
 class FiubademyApp extends StatelessWidget {
   const FiubademyApp({Key? key}) : super(key: key);
+
+  void _updateUser(BuildContext context, Auth auth, User user) async {
+    if (auth.userID == null) {
+      user.deleteData();
+      return;
+    }
+
+    Map<String, dynamic>? userData = await Server.getUser(auth, auth.userID!);
+    if (userData == null) {
+      final snackBar = SnackBar(content: Text('Failed to update user data'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +38,9 @@ class FiubademyApp extends StatelessWidget {
             create: (context) => User(),
             update: (context, auth, user) {
               if (user == null) throw ArgumentError.notNull('user');
-              user.userID = auth.userID;
+              if (auth.userID != user.userID) {
+                _updateUser(context, auth, user);
+              }
               return user;
             },
           ),

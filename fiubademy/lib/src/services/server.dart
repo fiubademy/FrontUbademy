@@ -62,4 +62,23 @@ class Server {
         return 'Failed to sign up. Please try again in a few minutes';
     }
   }
+
+  static Future<Map<String, dynamic>?> getUser(Auth auth, String userID) async {
+    final Map<String, String> queryParams = {
+      'user_id': userID,
+    };
+    final response = await http.post(
+      Uri.https(url, "/users/ID/", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return jsonDecode(response.body);
+      default:
+        return null;
+    }
+  }
 }
