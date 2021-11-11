@@ -200,23 +200,6 @@ class CourseViewPage extends StatelessWidget {
                 ),
               ),
             ),
-
-            /*
-                        ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-                    child: Text(
-                      '#Curvas',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  color: Theme.of(context).colorScheme.secondaryVariant,
-                ),
-                          ],
-                        ),*/
           ],
         ),
       ),
