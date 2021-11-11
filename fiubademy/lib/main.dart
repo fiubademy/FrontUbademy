@@ -52,6 +52,8 @@ class FiubademyApp extends StatelessWidget {
             create: (context) => User(),
             update: (context, auth, user) {
               if (user == null) throw ArgumentError.notNull('user');
+              print('Updating user');
+              print(auth.userID);
               if (auth.userID != user.userID) {
                 print('Updating pos');
                 _updateUserLocation(auth);
@@ -65,11 +67,23 @@ class FiubademyApp extends StatelessWidget {
         ],
         builder: (context, child) {
           return MaterialApp(
+<<<<<<< HEAD
               title: 'Ubademy',
               theme: ThemeData(
                 primarySwatch: Colors.blue,
               ),
               home: _switchHome(context));
+=======
+            title: 'Ubademy',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            home: Provider.of<Auth>(context).userToken == null
+                ? const LogInPage()
+                : const HomePage(),
+            // Idea: use anonymous function. if null, also Navigator pop all.
+          );
+>>>>>>> development
         });
   }
 
