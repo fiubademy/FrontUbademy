@@ -1,5 +1,8 @@
 import 'package:geolocator/geolocator.dart';
 
+import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/server.dart';
+
 Future<Position> getLocation() async {
   bool serviceEnabled;
   LocationPermission permission;
@@ -35,4 +38,15 @@ Future<Position> getLocation() async {
   // When we reach here, permissions are granted and we can
   // continue accessing the position of the device.
   return await Geolocator.getCurrentPosition();
+}
+
+void updateUserLocation(Auth auth) async {
+  if (auth.userID == null) {
+    return;
+  }
+
+  if (await Geolocator.isLocationServiceEnabled()) {
+    Position pos = await getLocation();
+    Server.updatePosition(auth, pos.latitude, pos.longitude);
+  }
 }

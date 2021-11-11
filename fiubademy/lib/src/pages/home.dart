@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
@@ -23,8 +24,9 @@ class _HomePageState extends State<HomePage> {
         builder: (context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.hasData) {
             if (!snapshot.data!) {
-              return Container();
+              _requestLocation(context);
             }
+            updateUserLocation(Provider.of<Auth>(context, listen: false));
             return Scaffold(
               drawer: _buildDrawer(context),
               body: FloatingSearchAppBar(
@@ -33,9 +35,56 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           } else {
-            return Container();
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
           }
         });
+  }
+
+  Widget _requestLocation(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Ubademy'),
+      ),
+      body: SafeArea(
+        child: Container(
+          constraints: const BoxConstraints.expand(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.location_off_outlined,
+                size: 170,
+                color: Theme.of(context).colorScheme.secondaryVariant,
+              ),
+              const SizedBox(height: 16.0),
+              Text(
+                'Whoops! It looks like your location isn\'t enabled.',
+                style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16.0),
+              Text('Please enable Ubademy to access your location to continue',
+                  style: Theme.of(context).textTheme.subtitle1,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 32.0),
+              ElevatedButton(
+                onPressed: () async {
+                  setState(() {
+                    _locationEnabled = Geolocator.isLocationServiceEnabled();
+                  });
+                },
+                child: Text('Enable Location'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
