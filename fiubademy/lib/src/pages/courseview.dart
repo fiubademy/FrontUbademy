@@ -223,16 +223,32 @@ class CourseViewPage extends StatelessWidget {
             '4.3',
             style: Theme.of(context).textTheme.subtitle1,
           ),
-          Spacer(),
+          const Spacer(),
           Text(
             '(37 reviews)',
             style: Theme.of(context).textTheme.subtitle1,
           )
         ],
       ),
-      TextButton(
-        onPressed: () {},
-        child: Text('Write a review'),
+      const SizedBox(height: 8.0),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          TextButton(
+            onPressed: () {
+              if (true) {
+                const snackBar = SnackBar(
+                    content: Text(
+                        'You need to finish the course to write a review'));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              } //else {
+              //Navigator.push(context, route);
+              //}
+            },
+            child: const Text('Write a review'),
+          ),
+          TextButton(onPressed: () {}, child: const Text('See all reviews'))
+        ],
       ),
     ];
   }
