@@ -47,6 +47,12 @@ class User extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setPosition(double latitude, double longitude) {
+    _latitude = latitude;
+    _longitude = longitude;
+    notifyListeners();
+  }
+
   void deleteData() {
     _userID = null;
     _username = 'Failed to load username';

@@ -2,6 +2,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
+import 'package:fiubademy/src/services/user.dart';
 
 Future<Position> getLocation() async {
   bool serviceEnabled;
@@ -40,7 +41,7 @@ Future<Position> getLocation() async {
   return await Geolocator.getCurrentPosition();
 }
 
-void updateUserLocation(Auth auth) async {
+void updateUserLocation(Auth auth, User user) async {
   if (auth.userID == null) {
     return;
   }
@@ -48,5 +49,6 @@ void updateUserLocation(Auth auth) async {
   if (await Geolocator.isLocationServiceEnabled()) {
     Position pos = await getLocation();
     Server.updatePosition(auth, pos.latitude, pos.longitude);
+    user.setPosition(pos.latitude, pos.longitude);
   }
 }
