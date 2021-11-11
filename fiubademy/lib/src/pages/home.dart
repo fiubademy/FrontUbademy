@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import '../services/auth.dart';
 import 'package:provider/provider.dart';
@@ -13,15 +14,28 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Future<bool> _locationEnabled = Geolocator.isLocationServiceEnabled();
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: _buildDrawer(context),
-      body: FloatingSearchAppBar(
-        body: _buildExpandableBody(context),
-        title: const Text('Ubademy'),
-      ),
-    );
+    return FutureBuilder(
+        future: _locationEnabled,
+        builder: (context, AsyncSnapshot<bool> snapshot) {
+          if (snapshot.hasData) {
+            if (!snapshot.data!) {
+              return Container();
+            }
+            return Scaffold(
+              drawer: _buildDrawer(context),
+              body: FloatingSearchAppBar(
+                body: _buildExpandableBody(context),
+                title: const Text('Ubademy'),
+              ),
+            );
+          } else {
+            return Container();
+          }
+        });
   }
 }
 

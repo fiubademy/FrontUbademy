@@ -1,4 +1,3 @@
-import 'package:fiubademy/src/pages/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -9,6 +8,7 @@ import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/location.dart';
+import 'package:fiubademy/src/pages/location_request.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -23,9 +23,6 @@ class FiubademyApp extends StatelessWidget {
       return;
     }
 
-    Position pos = await getLocation();
-    Server.updatePosition(auth, pos.latitude, pos.longitude);
-
     Map<String, dynamic>? userData = await Server.getUser(auth, auth.userID!);
     if (userData == null) {
       return;
@@ -38,8 +35,10 @@ class FiubademyApp extends StatelessWidget {
       return;
     }
 
-    Position pos = await getLocation();
-    Server.updatePosition(auth, pos.latitude, pos.longitude);
+    if (await Geolocator.isLocationServiceEnabled()) {
+      Position pos = await getLocation();
+      Server.updatePosition(auth, pos.latitude, pos.longitude);
+    }
   }
 
   @override
@@ -54,8 +53,11 @@ class FiubademyApp extends StatelessWidget {
             update: (context, auth, user) {
               if (user == null) throw ArgumentError.notNull('user');
               if (auth.userID != user.userID) {
+                print('Updating pos');
                 _updateUserLocation(auth);
+                print('Updating user');
                 _updateUser(auth, user);
+                print('Updated user');
               }
               return user;
             },
@@ -78,9 +80,14 @@ class FiubademyApp extends StatelessWidget {
         return const LogInPage();
       }
 
-      if (user.latitude == null) {
-        return const ProfilePage();
-      }
+      Geolocator.isLocationServiceEnabled().then((enabled) {
+        if (!enabled) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const LocationRequestPage()));
+        }
+      });
 
       return const HomePage();
     });
