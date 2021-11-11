@@ -81,4 +81,25 @@ class Server {
         return null;
     }
   }
+
+  static Future<bool> updatePosition(
+      Auth auth, double latitude, double longitude) async {
+    final Map<String, String> queryParams = {
+      'latitude': latitude.toString(),
+      'longitude': longitude.toString(),
+    };
+    final response = await http.get(
+      Uri.https(url, "/users/${auth.userToken}/set_location", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return true;
+      default:
+        return false;
+    }
+  }
 }
