@@ -24,9 +24,10 @@ class _HomePageState extends State<HomePage> {
         builder: (context, AsyncSnapshot<bool> snapshot) {
           if (snapshot.hasData) {
             if (!snapshot.data!) {
-              _requestLocation(context);
+              return _requestLocation(context);
             }
-            updateUserLocation(Provider.of<Auth>(context, listen: false));
+            updateUserLocation(Provider.of<Auth>(context, listen: false),
+                Provider.of<User>(context, listen: false));
             return Scaffold(
               drawer: _buildDrawer(context),
               body: FloatingSearchAppBar(
