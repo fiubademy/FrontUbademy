@@ -73,6 +73,7 @@ class CourseViewPage extends StatelessWidget {
       child: Scrollbar(
         child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTitle(context),
@@ -149,51 +150,76 @@ class CourseViewPage extends StatelessWidget {
       IntrinsicHeight(
           child: Row(
         children: [
-          const Icon(Icons.calendar_today),
+          const Icon(Icons.calendar_today, color: Colors.grey),
           const VerticalDivider(),
-          Text('16 Mar 2021', style: Theme.of(context).textTheme.subtitle1),
+          const SizedBox(width: 4.0),
+          Text('Created 16 Mar 2021',
+              style: Theme.of(context).textTheme.subtitle1),
         ],
       )),
       const SizedBox(
         height: 16.0,
       ),
       IntrinsicHeight(
-          child: Row(
-        children: [
-          Icon(Icons.tag_rounded, color: Colors.blue),
-          VerticalDivider(),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-              child: Text(
-                '#PHP',
-                style: Theme.of(context).textTheme.subtitle1,
+        child: Row(
+          children: [
+            const Icon(Icons.location_on, color: Colors.grey),
+            const VerticalDivider(),
+            const SizedBox(width: 4.0),
+            Text('Facultad de Ingeniería, UBA',
+                style: Theme.of(context).textTheme.subtitle1),
+          ],
+        ),
+      ),
+      const SizedBox(
+        height: 16.0,
+      ),
+      IntrinsicHeight(
+        child: Row(
+          children: [
+            const Icon(Icons.tag_rounded, color: Colors.grey),
+            const VerticalDivider(),
+            Expanded(
+              child: SizedBox(
+                height: 32.0,
+                child: ListView.builder(
+                  physics: ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 6,
+                  itemBuilder: (BuildContext context, int index) => Card(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+                      child: Text(
+                        '#Tag $index',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    color: Theme.of(context).colorScheme.secondaryVariant,
+                  ),
+                ),
               ),
             ),
-            color: Theme.of(context).colorScheme.secondaryVariant,
-          ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-              child: Text(
-                '#PHP',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ),
-            color: Theme.of(context).colorScheme.secondaryVariant,
-          ),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-              child: Text(
-                '#PHP',
-                style: Theme.of(context).textTheme.subtitle1,
-              ),
-            ),
-            color: Theme.of(context).colorScheme.secondaryVariant,
-          ),
-        ],
-      ))
+
+            /*
+                        ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+                    child: Text(
+                      '#Curvas',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  color: Theme.of(context).colorScheme.secondaryVariant,
+                ),
+                          ],
+                        ),*/
+          ],
+        ),
+      ),
     ];
   }
 
@@ -216,7 +242,7 @@ class CourseViewPage extends StatelessWidget {
           ),
           Spacer(),
           Text(
-            '(45 reviews)',
+            '(37 reviews)',
             style: Theme.of(context).textTheme.subtitle1,
           )
         ],
