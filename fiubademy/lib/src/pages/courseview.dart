@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
@@ -33,7 +34,7 @@ class CourseViewPage extends StatelessWidget {
     return;
   }
 
-  final Future<void> _delay = Future.delayed(Duration(seconds: 1));
+  final Future<void> _delay = Future.delayed(const Duration(seconds: 1));
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class CourseViewPage extends StatelessWidget {
                 appBar: AppBar(
                   title: Text('Ubademy'),
                 ),
-                body: Center(
+                body: const Center(
                   child: CircularProgressIndicator(),
                 ),
               );
@@ -85,12 +86,14 @@ class CourseViewPage extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 8.0),
               ..._buildDetails(context),
+              const SizedBox(height: 8.0),
               const Divider(),
               const SizedBox(height: 8.0),
               ..._buildRatings(context),
-              Center(
-                child: _CourseLeaveButton(),
-              )
+              const SizedBox(height: 8.0),
+              const Divider(),
+              Center(child: _CourseLeaveButton()),
+              const SizedBox(height: 8.0),
             ],
           ),
         ),
@@ -110,12 +113,17 @@ class CourseViewPage extends StatelessWidget {
           Icons.school,
           color: Theme.of(context).colorScheme.secondaryVariant,
         ),
-        SizedBox(width: 8.0),
+        const SizedBox(width: 8.0),
         Text('by Maulhardt', style: Theme.of(context).textTheme.subtitle2),
-        Spacer(),
+        const Spacer(),
         Text(
           'Free',
           style: Theme.of(context).textTheme.subtitle2,
+        ),
+        const SizedBox(width: 8.0),
+        Icon(
+          Icons.monetization_on_rounded,
+          color: Colors.green[700],
         ),
       ],
     );
@@ -141,31 +149,9 @@ class CourseViewPage extends StatelessWidget {
       IntrinsicHeight(
           child: Row(
         children: [
-          Icon(Icons.star, color: Colors.amber),
-          VerticalDivider(),
-          Text('4.3', style: Theme.of(context).textTheme.subtitle1),
-        ],
-      )),
-      const SizedBox(
-        height: 16.0,
-      ),
-      IntrinsicHeight(
-          child: Row(
-        children: [
-          Icon(Icons.calendar_today),
-          VerticalDivider(),
+          const Icon(Icons.calendar_today),
+          const VerticalDivider(),
           Text('16 Mar 2021', style: Theme.of(context).textTheme.subtitle1),
-        ],
-      )),
-      const SizedBox(
-        height: 16.0,
-      ),
-      IntrinsicHeight(
-          child: Row(
-        children: [
-          Icon(Icons.monetization_on_rounded, color: Colors.green[700]),
-          VerticalDivider(),
-          Text('Free', style: Theme.of(context).textTheme.subtitle1),
         ],
       )),
       const SizedBox(
@@ -213,7 +199,32 @@ class CourseViewPage extends StatelessWidget {
 
   List<Widget> _buildRatings(BuildContext context) {
     return [
-      Text('Reviews and Rating', style: Theme.of(context).textTheme.headline6),
+      Text('Reviews and Ratings', style: Theme.of(context).textTheme.headline6),
+      const SizedBox(height: 16.0),
+      Row(
+        children: [
+          RatingBarIndicator(
+            rating: 4.3,
+            itemSize: 24,
+            itemBuilder: (context, index) =>
+                Icon(Icons.star, color: Colors.amber),
+          ),
+          const SizedBox(width: 8.0),
+          Text(
+            '4.3',
+            style: Theme.of(context).textTheme.subtitle1,
+          ),
+          Spacer(),
+          Text(
+            '(45 reviews)',
+            style: Theme.of(context).textTheme.subtitle1,
+          )
+        ],
+      ),
+      TextButton(
+        onPressed: () {},
+        child: Text('Write a review'),
+      ),
     ];
   }
 }
