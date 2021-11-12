@@ -3,6 +3,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/widgets/course_rating.dart';
+import 'package:fiubademy/src/widgets/course_tags.dart';
 import 'package:fiubademy/src/models/course.dart';
 
 class NextPage extends StatelessWidget {
@@ -180,25 +182,7 @@ class CourseViewPage extends StatelessWidget {
             const Icon(Icons.tag_rounded, color: Colors.grey),
             const VerticalDivider(),
             Expanded(
-              child: SizedBox(
-                height: 32.0,
-                child: ListView.builder(
-                  physics: ClampingScrollPhysics(),
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 6,
-                  itemBuilder: (BuildContext context, int index) => Card(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-                      child: Text(
-                        '#Tag $index',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    color: Theme.of(context).colorScheme.secondaryVariant,
-                  ),
-                ),
-              ),
+              child: CourseTags(),
             ),
           ],
         ),
