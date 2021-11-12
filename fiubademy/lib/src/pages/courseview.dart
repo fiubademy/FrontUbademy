@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
@@ -19,7 +18,7 @@ class NextPage extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) => CourseViewPage(courseID: "courseID")));
         },
-        child: Text('Go!'));
+        child: const Text('Go!'));
   }
 }
 
@@ -47,7 +46,7 @@ class CourseViewPage extends StatelessWidget {
             case ConnectionState.waiting:
               return Scaffold(
                 appBar: AppBar(
-                  title: Text('Ubademy'),
+                  title: const Text('Ubademy'),
                 ),
                 body: const Center(
                   child: CircularProgressIndicator(),
@@ -61,7 +60,7 @@ class CourseViewPage extends StatelessWidget {
                 appBar: AppBar(title: Text('Ubademy'), actions: [
                   IconButton(
                       onPressed: () => _toggleFavorite(),
-                      icon: Icon(Icons.favorite_outline)),
+                      icon: const Icon(Icons.favorite_outline)),
                 ]),
                 body: _buildCourse(context),
               );
@@ -241,19 +240,19 @@ class _CourseSignUpButton extends StatelessWidget {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text('Cancel'),
+                    child: const Text('Cancel'),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       _signUpToCourse();
                       Navigator.pop(context);
                     },
-                    child: Text('SIGN UP'),
+                    child: const Text('SIGN UP'),
                   ),
                 ]),
           );
         },
-        child: Text('SIGN UP TO COURSE'));
+        child: const Text('SIGN UP TO COURSE'));
   }
 }
 
@@ -279,19 +278,19 @@ class _CourseLeaveButton extends StatelessWidget {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: Text('CANCEL'),
+                    child: const Text('CANCEL'),
                   ),
                   TextButton(
                     onPressed: () {
                       _leaveCourse();
                       Navigator.pop(context);
                     },
-                    child: Text('LEAVE'),
+                    child: const Text('LEAVE'),
                   ),
                 ]),
           );
         },
         style: ElevatedButton.styleFrom(primary: Colors.red[700]),
-        child: Text('LEAVE COURSE'));
+        child: const Text('LEAVE COURSE'));
   }
 }
