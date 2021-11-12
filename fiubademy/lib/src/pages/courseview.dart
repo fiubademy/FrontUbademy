@@ -70,12 +70,11 @@ class CourseViewPage extends StatelessWidget {
   }
 
   Widget _buildCourse(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-      child: Scrollbar(
-        child: SingleChildScrollView(
+    return Scrollbar(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTitle(context),
@@ -95,8 +94,7 @@ class CourseViewPage extends StatelessWidget {
               ..._buildRatings(context),
               const SizedBox(height: 8.0),
               const Divider(),
-              Center(child: _CourseLeaveButton()),
-              const SizedBox(height: 8.0),
+              const Center(child: _CourseLeaveButton()),
             ],
           ),
         ),
@@ -105,8 +103,10 @@ class CourseViewPage extends StatelessWidget {
   }
 
   Widget _buildTitle(BuildContext context) {
-    return Text('Análisis Matemático II',
-        style: Theme.of(context).textTheme.headline5);
+    return Text(
+      'Análisis Matemático II',
+      style: Theme.of(context).textTheme.headline5,
+    );
   }
 
   Widget _buildSubtitle(BuildContext context) {
@@ -154,7 +154,7 @@ class CourseViewPage extends StatelessWidget {
         children: [
           const Icon(Icons.calendar_today, color: Colors.grey),
           const VerticalDivider(),
-          const SizedBox(width: 4.0),
+          const SizedBox(width: 8.0),
           Text('Created 16 Mar 2021',
               style: Theme.of(context).textTheme.subtitle1),
         ],
@@ -167,7 +167,7 @@ class CourseViewPage extends StatelessWidget {
           children: [
             const Icon(Icons.location_on, color: Colors.grey),
             const VerticalDivider(),
-            const SizedBox(width: 4.0),
+            const SizedBox(width: 8.0),
             Text('Facultad de Ingeniería, UBA',
                 style: Theme.of(context).textTheme.subtitle1),
           ],
