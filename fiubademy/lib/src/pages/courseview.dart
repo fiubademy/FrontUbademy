@@ -180,6 +180,7 @@ class CourseViewPage extends StatelessWidget {
           children: [
             const Icon(Icons.tag_rounded, color: Colors.grey),
             const VerticalDivider(),
+            // Expanded is necessary otherwise throws error
             Expanded(
               child: CourseTags(),
             ),
