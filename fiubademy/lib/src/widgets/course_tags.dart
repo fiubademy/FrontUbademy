@@ -29,8 +29,8 @@ class CourseTags extends StatelessWidget {
         // The color channel is irrelevant using dstOut.
         blendMode: BlendMode.dstOut,
         child: ListView.separated(
-          separatorBuilder: (context, index) => const SizedBox(width: 6.0),
-          padding: EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
+          separatorBuilder: (context, index) => const SizedBox(width: 4.0),
+          padding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
           physics: const ClampingScrollPhysics(),
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
@@ -38,7 +38,7 @@ class CourseTags extends StatelessWidget {
           itemBuilder: (BuildContext context, int index) => Chip(
             label: Text(
               '#Tag $index',
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Theme.of(context).colorScheme.secondaryVariant,
             shape: RoundedRectangleBorder(

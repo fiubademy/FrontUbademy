@@ -15,7 +15,7 @@ class MyCoursesPage extends StatelessWidget {
         body: Scrollbar(
           child: ListView.builder(
             padding: const EdgeInsets.all(16.0),
-            itemCount: 5,
+            itemCount: 10,
             itemBuilder: (context, index) => CourseCard(),
           ),
         ),
