@@ -33,46 +33,14 @@ class _ProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       children: [
         _ProfilePersonalDataCard(
           user: Provider.of<User>(context),
           isSelf: isSelf,
         ),
         if (isSelf) _ProfileSubscriptionCard(user: user),
-        Card(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-                child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Courses',
-                      style: Theme.of(context).textTheme.headline6,
-                    )),
-              ),
-              ListTile(
-                onTap: () {},
-                title: const Text(
-                  'My Courses',
-                ),
-              ),
-              ListTile(
-                onTap: () {},
-                title: const Text(
-                  'My Favourites',
-                ),
-              ),
-              ListTile(
-                onTap: () {},
-                title: const Text(
-                  'My Inscriptions',
-                ),
-              ),
-            ],
-          ),
-        ),
+        if (isSelf) _ProfileCoursesCard(user: user),
       ],
     );
   }
@@ -92,7 +60,8 @@ class _ProfilePersonalDataCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
+            padding: EdgeInsets.fromLTRB(
+                16.0, isSelf ? 4.0 : 16.0, 16.0, isSelf ? 4.0 : 16.0),
             child: Row(
               children: [
                 Text('Personal Data',
@@ -131,13 +100,56 @@ class _ProfileSubscriptionCard extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Personal Data',
+                'Subscription',
                 style: Theme.of(context).textTheme.headline6,
               ),
             ),
           ),
           ListTile(title: Text(Provider.of<User>(context).subscriptionName)),
           ListTile(title: Text('Expiration: 31/12/2021')),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileCoursesCard extends StatelessWidget {
+  final User user;
+
+  const _ProfileCoursesCard({Key? key, required this.user}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Courses',
+                  style: Theme.of(context).textTheme.headline6,
+                )),
+          ),
+          ListTile(
+            onTap: () {},
+            title: const Text(
+              'My Courses',
+            ),
+          ),
+          ListTile(
+            onTap: () {},
+            title: const Text(
+              'My Favourites',
+            ),
+          ),
+          ListTile(
+            onTap: () {},
+            title: const Text(
+              'My Inscriptions',
+            ),
+          ),
         ],
       ),
     );
