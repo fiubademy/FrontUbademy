@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/user.dart';
+import 'package:geocoding/geocoding.dart';
 
 class ProfilePage extends StatelessWidget {
   final User user;
@@ -50,9 +51,14 @@ class _ProfilePersonalDataCard extends StatelessWidget {
   final User user;
   final bool isSelf;
 
-  const _ProfilePersonalDataCard(
-      {Key? key, required this.user, this.isSelf = false})
-      : super(key: key);
+  _ProfilePersonalDataCard({Key? key, required this.user, this.isSelf = false})
+      : super(key: key) {
+    printLoc();
+  }
+
+  void printLoc() async {
+    print('1');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +84,24 @@ class _ProfilePersonalDataCard extends StatelessWidget {
           ListTile(
             title: Text(user.email),
           ),
+          FutureBuilder(
+              future: placemarkFromCoordinates(user.latitude!, user.longitude!),
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<Placemark>> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return const ListTile(title: Text('Fetching location'));
+                  default:
+                    if (snapshot.hasError) {
+                      return const ListTile(
+                          title: Text('Failed to fetch location'));
+                    }
+                    Placemark placemark = snapshot.data![0];
+                    return ListTile(
+                        title: Text(
+                            '${placemark.administrativeArea}, ${placemark.country}'));
+                }
+              }),
         ],
       ),
     );
