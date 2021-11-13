@@ -1,4 +1,3 @@
-import 'package:fiubademy/src/widgets/empty.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fiubademy/src/services/user.dart';
@@ -23,9 +22,8 @@ class ProfilePersonalDataCard extends StatelessWidget {
                 Text('Personal Data',
                     style: Theme.of(context).textTheme.headline6),
                 const Spacer(),
-                isSelf
-                    ? IconButton(onPressed: () {}, icon: const Icon(Icons.edit))
-                    : const Empty(),
+                if (isSelf)
+                  IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
               ],
             ),
           ),
