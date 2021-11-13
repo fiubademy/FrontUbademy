@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/pages/review_course.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -49,15 +50,16 @@ class FiubademyApp extends StatelessWidget {
         ],
         builder: (context, child) {
           return MaterialApp(
-            title: 'Ubademy',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            home: Provider.of<Auth>(context).userToken == null
-                ? const LogInPage()
-                : const HomePage(),
-            // Idea: use anonymous function. if null, also Navigator pop all.
-          );
+              title: 'Ubademy',
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+              ),
+              home: ReviewCoursePage()
+              //Provider.of<Auth>(context).userToken == null
+              //? const LogInPage()
+              //: const HomePage(),
+              // Idea: use anonymous function. if null, also Navigator pop all.
+              );
         });
   }
 }
