@@ -1,6 +1,6 @@
-import 'package:fiubademy/src/widgets/profile_personal_data_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:fiubademy/src/services/user.dart';
 
 class ProfilePage extends StatelessWidget {
