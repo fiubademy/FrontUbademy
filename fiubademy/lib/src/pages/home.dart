@@ -103,10 +103,14 @@ Widget _buildDrawer(BuildContext context) {
                 leading: const Icon(Icons.account_circle),
                 title: const Text('My Profile'),
                 onTap: () {
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return const ProfilePage();
+                      return ProfilePage(
+                        user: Provider.of<User>(context),
+                        isSelf: true,
+                      );
                     }),
                   );
                 },
