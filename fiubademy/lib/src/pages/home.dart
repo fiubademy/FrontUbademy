@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import '../services/auth.dart';
@@ -15,11 +16,70 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: updateUserLocation(Provider.of<Auth>(context, listen: false),
+            Provider.of<User>(context, listen: false)),
+        builder: (context, AsyncSnapshot<void> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Scaffold(
+                appBar: AppBar(title: const Text('Ubademy')),
+                body: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            default:
+              if (snapshot.hasError) {
+                return _requestLocation(context);
+              }
+              return Scaffold(
+                drawer: _buildDrawer(context),
+                body: FloatingSearchAppBar(
+                  body: _buildExpandableBody(context),
+                  title: const Text('Ubademy'),
+                ),
+              );
+          }
+        });
+  }
+
+  Widget _requestLocation(BuildContext context) {
     return Scaffold(
-      drawer: _buildDrawer(context),
-      body: FloatingSearchAppBar(
-        body: _buildExpandableBody(context),
+      appBar: AppBar(
         title: const Text('Ubademy'),
+      ),
+      body: SafeArea(
+        child: Container(
+          constraints: const BoxConstraints.expand(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.location_off_outlined,
+                size: 170,
+                color: Theme.of(context).colorScheme.secondaryVariant,
+              ),
+              const SizedBox(height: 16.0),
+              Text(
+                'Whoops! It looks like your location isn\'t enabled.',
+                style: Theme.of(context).textTheme.headline6,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16.0),
+              Text('Please enable Ubademy to access your location to continue',
+                  style: Theme.of(context).textTheme.subtitle1,
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 32.0),
+              ElevatedButton(
+                onPressed: () async {
+                  setState(() {});
+                },
+                child: const Text('Enable Location'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
