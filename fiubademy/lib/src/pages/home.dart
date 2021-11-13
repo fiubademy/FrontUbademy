@@ -1,6 +1,5 @@
 import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import '../services/auth.dart';
 import 'package:provider/provider.dart';
@@ -15,32 +14,31 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Future<bool> _locationEnabled = Geolocator.isLocationServiceEnabled();
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: _locationEnabled,
-        builder: (context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.hasData) {
-            if (!snapshot.data!) {
-              return _requestLocation(context);
-            }
-            updateUserLocation(Provider.of<Auth>(context, listen: false),
-                Provider.of<User>(context, listen: false));
-            return Scaffold(
-              drawer: _buildDrawer(context),
-              body: FloatingSearchAppBar(
-                body: _buildExpandableBody(context),
-                title: const Text('Ubademy'),
-              ),
-            );
-          } else {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
+        future: updateUserLocation(Provider.of<Auth>(context, listen: false),
+            Provider.of<User>(context, listen: false)),
+        builder: (context, AsyncSnapshot<void> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Scaffold(
+                appBar: AppBar(title: const Text('Ubademy')),
+                body: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            default:
+              if (snapshot.hasError) {
+                return _requestLocation(context);
+              }
+              return Scaffold(
+                drawer: _buildDrawer(context),
+                body: FloatingSearchAppBar(
+                  body: _buildExpandableBody(context),
+                  title: const Text('Ubademy'),
+                ),
+              );
           }
         });
   }
@@ -75,11 +73,9 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 32.0),
               ElevatedButton(
                 onPressed: () async {
-                  setState(() {
-                    _locationEnabled = Geolocator.isLocationServiceEnabled();
-                  });
+                  setState(() {});
                 },
-                child: Text('Enable Location'),
+                child: const Text('Enable Location'),
               ),
             ],
           ),

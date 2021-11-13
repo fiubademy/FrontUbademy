@@ -41,14 +41,19 @@ Future<Position> getLocation() async {
   return await Geolocator.getCurrentPosition();
 }
 
-void updateUserLocation(Auth auth, User user) async {
-  if (auth.userID == null) {
-    return;
-  }
+Future<void> updateUserLocation(Auth auth, User user) async {
+  return Future.sync(() async {
+    if (auth.userID == null) {
+      return;
+    }
 
-  if (await Geolocator.isLocationServiceEnabled()) {
-    Position pos = await getLocation();
+    Position pos;
+    try {
+      pos = await getLocation();
+    } catch (e) {
+      return Future.error('Failed to get location.');
+    }
     Server.updatePosition(auth, pos.latitude, pos.longitude);
     user.setPosition(pos.latitude, pos.longitude);
-  }
+  });
 }

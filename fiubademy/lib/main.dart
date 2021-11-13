@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
 
 import 'package:fiubademy/src/pages/login.dart';
 import 'package:fiubademy/src/pages/home.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/location.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -16,6 +14,7 @@ void main() {
 class FiubademyApp extends StatelessWidget {
   const FiubademyApp({Key? key}) : super(key: key);
 
+  // Only called when auth changes
   void _updateUser(Auth auth, User user) async {
     if (auth.userID == null) {
       user.deleteData();
