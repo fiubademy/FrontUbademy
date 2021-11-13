@@ -1,10 +1,13 @@
-import 'package:fiubademy/src/widgets/profile_personal_data_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:fiubademy/src/widgets/profile_personal_data_card.dart';
 import 'package:fiubademy/src/services/user.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  final User user;
+
+  const ProfilePage({Key? key, required this.user}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,12 +15,14 @@ class ProfilePage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('My Profile'),
         ),
-        body: _ProfileBody());
+        body: _ProfileBody(user: user));
   }
 }
 
 class _ProfileBody extends StatefulWidget {
-  const _ProfileBody({Key? key}) : super(key: key);
+  final User user;
+
+  const _ProfileBody({Key? key, required this.user}) : super(key: key);
 
   @override
   _ProfileBodyState createState() => _ProfileBodyState();
@@ -29,10 +34,7 @@ class _ProfileBodyState extends State<_ProfileBody> {
     return ListView(
       padding: EdgeInsets.all(16.0),
       children: [
-        ProfilePersonalDataCard(
-          user: Provider.of<User>(context),
-          isSelf: true,
-        ),
+        ProfilePersonalDataCard(user: widget.user),
         Card(
           child: Column(
             children: [
