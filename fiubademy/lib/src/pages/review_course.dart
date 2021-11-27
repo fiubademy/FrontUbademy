@@ -17,7 +17,7 @@ class ReviewCoursePage extends StatelessWidget {
               children: [
                 RatingBar.builder(
                   minRating: 1.0,
-                  itemBuilder: (context, _) => const Icon(
+                  itemBuilder: (context, index) => const Icon(
                     Icons.star,
                     color: Colors.amber,
                   ),
