@@ -8,6 +8,7 @@ import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/pages/courseview.dart';
+import 'package:fiubademy/src/pages/create_exam.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -55,7 +56,7 @@ class FiubademyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),
-            home: NextPage(),
+            home: ExamCreationPage(),
             /*Provider.of<Auth>(context).userToken == null
                 ? const LogInPage()
                 : const HomePage(),*/
