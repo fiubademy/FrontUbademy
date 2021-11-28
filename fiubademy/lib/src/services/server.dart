@@ -102,4 +102,27 @@ class Server {
         return false;
     }
   }
+
+  static Future<String?> enrollToCourse(Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/set_location", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return null;
+      case HttpStatus.badRequest:
+        return 'Failed to enroll. Please restart the app';
+      case HttpStatus.notFound:
+        return 'Failed to enroll. Please come back in a few minutes';
+      default:
+        return 'Failed to enroll. Please try again in a few minutes';
+    }
+  }
 }
