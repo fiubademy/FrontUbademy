@@ -122,6 +122,9 @@ class Server {
         return 'Failed to enroll. Already enrolled. Please restart the app';
       case HttpStatus.notFound:
         return 'Failed to enroll. Please come back in a few minutes';
+      case HttpStatus.unprocessableEntity:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
       default:
         return 'Failed to enroll. Please try again in a few minutes';
     }
@@ -140,13 +143,29 @@ class Server {
     );
 
     switch (response.statusCode) {
-      case HttpStatus.ok:
+      case HttpStatus.accepted:
         return null;
       case HttpStatus.unprocessableEntity:
         auth.deleteAuth();
         return 'Invalid credentials. Please login again';
+      case HttpStatus.notFound:
+        return 'Failed to unsubscribe. Please come back in a few minutes';
       default:
         return 'Failed to unsubscribe. Please try again in a few minutes';
     }
+  }
+
+  static Future<String?> addCollaborator(
+      Auth auth, String collaboratorID, String courseID) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/add_collaborator/$collaboratorID",
+          queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
   }
 }
