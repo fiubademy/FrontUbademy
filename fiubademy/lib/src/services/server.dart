@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:fiubademy/src/services/auth.dart';
 
 class Server {
+  // TODO Check which methods return 422 and kill the session of Auth
   static const String url = "api-gateway-fiubademy.herokuapp.com";
 
   static bool isValidEmail(String email) {
@@ -108,21 +109,44 @@ class Server {
       'sessionToken': auth.userToken!,
     };
     final response = await http.get(
-      Uri.https(url, "/courses/id/$courseID/set_location", queryParams),
+      Uri.https(url, "/courses/id/$courseID/enroll", queryParams),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
 
     switch (response.statusCode) {
-      case HttpStatus.accepted:
+      case HttpStatus.created:
         return null;
-      case HttpStatus.badRequest:
-        return 'Failed to enroll. Please restart the app';
+      case HttpStatus.conflict:
+        return 'Failed to enroll. Already enrolled. Please restart the app';
       case HttpStatus.notFound:
         return 'Failed to enroll. Please come back in a few minutes';
       default:
         return 'Failed to enroll. Please try again in a few minutes';
+    }
+  }
+
+  static Future<String?> unsubscribeFromCourse(
+      Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/unsubscribe", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case HttpStatus.unprocessableEntity:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to unsubscribe. Please try again in a few minutes';
     }
   }
 }
