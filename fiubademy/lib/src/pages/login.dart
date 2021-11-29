@@ -160,7 +160,7 @@ class _GoogleLogInButtonState extends State<GoogleLogInButton> {
     super.initState();
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       setState(() {
-        Provider.of<Auth>(context).deleteToken();
+        Provider.of<Auth>(context).deleteAuth();
         _currentUser = account;
       });
     });
