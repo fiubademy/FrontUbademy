@@ -43,6 +43,38 @@ class Server {
     }
   }
 
+  /* Logs in to the account using google. Updates auth */
+
+  static Future<String?> loginWithGoogle(
+      Auth auth, String email, String displayName, String googleID) async {
+    final Map<String, String> queryParams = {
+      'idGoogle': googleID,
+      'username': displayName,
+      'email': email,
+    };
+    final response = await http.post(
+      Uri.https(url, "/users/loginGoogle", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.created:
+      case HttpStatus.accepted:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        auth.setAuth(body['userID'], body['sessionToken']);
+        return null;
+      case HttpStatus.notAcceptable:
+      case HttpStatus.notFound:
+        return 'Failed to log in with Google. Please try again';
+      case HttpStatus.unauthorized:
+        return 'Failed to log in with Google. Account credentials are incompatible';
+      default:
+        return 'Failed to log in with Google. Please try again in a few minutes.';
+    }
+  }
+
   /* Creates a new user. Returns null on success, an error message otherwise */
 
   static Future<String?> signup(
