@@ -275,10 +275,157 @@ class Server {
     );
 
     switch (response.statusCode) {
-      case 200:
+      case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);
         List<Map<String, dynamic>> courses = body["content"];
         return courses;
+      default:
+        return null;
+    }
+  }
+
+  /* Returns a list of courses in the page. Returns null in case of error. */
+
+  static Future<Map<String, dynamic>?> getCourse(
+      Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+      'id': courseID,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/all/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses = body["content"];
+        if (courses.length == 1) {
+          return courses[0];
+        } else {
+          return null;
+        }
+      default:
+        return null;
+    }
+  }
+
+  /* Returns a list of courses which you own, null on error. */
+
+  static Future<List<Map<String, dynamic>>?> getMyOwnedCourses(
+      Auth auth, int page) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/owner/my_courses/$page", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses = body["content"];
+        return courses;
+      default:
+        return null;
+    }
+  }
+
+  /* Returns a list of courses in which you are collaborating, null on error. */
+
+  static Future<List<Map<String, dynamic>>?> getMyCollaborationCourses(
+      Auth auth, int page) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/collaborator/my_courses/$page", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses = body["content"];
+        return courses;
+      default:
+        return null;
+    }
+  }
+
+  /* Returns a list of courses in which you are enrolled, null on error. */
+
+  static Future<List<Map<String, dynamic>>?> getMyEnrolledCourses(
+      Auth auth, int page) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/my_courses/$page", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses = body["content"];
+        return courses;
+      default:
+        return null;
+    }
+  }
+
+  /* Returns a list of studentsIDs in the course, null on error. */
+
+  static Future<List<String>?> getCourseStudents(
+      Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/students", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<String> students = jsonDecode(response.body);
+        return students;
+      default:
+        return null;
+    }
+  }
+
+  /* Returns a list of collaboratorIDs in the course, null on error. */
+
+  static Future<List<String>?> getCourseCollaborators(
+      Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/collaborators", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<String> collaborators = jsonDecode(response.body);
+        return collaborators;
       default:
         return null;
     }
