@@ -63,7 +63,7 @@ class Server {
       case HttpStatus.created:
       case HttpStatus.accepted:
         Map<String, dynamic> body = jsonDecode(response.body);
-        auth.setAuth(body['userID'], body['sessionToken']);
+        auth.setAuth(body['user_id'], body['sessionToken']);
         return null;
       case HttpStatus.notAcceptable:
       case HttpStatus.notFound:

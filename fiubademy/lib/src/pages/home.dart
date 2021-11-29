@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/services/google_auth.dart';
 import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
@@ -148,6 +149,9 @@ Widget _buildDrawer(BuildContext context) {
         ListTile(
           onTap: () {
             Provider.of<Auth>(context, listen: false).deleteAuth();
+            googleSignIn
+                .isSignedIn()
+                .then((value) => {if (value) googleSignIn.disconnect()});
           },
           leading: Icon(Icons.logout, color: Colors.red[700]),
           title: Text(

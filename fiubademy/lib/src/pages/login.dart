@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:fiubademy/src/pages/signup.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/google_auth.dart';
 
 class LogInPage extends StatelessWidget {
   const LogInPage({Key? key}) : super(key: key);
@@ -152,43 +153,42 @@ class GoogleLogInButton extends StatefulWidget {
 }
 
 class _GoogleLogInButtonState extends State<GoogleLogInButton> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
   GoogleSignInAccount? _currentUser;
 
   @override
   void initState() {
     super.initState();
-    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      setState(() async {
-        Auth auth = Provider.of<Auth>(context, listen: false);
-        auth.deleteAuth();
-        _currentUser = account;
-        if (_currentUser != null) {
-          // TODO Might want to check with Backend if displayName is constant
-          String? result = await Server.loginWithGoogle(
-              auth,
-              _currentUser!.email,
-              // TODO DisplayName not available? Needs review
-              _currentUser!.displayName ?? "",
-              _currentUser!.id);
-          if (result != null) {
-            final snackBar = SnackBar(content: Text(result));
-            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      if (mounted) {
+        setState(() {
+          Auth auth = Provider.of<Auth>(context, listen: false);
+          auth.deleteAuth();
+          _currentUser = account;
+          if (_currentUser != null) {
+            // TODO Might want to check with Backend if displayName is constant
+            Server.loginWithGoogle(
+                    auth,
+                    _currentUser!.email,
+                    // TODO DisplayName not available? Needs review
+                    _currentUser!.displayName ?? "",
+                    _currentUser!.id)
+                .then((result) {
+              if (result != null) {
+                final snackBar = SnackBar(content: Text(result));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            });
           }
-        }
-      });
+        });
+      }
     });
-    _googleSignIn.signInSilently();
+    googleSignIn.signInSilently();
   }
 
   void _googleLogIn(BuildContext context) async {
-    GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
     try {
-      await _googleSignIn.signIn();
+      await googleSignIn.signIn();
     } catch (error) {
-      print("\n");
-      print(error);
-      print("\n");
       const snackBar = SnackBar(content: Text('Google Sign In failed'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
