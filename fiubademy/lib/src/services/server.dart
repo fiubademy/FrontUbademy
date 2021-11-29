@@ -69,6 +69,27 @@ class Server {
     }
   }
 
+  /* Logs out the user manually */
+
+  static Future<bool> logout(Auth auth) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.delete(
+      Uri.https(url, "/users/logout/", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   /* Gets a user, given my permissions */
 
   static Future<Map<String, dynamic>?> getUser(Auth auth, String userID) async {
@@ -431,7 +452,6 @@ class Server {
     }
   }
 
-  // TODO Revisar porque use GET en todos en vez de POST o DELETE
   static Future<String?> createCourse(
       Auth auth,
       String name,
@@ -460,5 +480,12 @@ class Server {
       },
       body: jsonEncode(requestBody),
     );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      default:
+        return 'Failed to create course. Please try again.';
+    }
   }
 }
