@@ -154,6 +154,7 @@ class GoogleLogInButton extends StatefulWidget {
 
 class _GoogleLogInButtonState extends State<GoogleLogInButton> {
   GoogleSignInAccount? _currentUser;
+  bool _loggingIn = false;
 
   @override
   void initState() {
@@ -187,21 +188,29 @@ class _GoogleLogInButtonState extends State<GoogleLogInButton> {
 
   void _googleLogIn(BuildContext context) async {
     try {
+      setState(() {
+        _loggingIn = true;
+      });
       await googleSignIn.signIn();
     } catch (error) {
       const snackBar = SnackBar(content: Text('Google Sign In failed'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
+    setState(() {
+      _loggingIn = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: SignInButton(
-        Buttons.Google,
-        onPressed: () => _googleLogIn(context),
-      ),
-    );
+    return _loggingIn
+        ? const CircularProgressIndicator()
+        : SizedBox(
+            width: double.infinity,
+            child: SignInButton(
+              Buttons.Google,
+              onPressed: () => _googleLogIn(context),
+            ),
+          );
   }
 }
