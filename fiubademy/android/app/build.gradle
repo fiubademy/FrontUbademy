@@ -42,16 +42,10 @@ android {
     }
 
     defaultConfig {
-<<<<<<< HEAD
-        applicationId "com.fiuba.fiubademy"
-        minSdkVersion 19
-        targetSdkVersion 30
-=======
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.fiubademy"
         minSdkVersion 21
         targetSdkVersion 31
->>>>>>> server_calls
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

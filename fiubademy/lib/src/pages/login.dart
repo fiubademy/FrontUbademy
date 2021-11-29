@@ -159,9 +159,23 @@ class _GoogleLogInButtonState extends State<GoogleLogInButton> {
   void initState() {
     super.initState();
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      setState(() {
-        Provider.of<Auth>(context).deleteAuth();
+      setState(() async {
+        Auth auth = Provider.of<Auth>(context, listen: false);
+        auth.deleteAuth();
         _currentUser = account;
+        if (_currentUser != null) {
+          // TODO Might want to check with Backend if displayName is constant
+          String? result = await Server.loginWithGoogle(
+              auth,
+              _currentUser!.email,
+              // TODO DisplayName not available? Needs review
+              _currentUser!.displayName ?? "",
+              _currentUser!.id);
+          if (result != null) {
+            final snackBar = SnackBar(content: Text(result));
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
+        }
       });
     });
     _googleSignIn.signInSilently();
@@ -172,6 +186,9 @@ class _GoogleLogInButtonState extends State<GoogleLogInButton> {
     try {
       await _googleSignIn.signIn();
     } catch (error) {
+      print("\n");
+      print(error);
+      print("\n");
       const snackBar = SnackBar(content: Text('Google Sign In failed'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
