@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "584161744453-fgaj91g8300kchrgf7nqavdgq5j0fh0p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fiuba.fiubademy",
+            "certificate_hash": "e8778b0cb1b080a12c5b189f5fd26dc037a55b30"
+          }
+        },
+        {
           "client_id": "584161744453-69d2o830calm0dmhils82n123im8vdcl.apps.googleusercontent.com",
           "client_type": 3
         }
