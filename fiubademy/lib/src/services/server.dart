@@ -98,7 +98,7 @@ class Server {
       'latitude': latitude.toString(),
       'longitude': longitude.toString(),
     };
-    final response = await http.get(
+    final response = await http.patch(
       Uri.https(url, "/users/${auth.userToken}/set_location", queryParams),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
@@ -119,7 +119,7 @@ class Server {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
-    final response = await http.get(
+    final response = await http.post(
       Uri.https(url, "/courses/id/$courseID/enroll", queryParams),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
@@ -148,7 +148,7 @@ class Server {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
-    final response = await http.get(
+    final response = await http.delete(
       Uri.https(url, "/courses/id/$courseID/unsubscribe", queryParams),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
@@ -175,7 +175,7 @@ class Server {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
-    final response = await http.get(
+    final response = await http.post(
       Uri.https(url, "/courses/id/$courseID/add_collaborator/$collaboratorID",
           queryParams),
       headers: <String, String>{
@@ -206,7 +206,7 @@ class Server {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
-    final response = await http.get(
+    final response = await http.delete(
       Uri.https(
           url, "/courses/id/$courseID/unsubscribe_collaborator", queryParams),
       headers: <String, String>{
@@ -235,7 +235,7 @@ class Server {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
-    final response = await http.get(
+    final response = await http.delete(
       Uri.https(
           url,
           "/courses/id/$courseID/remove_collaborator/$collaboratorID",
@@ -429,5 +429,36 @@ class Server {
       default:
         return null;
     }
+  }
+
+  // TODO Revisar porque use GET en todos en vez de POST o DELETE
+  static Future<String?> createCourse(
+      Auth auth,
+      String name,
+      String description,
+      List<String> hashtags,
+      int minSubscription,
+      double latitude,
+      double longitude) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    Map<String, dynamic> requestBody = {
+      "name": name,
+      "description": description,
+      "hashtags": hashtags,
+      "sub_level": minSubscription,
+      "latitude": latitude,
+      "longitude": longitude,
+    };
+
+    final response = await http.post(
+      Uri.https(url, "/courses", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(requestBody),
+    );
   }
 }
