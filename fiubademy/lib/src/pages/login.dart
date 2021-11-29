@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/pages/signup.dart';
@@ -39,13 +40,7 @@ class LogInPage extends StatelessWidget {
                 ],
               ),
               const Divider(),
-              SizedBox(
-                width: double.infinity,
-                child: SignInButton(
-                  Buttons.Google,
-                  onPressed: () {},
-                ),
-              ),
+              const GoogleLogInButton()
             ],
           ),
         ),
@@ -144,6 +139,51 @@ class _LogInFormState extends State<LogInForm> {
                   child: const Text('Sign in'),
                 ),
         ],
+      ),
+    );
+  }
+}
+
+class GoogleLogInButton extends StatefulWidget {
+  const GoogleLogInButton({Key? key}) : super(key: key);
+
+  @override
+  _GoogleLogInButtonState createState() => _GoogleLogInButtonState();
+}
+
+class _GoogleLogInButtonState extends State<GoogleLogInButton> {
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+  GoogleSignInAccount? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      setState(() {
+        Provider.of<Auth>(context).deleteToken();
+        _currentUser = account;
+      });
+    });
+    _googleSignIn.signInSilently();
+  }
+
+  void _googleLogIn(BuildContext context) async {
+    GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+    try {
+      await _googleSignIn.signIn();
+    } catch (error) {
+      const snackBar = SnackBar(content: Text('Google Sign In failed'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: SignInButton(
+        Buttons.Google,
+        onPressed: () => _googleLogIn(context),
       ),
     );
   }
