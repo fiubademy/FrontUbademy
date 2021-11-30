@@ -2,10 +2,13 @@ import 'package:fiubademy/src/services/google_auth.dart';
 import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
-import '../services/auth.dart';
 import 'package:provider/provider.dart';
-import 'package:fiubademy/src/pages/profile.dart';
+
 import 'package:fiubademy/src/services/user.dart';
+import 'package:fiubademy/src/services/auth.dart';
+
+import 'package:fiubademy/src/pages/profile.dart';
+import 'package:fiubademy/src/pages/my_courses.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -104,6 +107,7 @@ Widget _buildDrawer(BuildContext context) {
                 leading: const Icon(Icons.account_circle),
                 title: const Text('My Profile'),
                 onTap: () {
+                  Navigator.pop(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
@@ -118,6 +122,12 @@ Widget _buildDrawer(BuildContext context) {
                 title: const Text('My Courses'),
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const MyCoursesPage();
+                    }),
+                  );
                 },
               ),
               ListTile(
