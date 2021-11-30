@@ -66,7 +66,10 @@ class CourseCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
-            child: CourseTags(tags: _course.tags),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: CourseTags(tags: _course.tags),
+            ),
           ),
         ],
       ),

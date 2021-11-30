@@ -54,10 +54,9 @@ class FiubademyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),
-            home: NextPage(),
-            /*Provider.of<Auth>(context).userToken == null
+            home: Provider.of<Auth>(context).userToken == null
                 ? const LogInPage()
-                : const HomePage(),*/
+                : const HomePage(),
             // Idea: use anonymous function. if null, also Navigator pop all.
           );
         });
