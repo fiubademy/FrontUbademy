@@ -516,6 +516,9 @@ class Server {
     switch (response.statusCode) {
       case HttpStatus.ok:
         return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
       default:
         return 'Failed to create course. Please try again.';
     }

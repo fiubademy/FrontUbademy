@@ -4,6 +4,7 @@ import 'package:flutter/painting.dart';
 
 import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/widgets/course_card.dart';
+import 'package:fiubademy/src/widgets/course_list_view.dart';
 
 class MyCoursesPage extends StatelessWidget {
   const MyCoursesPage({Key? key}) : super(key: key);
@@ -43,15 +44,25 @@ class MyCoursesPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My Courses'),
       ),
-      body: Scrollbar(
-        child: ListView.builder(
+      body: SafeArea(
+        child: CourseListView(
+          onLoad: (index) {
+            if (index < 7) {
+              return courses;
+            } else {
+              return [];
+            }
+          },
+        ),
+
+        /*ListView.builder(
             padding: const EdgeInsets.all(16.0),
             itemBuilder: (context, index) {
               if (index >= courses.length) {
                 courses.addAll(List.filled(5, myCourse));
               }
               return CourseCard(course: courses[index]);
-            }),
+            }),*/
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
