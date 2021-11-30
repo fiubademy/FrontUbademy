@@ -35,7 +35,7 @@ class Course {
         _tags = courseData['hashtags'],
         _creationDate = courseData['time_created'],
         _blocked = courseData['blocked'],
-        _public = courseData['in_edition'],
+        _open = !courseData['in_edition'],
         _ratingCount = courseData['ratingCount'],
         _ratingAvg = courseData['ratingAvg'];
 
