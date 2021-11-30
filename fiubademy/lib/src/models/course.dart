@@ -33,11 +33,16 @@ class Course {
         _latitude = courseData['latitude'],
         _longitude = courseData['longitude'],
         _tags = courseData['hashtags'],
-        _creationDate = courseData['time_created'],
+        _creationDate = DateTime.parse(courseData['time_created']),
         _blocked = courseData['blocked'],
         _open = !courseData['in_edition'],
         _ratingCount = courseData['ratingCount'],
         _ratingAvg = courseData['ratingAvg'];
+
+  static Course create2(String courseID, Map<String, dynamic> courseData) {
+    Course course = Course._create(courseID, courseData);
+    return course;
+  }
 
   static Future<Course> create(
       String courseID, Future<Map<String, dynamic>> courseData) async {
@@ -103,4 +108,7 @@ class Course {
         throw StateError('Invalid month number');
     }
   }
+
+  double get latitude => _latitude;
+  double get longitude => _longitude;
 }

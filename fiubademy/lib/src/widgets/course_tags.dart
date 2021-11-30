@@ -37,7 +37,7 @@ class CourseTags extends StatelessWidget {
           physics: const ClampingScrollPhysics(),
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
-          itemCount: 6,
+          itemCount: _tags.length,
           itemBuilder: (BuildContext context, int index) => Chip(
             label: Text(
               _tags[index],

@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,12 +12,47 @@ class NextPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic> courseData = {
+      'name': 'Course Title Here',
+      'ownerID': '1234234',
+      'ownerName': 'Owner Name Here',
+      'sub_level': 1,
+      'description': 'A small description of the course',
+      'latitude': -34.6037,
+      'longitude': -58.3816,
+      'hashtags': ['Tag A', 'Tag B', 'Tag C'],
+      'time_created': '2021-11-29T15:19:57+0000',
+      'blocked': false,
+      'in_edition': false,
+      'ratingCount': 24,
+      'ratingAvg': 2.8,
+    };
+
+    Course myCourse = Course.create2('ABCDEF', courseData);
+
     return ElevatedButton(
         onPressed: () {
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => CourseViewPage(courseID: "courseID")));
+            context,
+            MaterialPageRoute(
+                /*
+              builder: (context) => FutureBuilder(
+                future: myCourse,
+                builder:
+                    (BuildContext context, AsyncSnapshot<Course> snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Container();
+                    default:
+                      if (snapshot.hasError) {
+                        return Container();
+                      }
+                      return CourseViewPage(course: snapshot.data!);
+                  }
+                },
+              ),*/
+                builder: (context) => CourseViewPage(course: myCourse)),
+          );
         },
         child: const Text('Go!'));
   }
@@ -95,7 +131,7 @@ class CourseViewPage extends StatelessWidget {
               ..._buildRatings(context),
               const SizedBox(height: 8.0),
               const Divider(),
-              const Center(child: _CourseLeaveButton()),
+              Center(child: _CourseLeaveButton(courseTitle: _course.title)),
             ],
           ),
         ),
@@ -170,8 +206,27 @@ class CourseViewPage extends StatelessWidget {
             const Icon(Icons.location_on, color: Colors.grey),
             const VerticalDivider(),
             const SizedBox(width: 8.0),
-            Text('Facultad de Ingeniería, UBA',
-                style: Theme.of(context).textTheme.subtitle1),
+            FutureBuilder(
+              future: getLocationName(_course.latitude, _course.longitude),
+              builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return Text('Fetching location',
+                        style: Theme.of(context).textTheme.subtitle1);
+                  default:
+                    if (snapshot.hasError) {
+                      return Text('Failed to fetch location',
+                          style: Theme.of(context).textTheme.subtitle1);
+                    }
+                    if (snapshot.data == null) {
+                      return Text('Failed to fetch location',
+                          style: Theme.of(context).textTheme.subtitle1);
+                    }
+                    return Text(snapshot.data!,
+                        style: Theme.of(context).textTheme.subtitle1);
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -185,7 +240,7 @@ class CourseViewPage extends StatelessWidget {
             const VerticalDivider(),
             // Expanded is necessary otherwise throws error
             Expanded(
-              child: CourseTags(),
+              child: CourseTags(tags: _course.tags),
             ),
           ],
         ),
@@ -197,7 +252,7 @@ class CourseViewPage extends StatelessWidget {
     return [
       Text('Reviews and Ratings', style: Theme.of(context).textTheme.headline6),
       const SizedBox(height: 16.0),
-      CourseRating(),
+      CourseRating(avg: _course.ratingAvg, count: _course.ratingCount),
       const SizedBox(height: 8.0),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -223,7 +278,11 @@ class CourseViewPage extends StatelessWidget {
 }
 
 class _CourseSignUpButton extends StatelessWidget {
-  const _CourseSignUpButton({Key? key}) : super(key: key);
+  final String _courseTitle;
+
+  const _CourseSignUpButton({Key? key, required String courseTitle})
+      : _courseTitle = courseTitle,
+        super(key: key);
 
   void _signUpToCourse() {
     return;
@@ -236,32 +295,36 @@ class _CourseSignUpButton extends StatelessWidget {
           showDialog<String>(
             context: context,
             builder: (context) => AlertDialog(
-                title: const Text('Sign up'),
-                content: const Text(
-                    'Are you sure you want to sign up to Course Name?'),
+                title: const Text('Enroll to Course'),
+                content:
+                    Text('Are you sure you want to enroll to $_courseTitle?'),
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text('Cancel'),
+                    child: const Text('CANCEL'),
                   ),
                   ElevatedButton(
                     onPressed: () {
                       _signUpToCourse();
                       Navigator.pop(context);
                     },
-                    child: const Text('SIGN UP'),
+                    child: const Text('ENROLL'),
                   ),
                 ]),
           );
         },
-        child: const Text('SIGN UP TO COURSE'));
+        child: const Text('ENROLL TO COURSE'));
   }
 }
 
 class _CourseLeaveButton extends StatelessWidget {
-  const _CourseLeaveButton({Key? key}) : super(key: key);
+  final String _courseTitle;
+
+  const _CourseLeaveButton({Key? key, required String courseTitle})
+      : _courseTitle = courseTitle,
+        super(key: key);
 
   void _leaveCourse() {
     return;
@@ -274,9 +337,8 @@ class _CourseLeaveButton extends StatelessWidget {
           showDialog<String>(
             context: context,
             builder: (context) => AlertDialog(
-                title: const Text('Leave Course'),
-                content:
-                    const Text('Are you sure you want to leave Course Name?'),
+                title: const Text('Unsubscribe from Course'),
+                content: Text('Are you sure you want to leave $_courseTitle?'),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -289,12 +351,12 @@ class _CourseLeaveButton extends StatelessWidget {
                       _leaveCourse();
                       Navigator.pop(context);
                     },
-                    child: const Text('LEAVE'),
+                    child: const Text('UNSUBSCRIBE'),
                   ),
                 ]),
           );
         },
         style: ElevatedButton.styleFrom(primary: Colors.red[700]),
-        child: const Text('LEAVE COURSE'));
+        child: const Text('UNSUBSCRIBE FROM COURSE'));
   }
 }
