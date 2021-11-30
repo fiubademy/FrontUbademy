@@ -54,8 +54,8 @@ class Course {
 
   static List<String> categories() => [
         'Arts & Crafts',
-        'Cooking'
-            'Design',
+        'Cooking',
+        'Design',
         'Business',
         'Economics & Finance',
         'Health & Fitness',

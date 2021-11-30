@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:material_tag_editor/tag_editor.dart';
 import 'package:fiubademy/src/models/course.dart';
+import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/user.dart';
+import 'package:fiubademy/src/services/server.dart';
+import 'package:provider/provider.dart';
 
 class CreateCoursePage extends StatelessWidget {
   const CreateCoursePage({Key? key}) : super(key: key);
@@ -91,15 +94,43 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
   String? _courseDescription;
   String? _courseType;
   String? _courseMinSubscriptionLevel;
-  List<String> tags = [];
+  List<String> _tags = [];
 
-  void _create() {
+  void _create() async {
     setState(() {
       _isLoading = true;
     });
     FocusScope.of(context).unfocus();
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      Auth auth = Provider.of<Auth>(context, listen: false);
+      User user = Provider.of<User>(context, listen: false);
+      int minSubLevel;
+      switch (_courseMinSubscriptionLevel) {
+        case 'Standard':
+          minSubLevel = 1;
+          break;
+        case 'Premium':
+          minSubLevel = 2;
+          break;
+        default:
+          minSubLevel = 0;
+      }
+      String? result = await Server.createCourse(
+        auth,
+        _courseTitle!,
+        _courseDescription!,
+        _tags,
+        minSubLevel,
+        user.latitude!,
+        user.longitude!,
+      );
+      if (result == null) {
+        Navigator.pop(context);
+      } else {
+        final snackBar = SnackBar(content: Text(result));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
 
     setState(() {
@@ -167,7 +198,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
           ),
           const SizedBox(height: 16.0),
           TagEditor(
-            length: tags.length,
+            length: _tags.length,
             delimiters: const [',', ' '],
             hasAddButton: true,
             inputDecoration: const InputDecoration(
@@ -177,11 +208,11 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
             ),
             onTagChanged: (newValue) {
               setState(() {
-                tags.add(newValue);
+                _tags.add(newValue);
               });
             },
             tagBuilder: (context, index) => Chip(
-              label: Text(tags[index],
+              label: Text(_tags[index],
                   style: const TextStyle(color: Colors.white)),
               backgroundColor: Theme.of(context).colorScheme.secondaryVariant,
               shape: RoundedRectangleBorder(
@@ -189,7 +220,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
               ),
               onDeleted: () {
                 setState(() {
-                  tags.removeWhere((element) => element == tags[index]);
+                  _tags.removeWhere((element) => element == _tags[index]);
                 });
               },
             ),
