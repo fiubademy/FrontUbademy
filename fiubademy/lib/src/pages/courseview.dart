@@ -35,7 +35,7 @@ class NextPage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-                /*
+              /*
               builder: (context) => FutureBuilder(
                 future: myCourse,
                 builder:
@@ -51,7 +51,9 @@ class NextPage extends StatelessWidget {
                   }
                 },
               ),*/
-                builder: (context) => CourseViewPage(course: myCourse)),
+              builder: (context) => CourseViewPage(
+                  course: myCourse, isEnrolled: false, isFavorite: true),
+            ),
           );
         },
         child: const Text('Go!'));
@@ -60,9 +62,17 @@ class NextPage extends StatelessWidget {
 
 class CourseViewPage extends StatelessWidget {
   final Course _course;
+  bool _isFavorite;
+  bool _isEnrolled;
 
-  CourseViewPage({Key? key, required Course course})
+  CourseViewPage(
+      {Key? key,
+      required Course course,
+      required bool isFavorite,
+      required bool isEnrolled})
       : _course = course,
+        _isFavorite = isFavorite,
+        _isEnrolled = isEnrolled,
         super(key: key);
 
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
@@ -73,7 +83,7 @@ class CourseViewPage extends StatelessWidget {
     return;
   }
 
-  final Future<void> _delay = Future.delayed(const Duration(seconds: 1));
+  final Future<void> _delay = Future.delayed(const Duration(seconds: 0));
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +108,9 @@ class CourseViewPage extends StatelessWidget {
                 appBar: AppBar(title: Text('Ubademy'), actions: [
                   IconButton(
                       onPressed: () => _toggleFavorite(),
-                      icon: const Icon(Icons.favorite_outline)),
+                      icon: _isFavorite
+                          ? const Icon(Icons.favorite, color: Colors.red)
+                          : const Icon(Icons.favorite_outline)),
                 ]),
                 body: _buildCourse(context),
               );
@@ -131,7 +143,11 @@ class CourseViewPage extends StatelessWidget {
               ..._buildRatings(context),
               const SizedBox(height: 8.0),
               const Divider(),
-              Center(child: _CourseLeaveButton(courseTitle: _course.title)),
+              Center(
+                child: _isEnrolled
+                    ? _CourseLeaveButton(courseTitle: _course.title)
+                    : _CourseSignUpButton(courseTitle: _course.title),
+              ),
             ],
           ),
         ),
