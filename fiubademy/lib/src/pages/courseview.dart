@@ -18,6 +18,7 @@ class NextPage extends StatelessWidget {
       'ownerName': 'Owner Name Here',
       'sub_level': 1,
       'description': 'A small description of the course',
+      'category': 'Business',
       'latitude': -34.6037,
       'longitude': -58.3816,
       'hashtags': ['Tag A', 'Tag B', 'Tag C'],

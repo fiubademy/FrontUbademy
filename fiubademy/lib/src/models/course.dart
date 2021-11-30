@@ -6,6 +6,7 @@ class Course {
   String _title;
   int _minSubscription;
   String _description;
+  String _category;
   double _latitude;
   double _longitude;
   List<String> _tags;
@@ -30,6 +31,7 @@ class Course {
         _ownerName = courseData['ownerName'],
         _minSubscription = courseData['sub_level'],
         _description = courseData['description'],
+        _category = courseData['category'],
         _latitude = courseData['latitude'],
         _longitude = courseData['longitude'],
         _tags = courseData['hashtags'],
@@ -50,8 +52,26 @@ class Course {
     return course;
   }
 
+  static List<String> categories() => [
+        'Arts & Crafts',
+        'Cooking'
+            'Design',
+        'Business',
+        'Economics & Finance',
+        'Health & Fitness',
+        'Humanities'
+            'Languages',
+        'Music',
+        'Office Productivity',
+        'Personal Development',
+        'Photography & Video',
+        'Science',
+        'Technology & Software',
+      ];
+
   String get title => _title;
   String get description => _description;
+  String get category => _category;
   String get ownerName => _ownerName;
 
   String get minSubscriptionName {

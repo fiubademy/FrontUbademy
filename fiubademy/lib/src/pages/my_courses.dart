@@ -16,6 +16,7 @@ class MyCoursesPage extends StatelessWidget {
       'ownerName': 'Owner Name Here',
       'sub_level': 1,
       'description': 'A small description of the course',
+      'category': 'Music',
       'latitude': -34.6037,
       'longitude': -58.3816,
       'hashtags': [
