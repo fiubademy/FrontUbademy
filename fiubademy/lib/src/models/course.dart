@@ -47,6 +47,7 @@ class Course {
 
   String get title => _title;
   String get description => _description;
+  String get ownerName => _ownerName;
 
   String get minSubscriptionName {
     switch (_minSubscription) {
@@ -69,4 +70,37 @@ class Course {
 
   int get ratingCount => _ratingCount;
   double get ratingAvg => _ratingAvg;
+
+  int get creationDay => _creationDate.day;
+  int get creationYear => _creationDate.year;
+  String get creationMonthName {
+    switch (_creationDate.month) {
+      case 1:
+        return 'Jan';
+      case 2:
+        return 'Feb';
+      case 3:
+        return 'Mar';
+      case 4:
+        return 'Apr';
+      case 5:
+        return 'May';
+      case 6:
+        return 'Jun';
+      case 7:
+        return 'Jul';
+      case 8:
+        return 'Aug';
+      case 9:
+        return 'Sep';
+      case 10:
+        return 'Oct';
+      case 11:
+        return 'Nov';
+      case 12:
+        return 'Dec';
+      default:
+        throw StateError('Invalid month number');
+    }
+  }
 }

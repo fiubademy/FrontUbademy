@@ -23,9 +23,11 @@ class NextPage extends StatelessWidget {
 }
 
 class CourseViewPage extends StatelessWidget {
-  final String courseID;
+  final Course _course;
 
-  CourseViewPage({Key? key, required this.courseID}) : super(key: key);
+  CourseViewPage({Key? key, required Course course})
+      : _course = course,
+        super(key: key);
 
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
     return 
@@ -103,7 +105,7 @@ class CourseViewPage extends StatelessWidget {
 
   Widget _buildTitle(BuildContext context) {
     return Text(
-      'Análisis Matemático II',
+      _course.title,
       style: Theme.of(context).textTheme.headline5,
     );
   }
@@ -116,10 +118,11 @@ class CourseViewPage extends StatelessWidget {
           color: Theme.of(context).colorScheme.secondaryVariant,
         ),
         const SizedBox(width: 8.0),
-        Text('by Maulhardt', style: Theme.of(context).textTheme.subtitle2),
+        Text('by ${_course.ownerName}',
+            style: Theme.of(context).textTheme.subtitle2),
         const Spacer(),
         Text(
-          'Free',
+          _course.minSubscriptionName,
           style: Theme.of(context).textTheme.subtitle2,
         ),
         const SizedBox(width: 8.0),
@@ -137,8 +140,7 @@ class CourseViewPage extends StatelessWidget {
       const SizedBox(
         height: 16.0,
       ),
-      Text(
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras euismod nisl vel sem sagittis eleifend at sed enim. Integer efficitur eleifend mollis. Donec arcu odio, finibus in vulputate et, interdum vel quam. Pellentesque leo lorem, finibus ut pharetra eu, sagittis sed felis. Aliquam et euismod nisl, et tempus nisl. Nunc dignissim aliquam fringilla. Ut mattis interdum sapien, id vestibulum ligula. Curabitur imperdiet diam at tellus scelerisque egestas in ut diam. Sed vel nunc id mi egestas blandit a vitae purus. Nullam non nibh non turpis aliquet viverra ac a lectus. Suspendisse ex nibh, porttitor ut auctor quis, tristique vel nibh. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae'),
+      Text(_course.description),
     ];
   }
 
@@ -154,7 +156,8 @@ class CourseViewPage extends StatelessWidget {
           const Icon(Icons.calendar_today, color: Colors.grey),
           const VerticalDivider(),
           const SizedBox(width: 8.0),
-          Text('Created 16 Mar 2021',
+          Text(
+              'Created ${_course.creationDay} ${_course.creationMonthName} ${_course.creationYear}',
               style: Theme.of(context).textTheme.subtitle1),
         ],
       )),
