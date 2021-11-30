@@ -1,11 +1,16 @@
+import 'package:flutter/material.dart';
+
+import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/widgets/course_creator_menu.dart';
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class CourseCard extends StatelessWidget {
-  const CourseCard({Key? key}) : super(key: key);
+  final Course _course;
+
+  const CourseCard({Key? key, required course})
+      : _course = course,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,22 +18,21 @@ class CourseCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
             child: Column(
               children: [
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                          'How to Flutter 101 - Ep. 3 - The Widget Tree Structure and ',
+                      child: Text(_course.title,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           style: Theme.of(context).textTheme.headline6),
                     ),
-                    CourseCreatorMenu(),
+                    const CourseCreatorMenu(),
                   ],
                 ),
-                Divider(),
+                const Divider(),
               ],
             ),
           ),
@@ -37,12 +41,12 @@ class CourseCard extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Closed',
+                  _course.stateName,
                   style: Theme.of(context).textTheme.subtitle1,
                 ),
                 const Spacer(),
                 Text(
-                  'Standard',
+                  _course.minSubscriptionName,
                   style: Theme.of(context).textTheme.subtitle1,
                 ),
                 const SizedBox(width: 8.0),
@@ -51,17 +55,18 @@ class CourseCard extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text(
-              'El mejor curso que existe en el mundo para programar Flutter. En este capítulo aprenderas sobre los Widgets.',
-            ),
+            title: Text(_course.description),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-            child: CourseRating(),
+            child: CourseRating(
+              count: _course.ratingCount,
+              avg: _course.ratingAvg,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
-            child: CourseTags(),
+            child: CourseTags(tags: _course.tags),
           ),
         ],
       ),

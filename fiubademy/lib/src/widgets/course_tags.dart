@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CourseTags extends StatelessWidget {
-  const CourseTags({Key? key}) : super(key: key);
+  final List<String> _tags;
+  const CourseTags({Key? key, required List<String> tags})
+      : _tags = tags,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +40,7 @@ class CourseTags extends StatelessWidget {
           itemCount: 6,
           itemBuilder: (BuildContext context, int index) => Chip(
             label: Text(
-              '#Tag $index',
+              _tags[index],
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: Theme.of(context).colorScheme.secondaryVariant,
