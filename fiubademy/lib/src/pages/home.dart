@@ -10,6 +10,7 @@ import 'package:fiubademy/src/services/location.dart';
 import 'package:fiubademy/src/pages/profile.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
+import 'package:fiubademy/src/pages/my_collaborations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -149,6 +150,12 @@ Widget _buildDrawer(BuildContext context) {
                 title: const Text('My Collaborations'),
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const MyCollaborationsPage();
+                    }),
+                  );
                 },
               ),
               ListTile(

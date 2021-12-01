@@ -401,13 +401,13 @@ class Server {
 
   /* Returns a list of courses in which you are collaborating, null on error. */
 
-  static Future<List<Map<String, dynamic>>?> getMyCollaborationCourses(
+  static Future<Map<String, dynamic>> getMyCollaborationCourses(
       Auth auth, int page) async {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
     final response = await http.get(
-      Uri.https(url, "/courses/collaborator/my_courses/$page", queryParams),
+      Uri.https(url, "/courses/my_courses/collaborator/$page", queryParams),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
@@ -417,10 +417,19 @@ class Server {
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);
-        List<Map<String, dynamic>> courses = body["content"];
-        return courses;
+        body['error'] = null;
+        return body;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
       default:
-        return null;
+        Map<String, dynamic> map = {
+          'error': 'Failed to get courses. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 
