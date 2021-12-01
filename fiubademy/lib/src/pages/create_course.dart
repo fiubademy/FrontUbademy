@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_tag_editor/tag_editor.dart';
+import 'package:provider/provider.dart';
+
 import 'package:fiubademy/src/models/course.dart';
+
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:provider/provider.dart';
 
 class CreateCoursePage extends StatelessWidget {
   const CreateCoursePage({Key? key}) : super(key: key);
@@ -92,7 +94,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
   final _formKey = GlobalKey<FormState>();
   String? _courseTitle;
   String? _courseDescription;
-  String? _courseType;
+  String? _courseCategory;
   String? _courseMinSubscriptionLevel;
   List<String> _tags = [];
 
@@ -120,6 +122,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
         auth,
         _courseTitle!,
         _courseDescription!,
+        _courseCategory!,
         _tags,
         minSubLevel,
         user.latitude!,
@@ -188,7 +191,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
                 return 'Please select a course type';
               }
             },
-            onSaved: (value) => _courseType = value,
+            onSaved: (value) => _courseCategory = value,
           ),
           const SizedBox(height: 16.0),
           MaterialDropdownButton(

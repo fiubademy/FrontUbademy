@@ -522,6 +522,7 @@ class Server {
       Auth auth,
       String name,
       String description,
+      String category,
       List<String> hashtags,
       int minSubscription,
       double latitude,
@@ -537,6 +538,7 @@ class Server {
       "sub_level": minSubscription,
       "latitude": latitude,
       "longitude": longitude,
+      "category": category,
     };
 
     final response = await http.post(
