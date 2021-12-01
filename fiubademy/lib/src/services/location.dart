@@ -1,4 +1,5 @@
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
@@ -56,4 +57,10 @@ Future<void> updateUserLocation(Auth auth, User user) async {
     Server.updatePosition(auth, pos.latitude, pos.longitude);
     user.setPosition(pos.latitude, pos.longitude);
   });
+}
+
+Future<String?> getLocationName(double latitude, double longitude) async {
+  Placemark placemark =
+      (await placemarkFromCoordinates(latitude, longitude))[0];
+  return '${placemark.administrativeArea}, ${placemark.country}';
 }

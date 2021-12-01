@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:fiubademy/src/pages/signup.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/google_auth.dart';
 
 class LogInPage extends StatelessWidget {
   const LogInPage({Key? key}) : super(key: key);
@@ -39,13 +41,7 @@ class LogInPage extends StatelessWidget {
                 ],
               ),
               const Divider(),
-              SizedBox(
-                width: double.infinity,
-                child: SignInButton(
-                  Buttons.Google,
-                  onPressed: () {},
-                ),
-              ),
+              const GoogleLogInButton()
             ],
           ),
         ),
@@ -146,5 +142,75 @@ class _LogInFormState extends State<LogInForm> {
         ],
       ),
     );
+  }
+}
+
+class GoogleLogInButton extends StatefulWidget {
+  const GoogleLogInButton({Key? key}) : super(key: key);
+
+  @override
+  _GoogleLogInButtonState createState() => _GoogleLogInButtonState();
+}
+
+class _GoogleLogInButtonState extends State<GoogleLogInButton> {
+  GoogleSignInAccount? _currentUser;
+  bool _loggingIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      if (mounted) {
+        setState(() {
+          Auth auth = Provider.of<Auth>(context, listen: false);
+          auth.deleteAuth();
+          _currentUser = account;
+          if (_currentUser != null) {
+            // TODO Might want to check with Backend if displayName is constant
+            Server.loginWithGoogle(
+                    auth,
+                    _currentUser!.email,
+                    // TODO DisplayName not available? Needs review
+                    _currentUser!.displayName ?? "",
+                    _currentUser!.id)
+                .then((result) {
+              if (result != null) {
+                final snackBar = SnackBar(content: Text(result));
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              }
+            });
+          }
+        });
+      }
+    });
+    googleSignIn.signInSilently();
+  }
+
+  void _googleLogIn(BuildContext context) async {
+    try {
+      setState(() {
+        _loggingIn = true;
+      });
+      await googleSignIn.signIn();
+    } catch (error) {
+      const snackBar = SnackBar(content: Text('Google Sign In failed'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+    setState(() {
+      _loggingIn = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _loggingIn
+        ? const CircularProgressIndicator()
+        : SizedBox(
+            width: double.infinity,
+            child: SignInButton(
+              Buttons.Google,
+              onPressed: () => _googleLogIn(context),
+            ),
+          );
   }
 }

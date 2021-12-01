@@ -36,11 +36,15 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_signin_button: ^2.0.0
   material_floating_search_bar: ^0.3.4
+  material_tag_editor: ^0.1.1
   flutter_secure_storage: ^4.2.1
   http: ^0.13.4
   provider: ^6.0.1
+  flutter_rating_bar: ^4.0.0
+  google_sign_in: ^5.2.1
   geolocator: ^7.7.1
   geocoding: ^2.0.1
+  infinite_scroll_pagination: ^3.1.0
 
 dev_dependencies:
   flutter_test:
