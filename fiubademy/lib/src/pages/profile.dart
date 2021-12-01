@@ -18,7 +18,9 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('My Profile'),
+          title: isSelf
+              ? const Text('My Profile')
+              : Text('${user.username}\'s Profile'),
         ),
         body: _ProfileBody(
           user: user,
