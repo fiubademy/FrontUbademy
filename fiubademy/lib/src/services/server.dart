@@ -386,6 +386,8 @@ class Server {
       },
     );
 
+    print(response);
+
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);

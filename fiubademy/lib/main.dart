@@ -54,10 +54,22 @@ class FiubademyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),
-            home: Provider.of<Auth>(context).userToken == null
-                ? const LogInPage()
-                : const HomePage(),
-            // Idea: use anonymous function. if null, also Navigator pop all.
+            home: Consumer<Auth>(
+              builder: (context, auth, child) {
+                bool isLoggedIn = auth.userToken != null;
+                print('Rebuilding');
+                print(auth.userToken);
+                print(isLoggedIn);
+                if (!isLoggedIn) {
+                  print('Got to first page');
+                  Future.delayed(const Duration(seconds: 1), () {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  });
+                }
+                print('Hey');
+                return isLoggedIn ? const HomePage() : const LogInPage();
+              },
+            ),
           );
         });
   }
