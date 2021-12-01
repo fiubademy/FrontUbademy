@@ -1,41 +1,137 @@
+import 'package:fiubademy/src/services/server.dart';
+
 class Course {
-  final String _courseID;
-  final String _name;
-  final String _description;
-  final String? _state;
-  final int _subscriptionLevel;
-  final double _rating;
-  final int _reviewsCount;
-  final List<String> _tags;
+  // General data
+  String _courseID;
+  String _title;
+  int _minSubscription;
+  String _description;
+  String _category;
+  double _latitude;
+  double _longitude;
+  List<String> _tags;
+  DateTime _creationDate;
 
-  const Course(String courseID, String name, String description, String? state,
-      int subscriptionLevel, double rating, int reviewsCount, List<String> tags)
-      : _courseID = courseID,
-        _name = name,
-        _description = description,
-        _state = state,
-        _subscriptionLevel = subscriptionLevel,
-        _rating = rating,
-        _reviewsCount = reviewsCount,
-        _tags = tags;
+  // Flags
+  bool _blocked;
+  bool _open;
 
-  String get name => _name;
+  // Owner data
+  String _ownerID;
+  String _ownerName;
+
+  // Rating data
+  int _ratingCount;
+  double _ratingAvg;
+
+  Course.fromMap(Map<String, dynamic> courseData)
+      : _courseID = courseData['id'], //
+        _title = courseData['name'], //
+        _ownerID = courseData['ownerId'], //
+        _ownerName = 'Hardcoded String', //
+        _minSubscription = courseData['sub_level'], //
+        _description = courseData['description'], //
+        _category = 'Hardcoded Category', //
+        _latitude = courseData['latitude'], //
+        _longitude = courseData['longitude'], //
+        _tags = List<String>.from(courseData['hashtags']), //
+        _creationDate = DateTime.parse(courseData['time_created']), //
+        _blocked = courseData['blocked'], //
+        _open = !(courseData['in_edition']), //
+        _ratingCount = courseData['ratingCount'], //
+        _ratingAvg = courseData['ratingAvg'] ?? 0; //
+
+/*
+  static Course create2(String courseID, Map<String, dynamic> courseData) {
+    /*
+    Course course = Course._create(courseData);
+    return course;*/
+  }
+
+  static Future<Course> create(
+      String courseID, Future<Map<String, dynamic>> courseData) async {
+        
+    Course course = Course._create(await courseData);
+    return course;
+  }*/
+
+  static List<String> categories() => [
+        'Arts & Crafts',
+        'Cooking',
+        'Design',
+        'Business',
+        'Economics & Finance',
+        'Health & Fitness',
+        'Humanities'
+            'Languages',
+        'Music',
+        'Office Productivity',
+        'Personal Development',
+        'Photography & Video',
+        'Science',
+        'Technology & Software',
+      ];
+
+  String get title => _title;
   String get description => _description;
-  String get state => _state ?? 'You shouldn\'t see this!';
-  String get subscriptionName {
-    switch (_subscriptionLevel) {
-      case 0:
-        return 'No subscription';
+  String get category => _category;
+  String get ownerName => _ownerName;
+
+  String get minSubscriptionName {
+    switch (_minSubscription) {
       case 1:
-        return 'Standard Subscription';
+        return 'Standard';
       case 2:
-        return 'Premium Subscription';
+        return 'Premium';
       default:
-        return 'No subscription';
+        return 'Free';
     }
   }
 
-  double get rating => _rating;
-  int get reviewsCount => _reviewsCount;
+  String get stateName {
+    if (_blocked) return 'Blocked';
+    if (_open) return 'Open';
+    return 'To be published';
+  }
+
   List<String> get tags => _tags;
+
+  int get ratingCount => _ratingCount;
+  double get ratingAvg => _ratingAvg;
+
+  int get creationDay => _creationDate.day;
+  int get creationYear => _creationDate.year;
+  String get creationMonthName {
+    switch (_creationDate.month) {
+      case 1:
+        return 'Jan';
+      case 2:
+        return 'Feb';
+      case 3:
+        return 'Mar';
+      case 4:
+        return 'Apr';
+      case 5:
+        return 'May';
+      case 6:
+        return 'Jun';
+      case 7:
+        return 'Jul';
+      case 8:
+        return 'Aug';
+      case 9:
+        return 'Sep';
+      case 10:
+        return 'Oct';
+      case 11:
+        return 'Nov';
+      case 12:
+        return 'Dec';
+      default:
+        throw StateError('Invalid month number');
+    }
+  }
+
+  double get latitude => _latitude;
+  double get longitude => _longitude;
 }

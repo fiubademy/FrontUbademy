@@ -1,3 +1,6 @@
+import 'package:fiubademy/src/pages/my_collaborations.dart';
+import 'package:fiubademy/src/pages/my_courses.dart';
+import 'package:fiubademy/src/pages/my_inscriptions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fiubademy/src/services/user.dart';
@@ -83,21 +86,42 @@ class _ProfileBodyState extends State<_ProfileBody> {
                     )),
               ),
               ListTile(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MyInscriptionsPage()));
+                },
+                title: const Text(
+                  'My Inscriptions',
+                ),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MyCoursesPage()));
+                },
                 title: const Text(
                   'My Courses',
+                ),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MyCollaborationsPage()));
+                },
+                title: const Text(
+                  'My Collaborations',
                 ),
               ),
               ListTile(
                 onTap: () {},
                 title: const Text(
                   'My Favourites',
-                ),
-              ),
-              ListTile(
-                onTap: () {},
-                title: const Text(
-                  'My Inscriptions',
                 ),
               ),
             ],
