@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "fiubademy",
+            "cwd": "fiubademy",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "fiubademy (profile mode)",
+            "cwd": "fiubademy",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        }
+    ]
+}
