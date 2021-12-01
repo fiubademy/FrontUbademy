@@ -1,11 +1,15 @@
+import 'package:fiubademy/src/widgets/course_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:provider/provider.dart';
+
+import 'package:fiubademy/src/models/course.dart';
 
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/google_auth.dart';
 import 'package:fiubademy/src/services/location.dart';
+import 'package:fiubademy/src/services/server.dart';
 
 import 'package:fiubademy/src/pages/profile.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
@@ -92,7 +96,36 @@ class _HomePageState extends State<HomePage> {
 }
 
 Widget _buildExpandableBody(BuildContext context) {
-  return Container();
+  return CourseListView(
+    onLoad: (index) async {
+      Auth auth = Provider.of<Auth>(context, listen: false);
+      int page = (index ~/ 5) + 1;
+      final result = await Server.getCourses(auth, page);
+      if (result['error'] != null) {
+        throw Exception(result['error']);
+      }
+
+      List<Map<String, dynamic>> coursesData =
+          List<Map<String, dynamic>>.from(result['content']);
+      Map<String, String> idsToNameMapping = {};
+      for (var courseData in coursesData) {
+        String ownerID = courseData['ownerId'];
+        if (!idsToNameMapping.containsKey(ownerID)) {
+          final userQuery = await Server.getUser(auth, ownerID);
+          if (userQuery == null) {
+            throw Exception(result['Failed to fetch user data']);
+          }
+          idsToNameMapping[ownerID] = userQuery['username'];
+        }
+        courseData['ownerName'] = idsToNameMapping[ownerID];
+        courseData['isEnrolled'] = false;
+      }
+
+      List<Course> courses = List.generate(
+          coursesData.length, (index) => Course.fromMap(coursesData[index]));
+      return Future<List<Course>>.value(courses);
+    },
+  );
 }
 
 Widget _buildDrawer(BuildContext context) {
