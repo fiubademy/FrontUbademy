@@ -40,8 +40,16 @@ class _CourseListViewState extends State<CourseListView> {
         final nextPageKey = pageKey + newItems.length;
         _pagingController.appendPage(newItems, nextPageKey);
       }
-    } catch (error) {
-      print(error);
+    } on Exception catch (error) {
+      String errorMessage = error.toString();
+      // Show snackbar only if planned error
+      if (errorMessage.startsWith('Exception: ')) {
+        // Keep only part past 'Exception: '. Yes, it's ugly.
+        final snackBar =
+            SnackBar(content: Text(error.toString().substring(11)));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+      if (!mounted) return;
       _pagingController.error = error;
     }
   }
