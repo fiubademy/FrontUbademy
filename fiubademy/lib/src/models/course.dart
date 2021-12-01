@@ -74,6 +74,7 @@ class Course {
         'Technology & Software',
       ];
 
+  String get courseID => _courseID;
   String get title => _title;
   String get description => _description;
   String get category => _category;
@@ -139,4 +140,6 @@ class Course {
 
   double get latitude => _latitude;
   double get longitude => _longitude;
+
+  set isEnrolled(bool isEnrolled) => _isEnrolled = isEnrolled;
 }

@@ -222,7 +222,6 @@ class Server {
         auth.deleteAuth();
         return 'Invalid credentials. Please login again';
       case HttpStatus.notFound:
-        return 'Failed to unsubscribe. Please try again in a few minutes';
       default:
         return 'Failed to unsubscribe. Please try again in a few minutes';
     }
