@@ -32,11 +32,8 @@ class _HomePageState extends State<HomePage> {
         builder: (context, AsyncSnapshot<void> snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
-              return Scaffold(
-                appBar: AppBar(title: const Text('Ubademy')),
-                body: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+              return const Center(
+                child: CircularProgressIndicator(),
               );
             default:
               if (snapshot.hasError) {

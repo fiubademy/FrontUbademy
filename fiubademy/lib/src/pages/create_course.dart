@@ -37,6 +37,7 @@ class MaterialDropdownButton extends FormField<String> {
   final String? defaultOption;
 
   MaterialDropdownButton({
+    Key? key,
     required this.options,
     this.hint,
     this.defaultOption,
@@ -45,6 +46,7 @@ class MaterialDropdownButton extends FormField<String> {
     FormFieldValidator<String>? validator,
     AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
   }) : super(
+          key: key,
           onSaved: onSaved,
           validator: validator,
           initialValue: initialValue,
@@ -96,7 +98,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
   String? _courseDescription;
   String? _courseCategory;
   String? _courseMinSubscriptionLevel;
-  List<String> _tags = [];
+  final List<String> _tags = [];
 
   void _create() async {
     setState(() {

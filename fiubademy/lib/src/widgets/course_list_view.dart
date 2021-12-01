@@ -70,34 +70,6 @@ class _CourseListViewState extends State<CourseListView> {
     );
   }
 
-  Widget _buildEmptyList() {
-    return SafeArea(
-      child: Container(
-        constraints: const BoxConstraints.expand(),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.info_outline_rounded,
-                size: 170,
-                color: Theme.of(context).colorScheme.secondaryVariant,
-              ),
-              const SizedBox(height: 16.0),
-              Text(
-                'Whoops! It looks like there are no courses to show.',
-                style: Theme.of(context).textTheme.headline6,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   void dispose() {
     _pagingController.dispose();

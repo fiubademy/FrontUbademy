@@ -1,29 +1,27 @@
-import 'package:fiubademy/src/services/server.dart';
-
 class Course {
   // General data
-  String _courseID;
-  String _title;
-  int _minSubscription;
-  String _description;
-  String _category;
-  double _latitude;
-  double _longitude;
-  List<String> _tags;
-  DateTime _creationDate;
+  final String _courseID;
+  final String _title;
+  final int _minSubscription;
+  final String _description;
+  final String _category;
+  final double _latitude;
+  final double _longitude;
+  final List<String> _tags;
+  final DateTime _creationDate;
 
   // Flags
-  bool _blocked;
-  bool _open;
+  final bool _blocked;
+  final bool _open;
   bool _isEnrolled;
 
   // Owner data
-  String _ownerID;
-  String _ownerName;
+  final String _ownerID;
+  final String _ownerName;
 
   // Rating data
-  int _ratingCount;
-  double _ratingAvg;
+  final int _ratingCount;
+  final double _ratingAvg;
 
   Course.fromMap(Map<String, dynamic> courseData)
       : _courseID = courseData['id'],

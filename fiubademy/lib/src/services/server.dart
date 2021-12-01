@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:fiubademy/src/services/auth.dart';
 
 class Server {
-  // TODO Check which methods return 422 and kill the session of Auth
   static const int _invalidToken = 498;
   static const String url = "api-gateway-fiubademy.herokuapp.com";
 
@@ -128,9 +127,6 @@ class Server {
   /* Gets a user, given my permissions */
 
   static Future<Map<String, dynamic>?> getUser(Auth auth, String userID) async {
-    final Map<String, String> queryParams = {
-      'user_id': userID,
-    };
     final response = await http.get(
       Uri.https(url, "/users/ID/$userID"),
       headers: <String, String>{
@@ -427,7 +423,6 @@ class Server {
       },
     );
 
-    // TODO Update to look like method above
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);

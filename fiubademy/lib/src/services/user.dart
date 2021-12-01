@@ -1,7 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:geolocator/geolocator.dart';
-
-import 'package:fiubademy/src/services/server.dart';
 
 class User extends ChangeNotifier {
   String? _userID;

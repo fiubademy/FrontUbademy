@@ -2,10 +2,8 @@ import 'package:fiubademy/src/pages/create_course.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/painting.dart';
 
 import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/widgets/course_card.dart';
 import 'package:fiubademy/src/widgets/course_list_view.dart';
 import 'package:fiubademy/src/services/server.dart';
 

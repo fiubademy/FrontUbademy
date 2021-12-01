@@ -1,4 +1,3 @@
-import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +6,6 @@ import 'package:fiubademy/src/pages/home.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/pages/courseview.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -57,16 +55,11 @@ class FiubademyApp extends StatelessWidget {
             home: Consumer<Auth>(
               builder: (context, auth, child) {
                 bool isLoggedIn = auth.userToken != null;
-                print('Rebuilding');
-                print(auth.userToken);
-                print(isLoggedIn);
                 if (!isLoggedIn) {
-                  print('Got to first page');
                   Future.delayed(const Duration(seconds: 1), () {
                     Navigator.popUntil(context, (route) => route.isFirst);
                   });
                 }
-                print('Hey');
                 return isLoggedIn ? const HomePage() : const LogInPage();
               },
             ),
