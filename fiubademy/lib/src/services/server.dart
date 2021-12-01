@@ -18,15 +18,16 @@ class Server {
   /* Logs in to the account. Updates auth */
 
   static Future<String?> login(Auth auth, String email, String password) async {
-    final Map<String, String> queryParams = {
+    final Map<String, String> body = {
       'email': email,
       'password': password,
     };
     final response = await http.post(
-      Uri.https(url, "/users/login", queryParams),
+      Uri.https(url, "/users/login"),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
+      body: jsonEncode(body),
     );
 
     switch (response.statusCode) {
@@ -47,16 +48,17 @@ class Server {
 
   static Future<String?> loginWithGoogle(
       Auth auth, String email, String displayName, String googleID) async {
-    final Map<String, String> queryParams = {
+    final Map<String, String> body = {
       'idGoogle': googleID,
       'username': displayName,
       'email': email,
     };
     final response = await http.post(
-      Uri.https(url, "/users/loginGoogle", queryParams),
+      Uri.https(url, "/users/loginGoogle"),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
+      body: jsonEncode(body),
     );
 
     switch (response.statusCode) {
@@ -79,16 +81,17 @@ class Server {
 
   static Future<String?> signup(
       String username, String email, String password) async {
-    final Map<String, String> queryParams = {
+    final Map<String, String> body = {
       'username': username,
       'email': email,
       'password': password,
     };
     final response = await http.post(
-      Uri.https(url, "/users/", queryParams),
+      Uri.https(url, "/users/"),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
+      body: jsonEncode(body),
     );
 
     switch (response.statusCode) {
@@ -147,20 +150,24 @@ class Server {
 
   static Future<bool> updatePosition(
       Auth auth, double latitude, double longitude) async {
-    final Map<String, String> queryParams = {
+    final Map<String, String> body = {
       'latitude': latitude.toString(),
       'longitude': longitude.toString(),
     };
     final response = await http.patch(
-      Uri.https(url, "/users/${auth.userToken}/set_location", queryParams),
+      Uri.https(url, "/users/${auth.userToken}/set_location"),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
+      body: jsonEncode(body),
     );
 
     switch (response.statusCode) {
       case HttpStatus.accepted:
         return true;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
       default:
         return false;
     }
