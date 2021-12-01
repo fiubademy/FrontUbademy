@@ -6,6 +6,7 @@ class Course {
   String _title;
   int _minSubscription;
   String _description;
+  String _category;
   double _latitude;
   double _longitude;
   List<String> _tags;
@@ -23,35 +24,57 @@ class Course {
   int _ratingCount;
   double _ratingAvg;
 
-  Course._create(String courseID, Map<String, dynamic> courseData)
-      : _courseID = courseID,
-        _title = courseData['name'],
-        _ownerID = courseData['ownerID'],
-        _ownerName = courseData['ownerName'],
-        _minSubscription = courseData['sub_level'],
-        _description = courseData['description'],
-        _latitude = courseData['latitude'],
-        _longitude = courseData['longitude'],
-        _tags = courseData['hashtags'],
-        _creationDate = DateTime.parse(courseData['time_created']),
-        _blocked = courseData['blocked'],
-        _open = !courseData['in_edition'],
-        _ratingCount = courseData['ratingCount'],
-        _ratingAvg = courseData['ratingAvg'];
+  Course.fromMap(Map<String, dynamic> courseData)
+      : _courseID = courseData['id'], //
+        _title = courseData['name'], //
+        _ownerID = courseData['ownerId'], //
+        _ownerName = 'Hardcoded String', //
+        _minSubscription = courseData['sub_level'], //
+        _description = courseData['description'], //
+        _category = 'Hardcoded Category', //
+        _latitude = courseData['latitude'], //
+        _longitude = courseData['longitude'], //
+        _tags = List<String>.from(courseData['hashtags']), //
+        _creationDate = DateTime.parse(courseData['time_created']), //
+        _blocked = courseData['blocked'], //
+        _open = !(courseData['in_edition']), //
+        _ratingCount = courseData['ratingCount'], //
+        _ratingAvg = courseData['ratingAvg'] ?? 0; //
 
+/*
   static Course create2(String courseID, Map<String, dynamic> courseData) {
-    Course course = Course._create(courseID, courseData);
-    return course;
+    /*
+    Course course = Course._create(courseData);
+    return course;*/
   }
 
   static Future<Course> create(
       String courseID, Future<Map<String, dynamic>> courseData) async {
-    Course course = Course._create(courseID, await courseData);
+        
+    Course course = Course._create(await courseData);
     return course;
-  }
+  }*/
+
+  static List<String> categories() => [
+        'Arts & Crafts',
+        'Cooking',
+        'Design',
+        'Business',
+        'Economics & Finance',
+        'Health & Fitness',
+        'Humanities'
+            'Languages',
+        'Music',
+        'Office Productivity',
+        'Personal Development',
+        'Photography & Video',
+        'Science',
+        'Technology & Software',
+      ];
 
   String get title => _title;
   String get description => _description;
+  String get category => _category;
   String get ownerName => _ownerName;
 
   String get minSubscriptionName {

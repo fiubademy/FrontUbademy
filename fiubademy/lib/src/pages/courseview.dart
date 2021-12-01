@@ -18,6 +18,7 @@ class NextPage extends StatelessWidget {
       'ownerName': 'Owner Name Here',
       'sub_level': 1,
       'description': 'A small description of the course',
+      'category': 'Business',
       'latitude': -34.6037,
       'longitude': -58.3816,
       'hashtags': ['Tag A', 'Tag B', 'Tag C'],
@@ -28,7 +29,7 @@ class NextPage extends StatelessWidget {
       'ratingAvg': 2.8,
     };
 
-    Course myCourse = Course.create2('ABCDEF', courseData);
+    Course myCourse = Course.fromMap(courseData);
 
     return ElevatedButton(
         onPressed: () {
@@ -255,9 +256,21 @@ class CourseViewPage extends StatelessWidget {
             const Icon(Icons.tag_rounded, color: Colors.grey),
             const VerticalDivider(),
             // Expanded is necessary otherwise throws error
-            Expanded(
-              child: CourseTags(tags: _course.tags),
-            ),
+            _course.tags.isEmpty
+                ? Row(
+                    children: [
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'No tags',
+                        style: Theme.of(context).textTheme.subtitle1,
+                      ),
+                    ],
+                  )
+                : Expanded(
+                    child: CourseTags(
+                      tags: _course.tags,
+                    ),
+                  ),
           ],
         ),
       ),
