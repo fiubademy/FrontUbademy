@@ -256,9 +256,21 @@ class CourseViewPage extends StatelessWidget {
             const Icon(Icons.tag_rounded, color: Colors.grey),
             const VerticalDivider(),
             // Expanded is necessary otherwise throws error
-            Expanded(
-              child: CourseTags(tags: _course.tags),
-            ),
+            _course.tags.isEmpty
+                ? Row(
+                    children: [
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'No tags',
+                        style: Theme.of(context).textTheme.subtitle1,
+                      ),
+                    ],
+                  )
+                : Expanded(
+                    child: CourseTags(
+                      tags: _course.tags,
+                    ),
+                  ),
           ],
         ),
       ),
