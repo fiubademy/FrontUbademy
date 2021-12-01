@@ -38,6 +38,7 @@ class MyCollaborationsPage extends StatelessWidget {
                 idsToNameMapping[ownerID] = userQuery['username'];
               }
               courseData['ownerName'] = idsToNameMapping[ownerID];
+              courseData['isEnrolled'] = false;
             }
 
             List<Course> courses = List.generate(coursesData.length,

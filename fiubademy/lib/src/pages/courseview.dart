@@ -52,8 +52,8 @@ class NextPage extends StatelessWidget {
                   }
                 },
               ),*/
-              builder: (context) => CourseViewPage(
-                  course: myCourse, isEnrolled: false, isFavorite: true),
+              builder: (context) =>
+                  CourseViewPage(course: myCourse, isFavorite: true),
             ),
           );
         },
@@ -64,16 +64,13 @@ class NextPage extends StatelessWidget {
 class CourseViewPage extends StatelessWidget {
   final Course _course;
   bool _isFavorite;
-  bool _isEnrolled;
 
-  CourseViewPage(
-      {Key? key,
-      required Course course,
-      required bool isFavorite,
-      required bool isEnrolled})
-      : _course = course,
+  CourseViewPage({
+    Key? key,
+    required Course course,
+    required bool isFavorite,
+  })  : _course = course,
         _isFavorite = isFavorite,
-        _isEnrolled = isEnrolled,
         super(key: key);
 
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
@@ -145,7 +142,7 @@ class CourseViewPage extends StatelessWidget {
               const SizedBox(height: 8.0),
               const Divider(),
               Center(
-                child: _isEnrolled
+                child: _course.isEnrolled
                     ? _CourseLeaveButton(courseTitle: _course.title)
                     : _CourseSignUpButton(courseTitle: _course.title),
               ),

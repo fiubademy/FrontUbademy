@@ -38,6 +38,7 @@ class MyInscriptionsPage extends StatelessWidget {
                 idsToNameMapping[ownerID] = userQuery['username'];
               }
               courseData['ownerName'] = idsToNameMapping[ownerID];
+              courseData['isEnrolled'] = true;
             }
 
             List<Course> courses = List.generate(coursesData.length,

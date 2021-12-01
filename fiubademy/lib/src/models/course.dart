@@ -15,6 +15,7 @@ class Course {
   // Flags
   bool _blocked;
   bool _open;
+  bool _isEnrolled;
 
   // Owner data
   String _ownerID;
@@ -25,21 +26,22 @@ class Course {
   double _ratingAvg;
 
   Course.fromMap(Map<String, dynamic> courseData)
-      : _courseID = courseData['id'], //
-        _title = courseData['name'], //
-        _ownerID = courseData['ownerId'], //
-        _ownerName = courseData['ownerName'], //
-        _minSubscription = courseData['sub_level'], //
-        _description = courseData['description'], //
-        _category = 'Hardcoded Category', //
-        _latitude = courseData['latitude'], //
-        _longitude = courseData['longitude'], //
-        _tags = List<String>.from(courseData['hashtags']), //
-        _creationDate = DateTime.parse(courseData['time_created']), //
-        _blocked = courseData['blocked'], //
-        _open = !(courseData['in_edition']), //
-        _ratingCount = courseData['ratingCount'], //
-        _ratingAvg = courseData['ratingAvg'] ?? 0; //
+      : _courseID = courseData['id'],
+        _title = courseData['name'],
+        _ownerID = courseData['ownerId'],
+        _ownerName = courseData['ownerName'],
+        _minSubscription = courseData['sub_level'],
+        _description = courseData['description'],
+        _category = 'Hardcoded Category',
+        _latitude = courseData['latitude'],
+        _longitude = courseData['longitude'],
+        _tags = List<String>.from(courseData['hashtags']),
+        _creationDate = DateTime.parse(courseData['time_created']),
+        _blocked = courseData['blocked'],
+        _open = !(courseData['in_edition']),
+        _ratingCount = courseData['ratingCount'],
+        _ratingAvg = courseData['ratingAvg'] ?? 0,
+        _isEnrolled = courseData['isEnrolled'];
 
 /*
   static Course create2(String courseID, Map<String, dynamic> courseData) {
@@ -94,6 +96,8 @@ class Course {
     if (_open) return 'Open';
     return 'To be published';
   }
+
+  bool get isEnrolled => _isEnrolled;
 
   List<String> get tags => _tags;
 
