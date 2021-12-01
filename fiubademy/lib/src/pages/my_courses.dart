@@ -14,36 +14,6 @@ class MyCoursesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic> courseData = {
-      'id': 'asdf',
-      'name': 'Course Title Here',
-      'ownerId': '1234234',
-      'ownerName': 'Owner Name Here',
-      'sub_level': 1,
-      'description': 'A small description of the course',
-      'category': 'Music',
-      'latitude': -34.6037,
-      'longitude': -58.3816,
-      'hashtags': [
-        'Tag A',
-        'Tag B',
-        'Tag C',
-        'Tag D',
-        'Tag E',
-        'Tag F',
-        'Tag G'
-      ],
-      'time_created': '2021-11-29T15:19:57+0000',
-      'blocked': false,
-      'in_edition': false,
-      'ratingCount': 24,
-      'ratingAvg': 2.8,
-    };
-
-    Course myCourse = Course.fromMap(courseData);
-
-    List<Course> courses = List.filled(5, myCourse, growable: true);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Courses'),
@@ -57,8 +27,25 @@ class MyCoursesPage extends StatelessWidget {
             if (result['error'] != null) {
               throw Exception(result['error']);
             }
-            List<Course> courses = List.generate(result['content'].length,
-                (index) => Course.fromMap(result['content'][index]));
+
+            List<Map<String, dynamic>> coursesData =
+                List<Map<String, dynamic>>.from(result['content']);
+            Map<String, String> idsToNameMapping = {};
+            for (var courseData in coursesData) {
+              String ownerID = courseData['ownerId'];
+              if (!idsToNameMapping.containsKey(ownerID)) {
+                final userQuery = await Server.getUser(auth, ownerID);
+                if (userQuery == null) {
+                  throw Exception(result['Failed to fetch creator name']);
+                }
+                idsToNameMapping[ownerID] = userQuery['username'];
+              }
+              courseData['ownerName'] = idsToNameMapping[ownerID];
+              courseData['isEnrolled'] = false;
+            }
+
+            List<Course> courses = List.generate(coursesData.length,
+                (index) => Course.fromMap(coursesData[index]));
             return Future<List<Course>>.value(courses);
           },
         ),

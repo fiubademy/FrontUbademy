@@ -29,6 +29,10 @@ class _CourseListViewState extends State<CourseListView> {
   Future<void> _fetchPage(int pageKey) async {
     try {
       final newItems = await widget.onLoad(pageKey);
+
+      // If not mounted, using page controller throws Error.
+      if (!mounted) return;
+
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
         _pagingController.appendLastPage(newItems);

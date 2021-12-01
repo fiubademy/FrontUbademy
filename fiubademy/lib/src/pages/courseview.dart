@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/server.dart';
+
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
 import 'package:fiubademy/src/models/course.dart';
@@ -52,8 +54,8 @@ class NextPage extends StatelessWidget {
                   }
                 },
               ),*/
-              builder: (context) => CourseViewPage(
-                  course: myCourse, isEnrolled: false, isFavorite: true),
+              builder: (context) =>
+                  CourseViewPage(course: myCourse, isFavorite: true),
             ),
           );
         },
@@ -64,16 +66,13 @@ class NextPage extends StatelessWidget {
 class CourseViewPage extends StatelessWidget {
   final Course _course;
   bool _isFavorite;
-  bool _isEnrolled;
 
-  CourseViewPage(
-      {Key? key,
-      required Course course,
-      required bool isFavorite,
-      required bool isEnrolled})
-      : _course = course,
+  CourseViewPage({
+    Key? key,
+    required Course course,
+    required bool isFavorite,
+  })  : _course = course,
         _isFavorite = isFavorite,
-        _isEnrolled = isEnrolled,
         super(key: key);
 
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
@@ -144,11 +143,7 @@ class CourseViewPage extends StatelessWidget {
               ..._buildRatings(context),
               const SizedBox(height: 8.0),
               const Divider(),
-              Center(
-                child: _isEnrolled
-                    ? _CourseLeaveButton(courseTitle: _course.title)
-                    : _CourseSignUpButton(courseTitle: _course.title),
-              ),
+              CourseToggleEnrollButton(course: _course),
             ],
           ),
         ),
@@ -306,86 +301,132 @@ class CourseViewPage extends StatelessWidget {
   }
 }
 
-class _CourseSignUpButton extends StatelessWidget {
-  final String _courseTitle;
+class CourseToggleEnrollButton extends StatefulWidget {
+  final Course _course;
 
-  const _CourseSignUpButton({Key? key, required String courseTitle})
-      : _courseTitle = courseTitle,
+  const CourseToggleEnrollButton({Key? key, required Course course})
+      : _course = course,
         super(key: key);
 
-  void _signUpToCourse() {
-    return;
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-        onPressed: () {
-          showDialog<String>(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: const Text('Enroll to Course'),
-                content:
-                    Text('Are you sure you want to enroll to $_courseTitle?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('CANCEL'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _signUpToCourse();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('ENROLL'),
-                  ),
-                ]),
-          );
-        },
-        child: const Text('ENROLL TO COURSE'));
-  }
+  _CourseToggleEnrollButtonState createState() =>
+      _CourseToggleEnrollButtonState();
 }
 
-class _CourseLeaveButton extends StatelessWidget {
-  final String _courseTitle;
+class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
+  late bool _isEnrolled;
+  bool _isLoading = false;
 
-  const _CourseLeaveButton({Key? key, required String courseTitle})
-      : _courseTitle = courseTitle,
-        super(key: key);
+  @override
+  void initState() {
+    _isEnrolled = widget._course.isEnrolled;
+    super.initState();
+  }
 
-  void _leaveCourse() {
-    return;
+  void _enrollToCourse() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result = await Server.enrollToCourse(auth, widget._course.courseID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        _isEnrolled = true;
+        widget._course.isEnrolled = true;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _unsubscribeFromCourse() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.unsubscribeFromCourse(auth, widget._course.courseID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        _isEnrolled = false;
+        widget._course.isEnrolled = false;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-        onPressed: () {
-          showDialog<String>(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: const Text('Unsubscribe from Course'),
-                content: Text('Are you sure you want to leave $_courseTitle?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('CANCEL'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      _leaveCourse();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('UNSUBSCRIBE'),
-                  ),
-                ]),
-          );
-        },
-        style: ElevatedButton.styleFrom(primary: Colors.red[700]),
-        child: const Text('UNSUBSCRIBE FROM COURSE'));
+    return Center(
+      child: _isLoading
+          ? const CircularProgressIndicator()
+          : (_isEnrolled
+              ? ElevatedButton(
+                  onPressed: () {
+                    showDialog<String>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                          title: const Text('Unsubscribe from Course'),
+                          content: Text(
+                              'Are you sure you want to leave ${widget._course.title}?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _unsubscribeFromCourse();
+                                Navigator.pop(context);
+                              },
+                              child: const Text('UNSUBSCRIBE'),
+                            ),
+                          ]),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(primary: Colors.red[700]),
+                  child: const Text('UNSUBSCRIBE FROM COURSE'),
+                )
+              : ElevatedButton(
+                  onPressed: () {
+                    showDialog<String>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                          title: const Text('Enroll to Course'),
+                          content: Text(
+                              'Are you sure you want to enroll to ${widget._course.title}?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('CANCEL'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                _enrollToCourse();
+                                Navigator.pop(context);
+                              },
+                              child: const Text('ENROLL'),
+                            ),
+                          ]),
+                    );
+                  },
+                  child: const Text('ENROLL TO COURSE'),
+                )),
+    );
   }
 }
