@@ -28,7 +28,7 @@ class Course {
       : _courseID = courseData['id'], //
         _title = courseData['name'], //
         _ownerID = courseData['ownerId'], //
-        _ownerName = 'Hardcoded String', //
+        _ownerName = courseData['ownerName'], //
         _minSubscription = courseData['sub_level'], //
         _description = courseData['description'], //
         _category = 'Hardcoded Category', //
@@ -75,6 +75,7 @@ class Course {
   String get title => _title;
   String get description => _description;
   String get category => _category;
+  String get ownerID => _ownerID;
   String get ownerName => _ownerName;
 
   String get minSubscriptionName {

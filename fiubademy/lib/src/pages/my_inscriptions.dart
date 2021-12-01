@@ -24,8 +24,24 @@ class MyInscriptionsPage extends StatelessWidget {
             if (result['error'] != null) {
               throw Exception(result['error']);
             }
-            List<Course> courses = List.generate(result['content'].length,
-                (index) => Course.fromMap(result['content'][index]));
+
+            List<Map<String, dynamic>> coursesData =
+                List<Map<String, dynamic>>.from(result['content']);
+            Map<String, String> idsToNameMapping = {};
+            for (var courseData in coursesData) {
+              String ownerID = courseData['ownerId'];
+              if (!idsToNameMapping.containsKey(ownerID)) {
+                final userQuery = await Server.getUser(auth, ownerID);
+                if (userQuery == null) {
+                  throw Exception(result['Failed to fetch creator name']);
+                }
+                idsToNameMapping[ownerID] = userQuery['username'];
+              }
+              courseData['ownerName'] = idsToNameMapping[ownerID];
+            }
+
+            List<Course> courses = List.generate(coursesData.length,
+                (index) => Course.fromMap(coursesData[index]));
             return Future<List<Course>>.value(courses);
           },
         ),
