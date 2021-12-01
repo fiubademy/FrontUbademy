@@ -1,9 +1,11 @@
+import 'package:fiubademy/src/pages/profile.dart';
 import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
+import 'package:fiubademy/src/services/user.dart';
 
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
@@ -105,7 +107,7 @@ class CourseViewPage extends StatelessWidget {
                 return Text('Error: ${snapshot.error}');
               }
               return Scaffold(
-                appBar: AppBar(title: Text('Ubademy'), actions: [
+                appBar: AppBar(title: const Text('Ubademy'), actions: [
                   IconButton(
                       onPressed: () => _toggleFavorite(),
                       icon: _isFavorite
@@ -166,8 +168,24 @@ class CourseViewPage extends StatelessWidget {
           color: Theme.of(context).colorScheme.secondaryVariant,
         ),
         const SizedBox(width: 8.0),
-        Text('by ${_course.ownerName}',
-            style: Theme.of(context).textTheme.subtitle2),
+        InkWell(
+          onTap: () async {
+            Auth auth = Provider.of<Auth>(context, listen: false);
+            Map<String, dynamic>? userData =
+                await Server.getUser(auth, _course.ownerID);
+            if (userData == null) return;
+            User user = User();
+            user.updateData(userData);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfilePage(user: user),
+              ),
+            );
+          },
+          child: Text('by ${_course.ownerName}',
+              style: Theme.of(context).textTheme.subtitle2),
+        ),
         const Spacer(),
         Text(
           _course.minSubscriptionName,

@@ -113,7 +113,10 @@ Widget _buildDrawer(BuildContext context) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return const ProfilePage();
+                      return ProfilePage(
+                        user: Provider.of<User>(context),
+                        isSelf: true,
+                      );
                     }),
                   );
                 },
