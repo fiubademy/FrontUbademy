@@ -29,7 +29,7 @@ class NextPage extends StatelessWidget {
       'ratingAvg': 2.8,
     };
 
-    Course myCourse = Course.create2('ABCDEF', courseData);
+    Course myCourse = Course.fromMap(courseData);
 
     return ElevatedButton(
         onPressed: () {

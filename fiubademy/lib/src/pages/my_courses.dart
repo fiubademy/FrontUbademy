@@ -1,10 +1,13 @@
 import 'package:fiubademy/src/pages/create_course.dart';
+import 'package:fiubademy/src/services/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/painting.dart';
 
 import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/widgets/course_card.dart';
 import 'package:fiubademy/src/widgets/course_list_view.dart';
+import 'package:fiubademy/src/services/server.dart';
 
 class MyCoursesPage extends StatelessWidget {
   const MyCoursesPage({Key? key}) : super(key: key);
@@ -12,8 +15,9 @@ class MyCoursesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Map<String, dynamic> courseData = {
+      'id': 'asdf',
       'name': 'Course Title Here',
-      'ownerID': '1234234',
+      'ownerId': '1234234',
       'ownerName': 'Owner Name Here',
       'sub_level': 1,
       'description': 'A small description of the course',
@@ -36,7 +40,7 @@ class MyCoursesPage extends StatelessWidget {
       'ratingAvg': 2.8,
     };
 
-    Course myCourse = Course.create2('ABCDEF', courseData);
+    Course myCourse = Course.fromMap(courseData);
 
     List<Course> courses = List.filled(5, myCourse, growable: true);
 
@@ -46,23 +50,18 @@ class MyCoursesPage extends StatelessWidget {
       ),
       body: SafeArea(
         child: CourseListView(
-          onLoad: (index) {
-            if (index < 7) {
-              return courses;
-            } else {
-              return [];
+          onLoad: (index) async {
+            Auth auth = Provider.of<Auth>(context, listen: false);
+            int page = (index ~/ 5) + 1;
+            final result = await Server.getMyOwnedCourses(auth, page);
+            if (result['error'] != null) {
+              throw Exception(result['error']);
             }
+            List<Course> courses = List.generate(result['content'].length,
+                (index) => Course.fromMap(result['content'][index]));
+            return Future<List<Course>>.value(courses);
           },
         ),
-
-        /*ListView.builder(
-            padding: const EdgeInsets.all(16.0),
-            itemBuilder: (context, index) {
-              if (index >= courses.length) {
-                courses.addAll(List.filled(5, myCourse));
-              }
-              return CourseCard(course: courses[index]);
-            }),*/
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

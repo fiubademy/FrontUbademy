@@ -5,16 +5,15 @@ import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/widgets/course_card.dart';
 
 class CourseListView extends StatefulWidget {
-  List<Course> Function(int index)? onLoad;
+  final Future<List<Course>> Function(int index) onLoad;
 
-  CourseListView({Key? key, this.onLoad}) : super(key: key);
+  const CourseListView({Key? key, required this.onLoad}) : super(key: key);
 
   @override
   _CourseListViewState createState() => _CourseListViewState();
 }
 
 class _CourseListViewState extends State<CourseListView> {
-  final List<Course> _courses = [];
   final int _pageSize = 5;
   final PagingController<int, Course> _pagingController =
       PagingController(firstPageKey: 0);
@@ -29,7 +28,7 @@ class _CourseListViewState extends State<CourseListView> {
 
   Future<void> _fetchPage(int pageKey) async {
     try {
-      final newItems = widget.onLoad!(pageKey);
+      final newItems = await widget.onLoad(pageKey);
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
         _pagingController.appendLastPage(newItems);
@@ -38,6 +37,7 @@ class _CourseListViewState extends State<CourseListView> {
         _pagingController.appendPage(newItems, nextPageKey);
       }
     } catch (error) {
+      print(error);
       _pagingController.error = error;
     }
   }
