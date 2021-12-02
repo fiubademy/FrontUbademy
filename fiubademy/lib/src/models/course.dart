@@ -62,8 +62,8 @@ class Course {
         'Business',
         'Economics & Finance',
         'Health & Fitness',
-        'Humanities'
-            'Languages',
+        'Humanities',
+        'Languages',
         'Music',
         'Office Productivity',
         'Personal Development',
@@ -71,6 +71,20 @@ class Course {
         'Science',
         'Technology & Software',
       ];
+
+  static List<String> subscriptionNames() => ['Free', 'Standard', 'Premium'];
+  static int? subscriptionLevelFromName(String subName) {
+    switch (subName) {
+      case 'Free':
+        return 0;
+      case 'Standard':
+        return 1;
+      case 'Premium':
+        return 2;
+      default:
+        return null;
+    }
+  }
 
   String get courseID => _courseID;
   String get title => _title;

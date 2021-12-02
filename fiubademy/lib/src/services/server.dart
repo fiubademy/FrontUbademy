@@ -317,10 +317,14 @@ class Server {
 
   /* Returns a list of courses in the page. Returns null in case of error. */
 
-  static Future<Map<String, dynamic>> getCourses(Auth auth, int page) async {
-    final Map<String, String> queryParams = {
+  static Future<Map<String, dynamic>> getCourses(Auth auth, int page,
+      {String? title, int? subLevel, String? category}) async {
+    final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
     };
+    if (title != null) queryParams['name'] = title;
+    if (subLevel != null) queryParams['sub_level'] = subLevel.toString();
+    if (category != null) queryParams['category'] = category;
     final response = await http.get(
       Uri.https(url, "/courses/all/$page", queryParams),
       headers: <String, String>{
