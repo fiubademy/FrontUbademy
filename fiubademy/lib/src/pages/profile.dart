@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/pages/edit_profile.dart';
 import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
@@ -74,7 +75,9 @@ class _ProfilePersonalDataCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline6),
                 const Spacer(),
                 if (isSelf)
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+                  IconButton(onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
+                  }, icon: const Icon(Icons.edit)),
               ],
             ),
           ),

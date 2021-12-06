@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:fiubademy/src/pages/edit_profile.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:fiubademy/src/services/auth.dart';
@@ -103,6 +104,65 @@ class Server {
         return 'Failed to sign up. Please try again in a few minutes';
     }
   }
+  
+  /*Edits User's Username in the API. Returns null on success or error string in failure.*/
+
+  static Future<String?> editInfoUser(
+    String newUsername, Auth auth
+  ) async {
+    final Map<String, String> body = {
+      'username': newUsername
+    };
+    final response = await http.patch(
+      Uri.https(url, "/users/${auth.userToken}"),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body)
+    );
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return 'Your username has been correctly changed.';
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to edit username. Please try again in a few minutes';
+    }
+  }
+
+  /* Changes user password when giving it the correct old user's password. Returns an OK message on success, and an error string on failure. */
+
+  static Future<String?> changePassword(
+    String oldPassword, String newPassword, Auth auth
+  ) async {
+    final Map<String, String> body = {
+      "oldPassword": oldPassword,
+      "newPassword": newPassword
+    };
+    final response = await http.patch(
+      Uri.https(url, "/users/changePassword/${auth.userToken}"),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body)
+    );
+    print(response.body);
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return 'Your password has been succesfully changed.';
+      case HttpStatus.notAcceptable:
+        return 'Failed to change password. New password must have 8 or more characters.';
+      case HttpStatus.badRequest:
+        return 'Failed to change password. Your old Password is not correct.';
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to change password. Please try again in a few minutes';
+    }
+  }
+
 
   /* Logs out the user manually */
 
