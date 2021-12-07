@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:fiubademy/src/pages/edit_profile.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:fiubademy/src/services/auth.dart';
@@ -103,22 +102,17 @@ class Server {
         return 'Failed to sign up. Please try again in a few minutes';
     }
   }
-  
+
   /*Edits User's Username in the API. Returns null on success or error string in failure.*/
 
-  static Future<String?> editInfoUser(
-    String newUsername, Auth auth
-  ) async {
-    final Map<String, String> body = {
-      'username': newUsername
-    };
-    final response = await http.patch(
-      Uri.https(url, "/users/${auth.userToken}"),
-      headers: <String, String>{
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: jsonEncode(body)
-    );
+  static Future<String> updateProfile(Auth auth, String newUsername) async {
+    final Map<String, String> body = {'username': newUsername};
+    final response =
+        await http.patch(Uri.https(url, "/users/${auth.userToken}"),
+            headers: <String, String>{
+              HttpHeaders.contentTypeHeader: 'application/json',
+            },
+            body: jsonEncode(body));
     switch (response.statusCode) {
       case HttpStatus.ok:
         return 'Your username has been correctly changed.';
@@ -132,21 +126,19 @@ class Server {
 
   /* Changes user password when giving it the correct old user's password. Returns an OK message on success, and an error string on failure. */
 
-  static Future<String?> changePassword(
-    String oldPassword, String newPassword, Auth auth
-  ) async {
+  static Future<String> changePassword( Auth auth,
+      String oldPassword, String newPassword) async {
     final Map<String, String> body = {
       "oldPassword": oldPassword,
       "newPassword": newPassword
     };
     final response = await http.patch(
-      Uri.https(url, "/users/changePassword/${auth.userToken}"),
-      headers: <String, String>{
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: jsonEncode(body)
-    );
-    print(response.body);
+        Uri.https(url, "/users/changePassword/${auth.userToken}"),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: jsonEncode(body));
+        
     switch (response.statusCode) {
       case HttpStatus.accepted:
         return 'Your password has been succesfully changed.';
@@ -161,7 +153,6 @@ class Server {
         return 'Failed to change password. Please try again in a few minutes';
     }
   }
-
 
   /* Logs out the user manually */
 
