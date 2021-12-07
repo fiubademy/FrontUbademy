@@ -50,6 +50,12 @@ class User extends ChangeNotifier {
     notifyListeners();
   }
 
+  set username(String newUsername) {
+    _username = newUsername;
+    print('Updated usernamed');
+    notifyListeners();
+  }
+
   void deleteData() {
     _userID = null;
     _username = 'Failed to load username';
