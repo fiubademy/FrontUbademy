@@ -76,10 +76,7 @@ class _ProfileChangeFormState extends State<ProfileChangeForm> {
       Auth auth = Provider.of<Auth>(context, listen: false);
       String result =
           await Server.updateProfile(auth, _usernameController.text);
-      print('Im here');
-      print(_usernameController.text);
       if (result == 'Your username has been correctly changed.') {
-        print('Updating profile');
         Provider.of<User>(context, listen: false).username =
             _usernameController.text;
       }

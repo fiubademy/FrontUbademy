@@ -73,9 +73,14 @@ class _ProfilePersonalDataCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.headline6),
                 const Spacer(),
                 if (isSelf)
-                  IconButton(onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => EditProfilePage()));
-                  }, icon: const Icon(Icons.edit)),
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const EditProfilePage()));
+                      },
+                      icon: const Icon(Icons.edit)),
               ],
             ),
           ),

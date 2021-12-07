@@ -52,7 +52,6 @@ class User extends ChangeNotifier {
 
   set username(String newUsername) {
     _username = newUsername;
-    print('Updated usernamed');
     notifyListeners();
   }
 
