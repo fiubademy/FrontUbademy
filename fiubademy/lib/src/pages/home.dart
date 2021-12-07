@@ -275,7 +275,10 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
         idsToNameMapping[ownerID] = userQuery['username'];
       }
       courseData['ownerName'] = idsToNameMapping[ownerID];
-      courseData['isEnrolled'] = false;
+      courseData['isEnrolled'] =
+          await Server.isEnrolled(auth, courseData['id']);
+      print(courseData['id']);
+      print(courseData['isEnrolled']);
     }
 
     List<Course> courses = List.generate(
