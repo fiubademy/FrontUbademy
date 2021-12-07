@@ -3,8 +3,6 @@ import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import 'package:fiubademy/src/services/user.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -43,7 +41,7 @@ class _ProfileBody extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       children: [
         _ProfilePersonalDataCard(
-          user: Provider.of<User>(context),
+          user: user,
           isSelf: isSelf,
         ),
         if (isSelf) _ProfileSubscriptionCard(user: user),
@@ -133,7 +131,7 @@ class _ProfileSubscriptionCard extends StatelessWidget {
               ),
             ),
           ),
-          ListTile(title: Text(Provider.of<User>(context).subscriptionName)),
+          ListTile(title: Text(user.subscriptionName)),
           ListTile(title: Text('Expiration: 31/12/2021')),
         ],
       ),

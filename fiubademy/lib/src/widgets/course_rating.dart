@@ -18,7 +18,7 @@ class CourseRating extends StatelessWidget {
           rating: _ratingAvg,
           itemSize: 24,
           itemBuilder: (context, index) =>
-              Icon(Icons.star, color: Colors.amber),
+              const Icon(Icons.star, color: Colors.amber),
         ),
         const SizedBox(width: 8.0),
         Text(

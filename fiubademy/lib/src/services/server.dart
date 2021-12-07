@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:fiubademy/src/services/auth.dart';
 
 class Server {
-  // TODO Check which methods return 422 and kill the session of Auth
   static const int _invalidToken = 498;
   static const String url = "api-gateway-fiubademy.herokuapp.com";
 
@@ -188,9 +187,6 @@ class Server {
   /* Gets a user, given my permissions */
 
   static Future<Map<String, dynamic>?> getUser(Auth auth, String userID) async {
-    final Map<String, String> queryParams = {
-      'user_id': userID,
-    };
     final response = await http.get(
       Uri.https(url, "/users/ID/$userID"),
       headers: <String, String>{
@@ -381,11 +377,14 @@ class Server {
 
   /* Returns a list of courses in the page. Returns null in case of error. */
 
-  static Future<List<Map<String, dynamic>>?> getCourses(
-      Auth auth, int page) async {
-    final Map<String, String> queryParams = {
+  static Future<Map<String, dynamic>> getCourses(Auth auth, int page,
+      {String? title, int? subLevel, String? category}) async {
+    final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
     };
+    if (title != null) queryParams['name'] = title;
+    if (subLevel != null) queryParams['sub_level'] = subLevel.toString();
+    if (category != null) queryParams['category'] = category;
     final response = await http.get(
       Uri.https(url, "/courses/all/$page", queryParams),
       headers: <String, String>{
@@ -396,10 +395,19 @@ class Server {
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);
-        List<Map<String, dynamic>> courses = body["content"];
-        return courses;
+        body['error'] = null;
+        return body;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
       default:
-        return null;
+        Map<String, dynamic> map = {
+          'error': 'Failed to get courses. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 
@@ -479,7 +487,6 @@ class Server {
       },
     );
 
-    // TODO Update to look like method above
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);

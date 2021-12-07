@@ -1,4 +1,3 @@
-import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,7 +6,6 @@ import 'package:fiubademy/src/pages/home.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/pages/courseview.dart';
 
 void main() {
   runApp(const FiubademyApp());
@@ -54,10 +52,17 @@ class FiubademyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),
-            home: Provider.of<Auth>(context).userToken == null
-                ? const LogInPage()
-                : const HomePage(),
-            // Idea: use anonymous function. if null, also Navigator pop all.
+            home: Consumer<Auth>(
+              builder: (context, auth, child) {
+                bool isLoggedIn = auth.userToken != null;
+                if (!isLoggedIn) {
+                  Future.delayed(const Duration(seconds: 1), () {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  });
+                }
+                return isLoggedIn ? const HomePage() : const LogInPage();
+              },
+            ),
           );
         });
   }
