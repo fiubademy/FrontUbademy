@@ -20,7 +20,8 @@ class CourseCollaboratorsPage extends StatefulWidget {
 }
 
 class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
-  bool _isLoading = false;
+  bool _isLoadingAdd = false;
+  bool _isLoadingRemove = false;
   final _newCollaboratorController = TextEditingController();
   final _addCollaboratorFormKey = GlobalKey<FormState>();
   final PagingController<int, User> _pagingController =
@@ -78,7 +79,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
 
   void _addCollaborator() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingAdd = true;
     });
     FocusScope.of(context).unfocus();
     if (_addCollaboratorFormKey.currentState!.validate()) {
@@ -93,7 +94,27 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
       }
     }
     setState(() {
-      _isLoading = false;
+      _isLoadingAdd = false;
+    });
+  }
+
+  void _removeCollaborator(String collaboratorID) async {
+    setState(() {
+      _isLoadingRemove = true;
+    });
+
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.removeCollaborator(auth, collaboratorID, widget._courseID);
+    if (result == null) {
+      _pagingController.refresh();
+    } else {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+
+    setState(() {
+      _isLoadingRemove = false;
     });
   }
 
@@ -134,7 +155,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
               const SizedBox(height: 16.0),
               Align(
                 alignment: Alignment.centerRight,
-                child: _isLoading
+                child: _isLoadingAdd
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
                         onPressed: () => _addCollaborator(),
@@ -154,10 +175,13 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
                         child: ListTile(
                           title: Text(item.username),
                           subtitle: Text(item.email),
-                          trailing: IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.close_rounded),
-                          ),
+                          trailing: _isLoadingRemove
+                              ? const CircularProgressIndicator()
+                              : IconButton(
+                                  onPressed: () =>
+                                      _removeCollaborator(item.userID!),
+                                  icon: const Icon(Icons.close_rounded),
+                                ),
                           onTap: () {
                             Navigator.push(
                                 context,

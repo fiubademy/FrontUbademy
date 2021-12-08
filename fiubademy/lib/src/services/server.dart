@@ -312,7 +312,7 @@ class Server {
       case HttpStatus.unauthorized:
         return 'Failed to remove collaborator. Not enough permissions';
       case HttpStatus.notFound:
-        return 'Failed to remove collaborator. Please try again in a few minutes';
+        return 'Failed to remove collaborator. Please refresh the list';
       default:
         return 'Failed to remove collaborator. Please try again in a few minutes';
     }
