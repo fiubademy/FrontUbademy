@@ -1,4 +1,5 @@
 import 'package:fiubademy/src/pages/course_collaborators.dart';
+import 'package:fiubademy/src/pages/course_edition.dart';
 import 'package:fiubademy/src/pages/course_students.dart';
 import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,13 @@ class CourseCreatorMenu extends StatelessWidget {
         switch (value) {
           case 0:
           case 1:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CourseEditionPage(course: _course),
+              ),
+            );
+            break;
           case 2:
             break;
           case 3:

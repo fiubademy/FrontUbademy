@@ -233,6 +233,7 @@ class CourseViewPage extends StatelessWidget {
       const SizedBox(
         height: 16.0,
       ),
+      // TODO Add category in details
       IntrinsicHeight(
         child: Row(
           children: [

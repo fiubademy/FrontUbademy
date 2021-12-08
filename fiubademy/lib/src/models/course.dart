@@ -32,7 +32,7 @@ class Course {
         _ownerName = courseData['ownerName'],
         _minSubscription = courseData['sub_level'],
         _description = courseData['description'],
-        _category = 'Hardcoded Category',
+        _category = courseData['category'],
         _latitude = courseData['latitude'],
         _longitude = courseData['longitude'],
         _tags = List<String>.from(courseData['hashtags']),
