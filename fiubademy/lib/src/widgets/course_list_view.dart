@@ -1,4 +1,3 @@
-import 'package:fiubademy/src/widgets/course_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
@@ -7,10 +6,8 @@ import 'package:fiubademy/src/widgets/course_card.dart';
 
 class CourseListView extends StatefulWidget {
   final Future<List<Course>> Function(int index) onLoad;
-  final CourseMenu? menu;
 
-  const CourseListView({Key? key, required this.onLoad, this.menu})
-      : super(key: key);
+  const CourseListView({Key? key, required this.onLoad}) : super(key: key);
 
   @override
   _CourseListViewState createState() => _CourseListViewState();
@@ -69,7 +66,6 @@ class _CourseListViewState extends State<CourseListView> {
         builderDelegate: PagedChildBuilderDelegate<Course>(
           itemBuilder: (context, item, index) => CourseCard(
             course: item,
-            menu: widget.menu,
           ),
         ),
       ),

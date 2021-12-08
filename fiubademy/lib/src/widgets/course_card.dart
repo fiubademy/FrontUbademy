@@ -8,20 +8,21 @@ import 'package:fiubademy/src/widgets/course_tags.dart';
 
 class CourseCard extends StatelessWidget {
   final Course _course;
-  final CourseMenu? menu;
 
-  const CourseCard({Key? key, required course, this.menu})
+  const CourseCard({Key? key, required course})
       : _course = course,
         super(key: key);
 
   Widget _buildMenu() {
-    switch (menu!) {
-      case CourseMenu.student:
-        return const CourseStudentMenu();
-      case CourseMenu.creator:
-        return const CourseCreatorMenu();
-      case CourseMenu.collaborator:
-        return const CourseCollaboratorMenu();
+    switch (_course.role) {
+      case CourseRole.notStudent:
+        return CourseNotStudentMenu(course: _course);
+      case CourseRole.student:
+        return CourseStudentMenu(course: _course);
+      case CourseRole.owner:
+        return CourseCreatorMenu(course: _course);
+      case CourseRole.collaborator:
+        return CourseCollaboratorMenu(course: _course);
     }
   }
 
@@ -50,7 +51,7 @@ class CourseCard extends StatelessWidget {
                             maxLines: 2,
                             style: Theme.of(context).textTheme.headline6),
                       ),
-                      if (menu != null) _buildMenu(),
+                      _buildMenu(),
                     ],
                   ),
                   const Divider(),
