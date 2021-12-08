@@ -1,3 +1,5 @@
+import 'package:fiubademy/src/pages/course_collaborators.dart';
+import 'package:fiubademy/src/pages/course_students.dart';
 import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/models/course.dart';
@@ -17,24 +19,65 @@ class CourseCreatorMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
+    return PopupMenuButton<int>(
+      onSelected: (int value) {
+        switch (value) {
+          case 0:
+          case 1:
+          case 2:
+            break;
+          case 3:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CourseCollaboratorsPage(
+                  courseID: _course.courseID,
+                ),
+              ),
+            );
+            break;
+          case 4:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CourseStudentsPage(
+                  courseID: _course.courseID,
+                ),
+              ),
+            );
+            break;
+          case 5:
+          case 6:
+            break;
+        }
+      },
       itemBuilder: (context) => [
         const PopupMenuItem(
+          value: 0,
           child: Text('View'),
         ),
         const PopupMenuItem(
+          value: 1,
           child: Text('Edit'),
         ),
         const PopupMenuItem(
+          value: 2,
           child: Text('Exams'),
         ),
         const PopupMenuItem(
+          value: 3,
           child: Text('Collaborators'),
         ),
         const PopupMenuItem(
+          value: 4,
+          child: Text('Students'),
+        ),
+        const PopupMenuItem(
+          value: 5,
           child: Text('Metrics'),
         ),
         const PopupMenuItem(
+          value: 6,
           child: Text('Forum'),
         ),
       ],
@@ -101,12 +144,19 @@ class CourseNotStudentMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
+    return PopupMenuButton<int>(
+      onSelected: (value) {
+        if (value == 0) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      CourseViewPage(course: _course, isFavorite: false)));
+        }
+      },
       itemBuilder: (context) => [
-        PopupMenuItem(
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CourseViewPage(course: _course, isFavorite: false));
-          },
+        const PopupMenuItem(
+          value: 0,
           child: const Text('View'),
         ),
       ],

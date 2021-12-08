@@ -238,6 +238,9 @@ class Server {
       },
     );
 
+    print(response.statusCode);
+    print(response.body);
+
     switch (response.statusCode) {
       case HttpStatus.created:
         return null;
@@ -245,7 +248,7 @@ class Server {
         auth.deleteAuth();
         return 'Invalid credentials. Please login again';
       case HttpStatus.notFound:
-        return 'Failed to add collaborator. Please try again in a few minutes';
+        return 'Failed to add collaborator. User does not exist';
       case HttpStatus.conflict:
         return 'Failed to add collaborator. User is already a collaborator';
       default:
@@ -481,7 +484,7 @@ class Server {
 
   /* Returns a list of studentsIDs in the course, null on error. */
 
-  static Future<List<String>?> getCourseStudents(
+  static Future<Map<String, dynamic>> getCourseStudents(
       Auth auth, String courseID) async {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
@@ -495,16 +498,27 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.ok:
-        List<String> students = jsonDecode(response.body);
-        return students;
+        List<String> body = List<String>.from(jsonDecode(response.body));
+        Map<String, dynamic> map = {'error': null, 'content': body};
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
       default:
-        return null;
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get collaborators. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 
   /* Returns a list of collaboratorIDs in the course, null on error. */
 
-  static Future<List<String>?> getCourseCollaborators(
+  static Future<Map<String, dynamic>> getCourseCollaborators(
       Auth auth, String courseID) async {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
@@ -518,10 +532,21 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.ok:
-        List<String> collaborators = jsonDecode(response.body);
-        return collaborators;
+        List<String> body = List<String>.from(jsonDecode(response.body));
+        Map<String, dynamic> map = {'error': null, 'content': body};
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
       default:
-        return null;
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get collaborators. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 
