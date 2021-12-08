@@ -1,3 +1,5 @@
+enum CourseRole { owner, collaborator, student, notStudent }
+
 class Course {
   // General data
   final String _courseID;
@@ -13,7 +15,7 @@ class Course {
   // Flags
   final bool _blocked;
   final bool _open;
-  bool _isEnrolled;
+  CourseRole role;
 
   // Owner data
   final String _ownerID;
@@ -39,8 +41,7 @@ class Course {
         _open = !(courseData['in_edition']),
         _ratingCount = courseData['ratingCount'],
         _ratingAvg = courseData['ratingAvg'] ?? 0,
-        _isEnrolled = courseData['isEnrolled'];
-
+        role = courseData['role'];
 /*
   static Course create2(String courseID, Map<String, dynamic> courseData) {
     /*
@@ -110,8 +111,6 @@ class Course {
     return 'To be published';
   }
 
-  bool get isEnrolled => _isEnrolled;
-
   List<String> get tags => _tags;
 
   int get ratingCount => _ratingCount;
@@ -152,6 +151,4 @@ class Course {
 
   double get latitude => _latitude;
   double get longitude => _longitude;
-
-  set isEnrolled(bool isEnrolled) => _isEnrolled = isEnrolled;
 }

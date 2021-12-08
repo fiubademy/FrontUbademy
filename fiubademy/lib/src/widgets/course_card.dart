@@ -2,16 +2,28 @@ import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/widgets/course_creator_menu.dart';
+import 'package:fiubademy/src/widgets/course_menu.dart';
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
 
 class CourseCard extends StatelessWidget {
   final Course _course;
+  final CourseMenu? menu;
 
-  const CourseCard({Key? key, required course})
+  const CourseCard({Key? key, required course, this.menu})
       : _course = course,
         super(key: key);
+
+  Widget _buildMenu() {
+    switch (menu!) {
+      case CourseMenu.student:
+        return const CourseStudentMenu();
+      case CourseMenu.creator:
+        return const CourseCreatorMenu();
+      case CourseMenu.collaborator:
+        return const CourseCollaboratorMenu();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +50,7 @@ class CourseCard extends StatelessWidget {
                             maxLines: 2,
                             style: Theme.of(context).textTheme.headline6),
                       ),
-                      const CourseCreatorMenu(),
+                      if (menu != null) _buildMenu(),
                     ],
                   ),
                   const Divider(),

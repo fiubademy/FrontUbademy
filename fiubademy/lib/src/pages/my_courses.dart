@@ -1,5 +1,6 @@
 import 'package:fiubademy/src/pages/create_course.dart';
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/widgets/course_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,6 +19,7 @@ class MyCoursesPage extends StatelessWidget {
       ),
       body: SafeArea(
         child: CourseListView(
+          menu: CourseMenu.creator,
           onLoad: (index) async {
             Auth auth = Provider.of<Auth>(context, listen: false);
             int page = (index ~/ 5) + 1;
@@ -39,7 +41,7 @@ class MyCoursesPage extends StatelessWidget {
                 idsToNameMapping[ownerID] = userQuery['username'];
               }
               courseData['ownerName'] = idsToNameMapping[ownerID];
-              courseData['isEnrolled'] = false;
+              courseData['role'] = CourseRole.owner;
             }
 
             List<Course> courses = List.generate(coursesData.length,

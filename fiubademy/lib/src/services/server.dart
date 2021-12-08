@@ -643,4 +643,30 @@ class Server {
         return false;
     }
   }
+
+  static Future<bool> isCollaborator(Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/my_courses/collaborator/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses =
+            List<Map<String, dynamic>>.from(body["content"]);
+        return courses.isNotEmpty;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
+    }
+  }
 }

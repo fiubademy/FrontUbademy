@@ -275,10 +275,17 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
         idsToNameMapping[ownerID] = userQuery['username'];
       }
       courseData['ownerName'] = idsToNameMapping[ownerID];
-      courseData['isEnrolled'] =
-          await Server.isEnrolled(auth, courseData['id']);
-      print(courseData['id']);
-      print(courseData['isEnrolled']);
+
+      // Order is by speed and then probability
+      if (ownerID == auth.userID) {
+        courseData['role'] = CourseRole.owner;
+      } else if (await Server.isEnrolled(auth, courseData['id'])) {
+        courseData['role'] = CourseRole.student;
+      } else if (await Server.isCollaborator(auth, courseData['id'])) {
+        courseData['role'] = CourseRole.collaborator;
+      } else {
+        courseData['role'] = CourseRole.notStudent;
+      }
     }
 
     List<Course> courses = List.generate(
