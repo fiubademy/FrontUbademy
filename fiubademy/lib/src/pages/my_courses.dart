@@ -39,7 +39,7 @@ class MyCoursesPage extends StatelessWidget {
                 idsToNameMapping[ownerID] = userQuery['username'];
               }
               courseData['ownerName'] = idsToNameMapping[ownerID];
-              courseData['isEnrolled'] = false;
+              courseData['role'] = CourseRole.owner;
             }
 
             List<Course> courses = List.generate(coursesData.length,

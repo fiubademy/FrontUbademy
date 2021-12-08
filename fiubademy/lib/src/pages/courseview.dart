@@ -143,9 +143,12 @@ class CourseViewPage extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 8.0),
               ..._buildRatings(context),
-              const SizedBox(height: 8.0),
-              const Divider(),
-              CourseToggleEnrollButton(course: _course),
+              if (_course.role == CourseRole.notStudent ||
+                  _course.role == CourseRole.student) ...[
+                const SizedBox(height: 8.0),
+                const Divider(),
+                CourseToggleEnrollButton(course: _course),
+              ]
             ],
           ),
         ),
@@ -300,16 +303,18 @@ class CourseViewPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           TextButton(
-            onPressed: () {
-              if (true) {
-                const snackBar = SnackBar(
-                    content: Text(
-                        'You need to finish the course to write a review'));
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              } //else {
-              //Navigator.push(context, route);
-              //}
-            },
+            onPressed: _course.role != CourseRole.student
+                ? null
+                : () {
+                    if (true) {
+                      const snackBar = SnackBar(
+                          content: Text(
+                              'You need to finish the course to write a review'));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } //else {
+                    //Navigator.push(context, route);
+                    //}
+                  },
             child: const Text('Write a review'),
           ),
           TextButton(onPressed: () {}, child: const Text('See all reviews'))
@@ -337,7 +342,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
 
   @override
   void initState() {
-    _isEnrolled = widget._course.isEnrolled;
+    _isEnrolled = widget._course.role == CourseRole.student;
     super.initState();
   }
 
@@ -353,7 +358,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
     } else {
       setState(() {
         _isEnrolled = true;
-        widget._course.isEnrolled = true;
+        widget._course.role = CourseRole.student;
       });
     }
 
@@ -375,7 +380,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
     } else {
       setState(() {
         _isEnrolled = false;
-        widget._course.isEnrolled = false;
+        widget._course.role = CourseRole.notStudent;
       });
     }
 

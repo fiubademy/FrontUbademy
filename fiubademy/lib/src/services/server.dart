@@ -103,57 +103,6 @@ class Server {
     }
   }
 
-  /*Edits User's Username in the API. Returns null on success or error string in failure.*/
-
-  static Future<String> updateProfile(Auth auth, String newUsername) async {
-    final Map<String, String> body = {'username': newUsername};
-    final response =
-        await http.patch(Uri.https(url, "/users/${auth.userToken}"),
-            headers: <String, String>{
-              HttpHeaders.contentTypeHeader: 'application/json',
-            },
-            body: jsonEncode(body));
-    switch (response.statusCode) {
-      case HttpStatus.ok:
-        return 'Your username has been correctly changed.';
-      case _invalidToken:
-        auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
-      default:
-        return 'Failed to edit username. Please try again in a few minutes';
-    }
-  }
-
-  /* Changes user password when giving it the correct old user's password. Returns an OK message on success, and an error string on failure. */
-
-  static Future<String> changePassword( Auth auth,
-      String oldPassword, String newPassword) async {
-    final Map<String, String> body = {
-      "oldPassword": oldPassword,
-      "newPassword": newPassword
-    };
-    final response = await http.patch(
-        Uri.https(url, "/users/changePassword/${auth.userToken}"),
-        headers: <String, String>{
-          HttpHeaders.contentTypeHeader: 'application/json',
-        },
-        body: jsonEncode(body));
-        
-    switch (response.statusCode) {
-      case HttpStatus.accepted:
-        return 'Your password has been succesfully changed.';
-      case HttpStatus.notAcceptable:
-        return 'Failed to change password. New password must have 8 or more characters.';
-      case HttpStatus.badRequest:
-        return 'Failed to change password. Your old Password is not correct.';
-      case _invalidToken:
-        auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
-      default:
-        return 'Failed to change password. Please try again in a few minutes';
-    }
-  }
-
   /* Logs out the user manually */
 
   static Future<bool> logout(Auth auth) async {
@@ -289,6 +238,9 @@ class Server {
       },
     );
 
+    print(response.statusCode);
+    print(response.body);
+
     switch (response.statusCode) {
       case HttpStatus.created:
         return null;
@@ -296,7 +248,7 @@ class Server {
         auth.deleteAuth();
         return 'Invalid credentials. Please login again';
       case HttpStatus.notFound:
-        return 'Failed to add collaborator. Please try again in a few minutes';
+        return 'Failed to add collaborator. User does not exist';
       case HttpStatus.conflict:
         return 'Failed to add collaborator. User is already a collaborator';
       default:
@@ -360,7 +312,7 @@ class Server {
       case HttpStatus.unauthorized:
         return 'Failed to remove collaborator. Not enough permissions';
       case HttpStatus.notFound:
-        return 'Failed to remove collaborator. Please try again in a few minutes';
+        return 'Failed to remove collaborator. Please refresh the list';
       default:
         return 'Failed to remove collaborator. Please try again in a few minutes';
     }
@@ -532,7 +484,7 @@ class Server {
 
   /* Returns a list of studentsIDs in the course, null on error. */
 
-  static Future<List<String>?> getCourseStudents(
+  static Future<Map<String, dynamic>> getCourseStudents(
       Auth auth, String courseID) async {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
@@ -546,16 +498,27 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.ok:
-        List<String> students = jsonDecode(response.body);
-        return students;
+        List<String> body = List<String>.from(jsonDecode(response.body));
+        Map<String, dynamic> map = {'error': null, 'content': body};
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
       default:
-        return null;
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get collaborators. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 
   /* Returns a list of collaboratorIDs in the course, null on error. */
 
-  static Future<List<String>?> getCourseCollaborators(
+  static Future<Map<String, dynamic>> getCourseCollaborators(
       Auth auth, String courseID) async {
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
@@ -569,10 +532,21 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.ok:
-        List<String> collaborators = jsonDecode(response.body);
-        return collaborators;
+        List<String> body = List<String>.from(jsonDecode(response.body));
+        Map<String, dynamic> map = {'error': null, 'content': body};
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
       default:
-        return null;
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get collaborators. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 
@@ -615,6 +589,109 @@ class Server {
         return 'Invalid credentials. Please login again';
       default:
         return 'Failed to create course. Please try again.';
+    }
+  }
+
+/*Edits User's Username in the API. Returns null on success or error string in failure.*/
+
+  static Future<String> updateProfile(Auth auth, String newUsername) async {
+    final Map<String, String> body = {'username': newUsername};
+    final response =
+        await http.patch(Uri.https(url, "/users/${auth.userToken}"),
+            headers: <String, String>{
+              HttpHeaders.contentTypeHeader: 'application/json',
+            },
+            body: jsonEncode(body));
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return 'Your username has been correctly changed.';
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to edit username. Please try again in a few minutes';
+    }
+  }
+
+  /* Changes user password when giving it the correct old user's password. Returns an OK message on success, and an error string on failure. */
+
+  static Future<String> changePassword(
+      Auth auth, String oldPassword, String newPassword) async {
+    final Map<String, String> body = {
+      "oldPassword": oldPassword,
+      "newPassword": newPassword
+    };
+    final response = await http.patch(
+        Uri.https(url, "/users/changePassword/${auth.userToken}"),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: jsonEncode(body));
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return 'Your password has been succesfully changed.';
+      case HttpStatus.notAcceptable:
+        return 'Failed to change password. New password must have 8 or more characters.';
+      case HttpStatus.badRequest:
+        return 'Failed to change password. Your old Password is not correct.';
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to change password. Please try again in a few minutes';
+    }
+  }
+
+  static Future<bool> isEnrolled(Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/my_courses/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses =
+            List<Map<String, dynamic>>.from(body["content"]);
+        return courses.isNotEmpty;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  static Future<bool> isCollaborator(Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/my_courses/collaborator/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses =
+            List<Map<String, dynamic>>.from(body["content"]);
+        return courses.isNotEmpty;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
     }
   }
 }

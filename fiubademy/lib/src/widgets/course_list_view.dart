@@ -64,7 +64,9 @@ class _CourseListViewState extends State<CourseListView> {
         padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
         pagingController: _pagingController,
         builderDelegate: PagedChildBuilderDelegate<Course>(
-          itemBuilder: (context, item, index) => CourseCard(course: item),
+          itemBuilder: (context, item, index) => CourseCard(
+            course: item,
+          ),
         ),
       ),
     );
