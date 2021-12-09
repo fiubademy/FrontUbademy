@@ -279,56 +279,23 @@ class MultimediaPicker extends StatefulWidget {
 }
 
 class _MultimediaPickerState extends State<MultimediaPicker> {
-  List<XFile> _imageFileList = [];
-
-  dynamic _pickImageError;
-  bool isVideo = false;
+  final List<List<dynamic>> _imageFileList = [];
 
   VideoPlayerController? _controller;
   VideoPlayerController? _toBeDisposed;
   String? _retrieveDataError;
 
   final ImagePicker _picker = ImagePicker();
-  final TextEditingController maxWidthController = TextEditingController();
-  final TextEditingController maxHeightController = TextEditingController();
-  final TextEditingController qualityController = TextEditingController();
-
-  Future<void> _playVideo(XFile? file) async {
-    if (file != null && mounted) {
-      await _disposeVideoController();
-      late VideoPlayerController controller;
-      if (kIsWeb) {
-        controller = VideoPlayerController.network(file.path);
-      } else {
-        controller = VideoPlayerController.file(File(file.path));
-      }
-      _controller = controller;
-      // In web, most browsers won't honor a programmatic call to .play
-      // if the video has a sound track (and is not muted).
-      // Mute the video so it auto-plays in web!
-      // This is not needed if the call to .play is the result of user
-      // interaction (clicking on a "play" button, for example).
-      final double volume = kIsWeb ? 0.0 : 1.0;
-      await controller.setVolume(volume);
-      await controller.initialize();
-      await controller.setLooping(true);
-      await controller.play();
-      setState(() {});
-    }
-  }
 
   void _onVideoButtonPressed(ImageSource source) async {
-    isVideo = true;
-
-    if (_controller != null) {
-      await _controller!.setVolume(0.0);
-    }
-
     try {
-      final XFile? file = await _picker.pickVideo(
+      final XFile? videoFile = await _picker.pickVideo(
           source: source, maxDuration: const Duration(seconds: 10));
-
-      await _playVideo(file);
+      if (videoFile != null) {
+        setState(() {
+          _imageFileList.add(List.unmodifiable([videoFile, 1]));
+        });
+      }
     } catch (error) {
       final snackBar = SnackBar(content: Text('$error'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -340,7 +307,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       final pickedFileList = await _picker.pickMultiImage();
       if (pickedFileList != null) {
         setState(() {
-          _imageFileList.addAll(pickedFileList);
+          // Add all images as unmodifiable lists [file, 0].
+          _imageFileList.addAll(List.generate(pickedFileList.length,
+              (index) => List.unmodifiable([pickedFileList[index], 0])));
         });
       }
     } catch (error) {
@@ -356,31 +325,13 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       );
       if (pickedFile != null) {
         setState(() {
-          _imageFileList.add(pickedFile);
+          _imageFileList.add(List.unmodifiable([pickedFile, 0]));
         });
       }
     } catch (error) {
       final snackBar = SnackBar(content: Text('$error'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-  }
-
-  @override
-  void deactivate() {
-    if (_controller != null) {
-      _controller!.setVolume(0.0);
-      _controller!.pause();
-    }
-    super.deactivate();
-  }
-
-  @override
-  void dispose() {
-    _disposeVideoController();
-    maxWidthController.dispose();
-    maxHeightController.dispose();
-    qualityController.dispose();
-    super.dispose();
   }
 
   Future<void> _disposeVideoController() async {
@@ -408,13 +359,13 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     // Why network for web?
     // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
     return kIsWeb
-        ? Image.network(_imageFileList[index].path)
+        ? Image.network(_imageFileList[index][0].path)
         : Container(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Center(
                 child: Image.file(
-                  File(_imageFileList[index].path),
+                  File(_imageFileList[index][0].path),
                 ),
               ),
             ),
@@ -443,8 +394,8 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       return retrieveError;
     }
 
-    if (isVideo) {
-      return _previewVideo();
+    if (_imageFileList[index][1] == 1) {
+      return Text('Video');
     } else {
       return _previewImages(index);
     }
@@ -462,16 +413,17 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     }
 
     if (response.type == RetrieveType.video) {
-      isVideo = true;
-      await _playVideo(response.file);
-      return;
-    } else {
-      isVideo = false;
       setState(() {
+        _imageFileList.add(List.unmodifiable([response.file!, 1]));
+      });
+    } else {
+      setState(() {
+        // Add All elements as unmodifiable lists [file, 0]
         if (response.files != null) {
-          _imageFileList = response.files!;
+          _imageFileList.addAll(List.generate(response.files!.length,
+              (index) => List.unmodifiable([response.files!, 0])));
         } else {
-          _imageFileList = [response.file!];
+          _imageFileList.add(List.unmodifiable([response.file!, 0]));
         }
       });
     }
@@ -704,10 +656,22 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         break;
     }
   }
-}
 
-typedef void OnPickImageCallback(
-    double? maxWidth, double? maxHeight, int? quality);
+  @override
+  void deactivate() {
+    if (_controller != null) {
+      _controller!.setVolume(0.0);
+      _controller!.pause();
+    }
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    _disposeVideoController();
+    super.dispose();
+  }
+}
 
 class AspectRatioVideo extends StatefulWidget {
   AspectRatioVideo(this.controller);
