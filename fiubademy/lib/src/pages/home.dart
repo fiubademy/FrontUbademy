@@ -224,14 +224,13 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
     try {
       final newItems = await onLoad(pageKey);
 
-      // If not mounted, using page controller throws Error.
-      if (!mounted) return;
-
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
+        if (!mounted) return;
         _pagingController.appendLastPage(newItems);
       } else {
         final nextPageKey = pageKey + newItems.length;
+        if (!mounted) return;
         _pagingController.appendPage(newItems, nextPageKey);
       }
     } on Exception catch (error) {

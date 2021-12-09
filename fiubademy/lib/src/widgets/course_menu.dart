@@ -28,7 +28,7 @@ class CourseCreatorMenu extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => CourseEditionPage(course: _course),
+                builder: (context) => MultimediaPicker(),
               ),
             );
             break;
