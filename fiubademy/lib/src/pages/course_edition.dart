@@ -279,11 +279,7 @@ class MultimediaPicker extends StatefulWidget {
 }
 
 class _MultimediaPickerState extends State<MultimediaPicker> {
-  List<XFile>? _imageFileList;
-
-  set _imageFile(XFile? value) {
-    _imageFileList = value == null ? null : [value];
-  }
+  List<XFile> _imageFileList = [];
 
   dynamic _pickImageError;
   bool isVideo = false;
@@ -321,54 +317,62 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     }
   }
 
-  void _onImageButtonPressed(ImageSource source,
-      {BuildContext? context, bool isMultiImage = false}) async {
-    print('A');
+  void _onVideoButtonPressed(ImageSource source) async {
+    isVideo = true;
+
     if (_controller != null) {
       await _controller!.setVolume(0.0);
     }
-    if (isVideo) {
-      final XFile? file = await _picker.pickVideo(
-          source: source, maxDuration: const Duration(seconds: 10));
-      await _playVideo(file);
-    } else if (isMultiImage) {
-      await _displayPickImageDialog(context!,
-          (double? maxWidth, double? maxHeight, int? quality) async {
-        try {
-          final pickedFileList = await _picker.pickMultiImage(
-            maxWidth: maxWidth,
-            maxHeight: maxHeight,
-            imageQuality: quality,
-          );
+
+    final XFile? file = await _picker.pickVideo(
+        source: source, maxDuration: const Duration(seconds: 10));
+    await _playVideo(file);
+    return;
+  }
+
+  void _onMultiImageButtonPressed() async {
+    await _displayPickImageDialog(context,
+        (double? maxWidth, double? maxHeight, int? quality) async {
+      try {
+        final pickedFileList = await _picker.pickMultiImage(
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+          imageQuality: quality,
+        );
+        if (pickedFileList != null) {
           setState(() {
             _imageFileList = pickedFileList;
           });
-        } catch (e) {
+        }
+      } catch (e) {
+        setState(() {
+          _pickImageError = e;
+        });
+      }
+    });
+  }
+
+  void _onCameraButtonPressed() async {
+    await _displayPickImageDialog(context,
+        (double? maxWidth, double? maxHeight, int? quality) async {
+      try {
+        final pickedFile = await _picker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+          imageQuality: quality,
+        );
+        if (pickedFile != null) {
           setState(() {
-            _pickImageError = e;
+            _imageFileList = [pickedFile];
           });
         }
-      });
-    } else {
-      await _displayPickImageDialog(context!,
-          (double? maxWidth, double? maxHeight, int? quality) async {
-        try {
-          final pickedFile = await _picker.pickImage(
-            source: source,
-            maxWidth: maxWidth,
-            maxHeight: maxHeight,
-            imageQuality: quality,
-          );
-          setState(() {
-            _imageFile = pickedFile;
-          });
-        } catch (e) {
-          setState(() {
-            _pickImageError = e;
-          });
-        }
-      });
-    }
+      } catch (e) {
+        setState(() {
+          _pickImageError = e;
+        });
+      }
+    });
   }
 
   @override
@@ -398,10 +402,6 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 
   Widget _previewVideo() {
-    final Text? retrieveError = _getRetrieveErrorWidget();
-    if (retrieveError != null) {
-      return retrieveError;
-    }
     if (_controller == null) {
       return const Text(
         'You have not yet picked a video',
@@ -415,26 +415,30 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 
   Widget _previewImages() {
-    final Text? retrieveError = _getRetrieveErrorWidget();
-    if (retrieveError != null) {
-      return retrieveError;
-    }
-    if (_imageFileList != null) {
-      return Semantics(
-          child: ListView.builder(
-            itemCount: _imageFileList!.length,
-            itemBuilder: (context, index) {
-              print(index);
-              // Why network for web?
-              // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
-              return kIsWeb
-                  ? Image.network(_imageFileList![index].path)
-                  : Image.file(
-                      File(_imageFileList![index].path),
-                    );
-            },
-          ),
-          label: 'image_picker_example_picked_images');
+    if (_imageFileList.isNotEmpty) {
+      /*
+      return ListView.builder(
+        itemCount: _imageFileList!.length,
+        itemBuilder: (context, index) {*/
+      // Why network for web?
+      // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
+      return kIsWeb
+          ? Image.network(_imageFileList[0].path)
+          : Container(
+              child: Center(
+                child: Image.file(
+                  File(_imageFileList[0].path),
+                ),
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.secondaryVariant,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            );
+      //},
+      //);
     } else if (_pickImageError != null) {
       return Text(
         'Pick image error: $_pickImageError',
@@ -449,6 +453,11 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 
   Widget _handlePreview() {
+    final Text? retrieveError = _getRetrieveErrorWidget();
+    if (retrieveError != null) {
+      return retrieveError;
+    }
+
     if (isVideo) {
       return _previewVideo();
     } else {
@@ -458,22 +467,28 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
 
   Future<void> retrieveLostData() async {
     final LostDataResponse response = await _picker.retrieveLostData();
+
     if (response.isEmpty) {
       return;
     }
-    if (response.file != null) {
-      if (response.type == RetrieveType.video) {
-        isVideo = true;
-        await _playVideo(response.file);
-      } else {
-        isVideo = false;
-        setState(() {
-          _imageFile = response.file;
-          _imageFileList = response.files;
-        });
-      }
-    } else {
+
+    if (response.file == null) {
       _retrieveDataError = response.exception!.code;
+    }
+
+    if (response.type == RetrieveType.video) {
+      isVideo = true;
+      await _playVideo(response.file);
+      return;
+    } else {
+      isVideo = false;
+      setState(() {
+        if (response.files != null) {
+          _imageFileList = response.files!;
+        } else {
+          _imageFileList = [response.file!];
+        }
+      });
     }
   }
 
@@ -481,7 +496,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Subscaffold'),
+        title: const Text('Subscaffold'),
       ),
       body: Center(
         child: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
@@ -496,7 +511,8 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                         textAlign: TextAlign.center,
                       );
                     case ConnectionState.done:
-                      return GridView.builder(
+                      return //_handlePreview();
+                          GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           mainAxisSpacing: 16.0,
@@ -504,9 +520,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                           crossAxisCount: 2,
                         ),
                         padding: const EdgeInsets.all(16),
-                        itemCount: 1,
+                        itemCount: _imageFileList.length + 1,
                         itemBuilder: (context, index) {
-                          if (index == 0) {
+                          if (index == _imageFileList.length) {
                             return InkWell(
                               onTap: () {
                                 _displayImageTypeDialog();
@@ -515,19 +531,17 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                               child: Container(
                                 child: Center(child: Text('$index')),
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.black),
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondaryVariant,
+                                  ),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
                             );
                           }
-                          return Container(
-                            child: Center(child: Text('$index')),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          );
+                          return _handlePreview();
                         },
                       );
                     default:
@@ -546,7 +560,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                 },
               )
             : _handlePreview(),
-      ),
+      ), /*
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
@@ -617,7 +631,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
             ),
           ),
         ],
-      ),
+      ),*/
     );
   }
 
@@ -630,8 +644,8 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     return null;
   }
 
-  void _displayImageTypeDialog() {
-    showGeneralDialog(
+  void _displayImageTypeDialog() async {
+    int? result = await showGeneralDialog(
         context: context,
         barrierLabel: "Label",
         barrierDismissible: true,
@@ -664,7 +678,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.pop(context, 0);
+                            },
                             child: const Icon(Icons.photo_library_rounded),
                             style: ElevatedButton.styleFrom(
                               shape: const CircleBorder(),
@@ -680,7 +696,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.pop(context, 1);
+                            },
                             child: const Icon(Icons.video_library_rounded),
                             style: ElevatedButton.styleFrom(
                               shape: const CircleBorder(),
@@ -696,7 +714,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.pop(context, 2);
+                            },
                             child: const Icon(Icons.camera_alt_rounded),
                             style: ElevatedButton.styleFrom(
                               shape: const CircleBorder(),
@@ -712,7 +732,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                       Column(
                         children: [
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.pop(context, 3);
+                            },
                             child: const Icon(Icons.video_camera_back_rounded),
                             style: ElevatedButton.styleFrom(
                               shape: const CircleBorder(),
@@ -730,6 +752,22 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
             ),
           );
         });
+
+    if (result == null) return;
+    switch (result) {
+      case 0:
+        _onMultiImageButtonPressed();
+        break;
+      case 1:
+        _onVideoButtonPressed(ImageSource.gallery);
+        break;
+      case 2:
+        _onCameraButtonPressed();
+        break;
+      case 3:
+        _onVideoButtonPressed(ImageSource.camera);
+        break;
+    }
   }
 
   Future<void> _displayPickImageDialog(
@@ -738,26 +776,28 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Add optional parameters'),
+            title: const Text('Add optional parameters'),
             content: Column(
               children: <Widget>[
                 TextField(
                   controller: maxWidthController,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                      InputDecoration(hintText: "Enter maxWidth if desired"),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                      hintText: "Enter maxWidth if desired"),
                 ),
                 TextField(
                   controller: maxHeightController,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  decoration:
-                      InputDecoration(hintText: "Enter maxHeight if desired"),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                      hintText: "Enter maxHeight if desired"),
                 ),
                 TextField(
                   controller: qualityController,
                   keyboardType: TextInputType.number,
-                  decoration:
-                      InputDecoration(hintText: "Enter quality if desired"),
+                  decoration: const InputDecoration(
+                      hintText: "Enter quality if desired"),
                 ),
               ],
             ),
