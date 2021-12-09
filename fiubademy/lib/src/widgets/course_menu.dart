@@ -24,6 +24,7 @@ class CourseCreatorMenu extends StatelessWidget {
       onSelected: (int value) {
         switch (value) {
           case 0:
+            break;
           case 1:
             Navigator.push(
               context,
@@ -55,6 +56,7 @@ class CourseCreatorMenu extends StatelessWidget {
             );
             break;
           case 5:
+            break;
           case 6:
             break;
         }

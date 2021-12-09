@@ -65,9 +65,70 @@ class NextPage extends StatelessWidget {
   }
 }
 
+class FavouriteIcon extends StatefulWidget {
+  bool isFavourite;
+  void Function()? onToggle;
+  final String courseID;
+
+  FavouriteIcon(
+      {Key? key,
+      required this.isFavourite,
+      this.onToggle,
+      required this.courseID})
+      : super(key: key);
+
+  @override
+  _FavouriteIconState createState() => _FavouriteIconState();
+}
+
+class _FavouriteIconState extends State<FavouriteIcon> {
+  bool isLoading = false;
+  bool isFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavourite = widget.isFavourite;
+  }
+
+  void _toggleFavourite() async {
+    if (isLoading) {
+      return;
+    }
+    setState(() {
+      isLoading = true;
+      isFavourite = !isFavourite;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result = isFavourite
+        ? await Server.removeFavourite(auth, widget.courseID)
+        : await Server.addFavourite(auth, widget.courseID);
+    if (result['error'] != null) {
+      final snackBar = SnackBar(content: Text('${result['error']}'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      setState(() {
+        isFavourite = !isFavourite;
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+        onPressed: () => _toggleFavourite(),
+        icon: isFavourite
+            ? const Icon(Icons.favorite, color: Colors.red)
+            : const Icon(Icons.favorite_outline));
+  }
+}
+
 class CourseViewPage extends StatelessWidget {
   final Course _course;
   bool _isFavorite;
+  bool isLoadingFavourite = false;
 
   CourseViewPage({
     Key? key,
@@ -80,10 +141,6 @@ class CourseViewPage extends StatelessWidget {
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
     return 
   }*/
-
-  void _toggleFavorite() {
-    return;
-  }
 
   final Future<void> _delay = Future.delayed(const Duration(seconds: 0));
 
@@ -108,11 +165,7 @@ class CourseViewPage extends StatelessWidget {
               }
               return Scaffold(
                 appBar: AppBar(title: const Text('Ubademy'), actions: [
-                  IconButton(
-                      onPressed: () => _toggleFavorite(),
-                      icon: _isFavorite
-                          ? const Icon(Icons.favorite, color: Colors.red)
-                          : const Icon(Icons.favorite_outline)),
+                  FavouriteIcon(isFavourite: false, courseID: _course.courseID)
                 ]),
                 body: _buildCourse(context),
               );

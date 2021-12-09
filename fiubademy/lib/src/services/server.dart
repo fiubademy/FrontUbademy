@@ -694,4 +694,80 @@ class Server {
         return false;
     }
   }
+
+  static Future<Map<String, dynamic>> addFavourite(
+      Auth auth, String courseID) async {
+    final Map<String, dynamic> queryParams = {
+      'fav': 'true',
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.put(
+      Uri.https(url, "/courses/new_fav", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': true,
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': false
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to add to favourite. Please try again in a few minutes',
+          'content': false
+        };
+        return map;
+    }
+  }
+
+  static Future<Map<String, dynamic>> removeFavourite(
+      Auth auth, String courseID) async {
+    final Map<String, dynamic> queryParams = {
+      'fav': 'false',
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.put(
+      Uri.https(url, "/courses/new_fav", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': true,
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': false
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to remove to favourite. Please try again in a few minutes',
+          'content': false
+        };
+        return map;
+    }
+  }
 }
