@@ -324,11 +324,15 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       await _controller!.setVolume(0.0);
     }
 
-    final XFile? file = await _picker.pickVideo(
-        source: source, maxDuration: const Duration(seconds: 10));
+    try {
+      final XFile? file = await _picker.pickVideo(
+          source: source, maxDuration: const Duration(seconds: 10));
 
-    await _playVideo(file);
-    return;
+      await _playVideo(file);
+    } catch (error) {
+      final snackBar = SnackBar(content: Text('$error'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   void _onMultiImageButtonPressed() async {
@@ -339,10 +343,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
           _imageFileList.addAll(pickedFileList);
         });
       }
-    } catch (e) {
-      setState(() {
-        _pickImageError = e;
-      });
+    } catch (error) {
+      final snackBar = SnackBar(content: Text('$error'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -356,10 +359,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
           _imageFileList.add(pickedFile);
         });
       }
-    } catch (e) {
-      setState(() {
-        _pickImageError = e;
-      });
+    } catch (error) {
+      final snackBar = SnackBar(content: Text('$error'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
@@ -403,35 +405,36 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 
   Widget _previewImages(int index) {
-    if (_imageFileList.isNotEmpty) {
-      // Why network for web?
-      // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
-      return kIsWeb
-          ? Image.network(_imageFileList[index].path)
-          : Container(
+    // Why network for web?
+    // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
+    return kIsWeb
+        ? Image.network(_imageFileList[index].path)
+        : Container(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
               child: Center(
                 child: Image.file(
                   File(_imageFileList[index].path),
                 ),
               ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.secondaryVariant,
-                ),
-                borderRadius: BorderRadius.circular(20),
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Theme.of(context).colorScheme.secondaryVariant,
+                width: 4,
               ),
-            );
-    } else if (_pickImageError != null) {
-      return Text(
-        'Pick image error: $_pickImageError',
-        textAlign: TextAlign.center,
-      );
-    } else {
-      return const Text(
-        'You have not yet picked an image.',
-        textAlign: TextAlign.center,
-      );
-    }
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.grey.withOpacity(0.6),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 4,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+          );
   }
 
   Widget _handlePreview(int index) {
@@ -511,14 +514,35 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                               },
                               borderRadius: BorderRadius.circular(20),
                               child: Container(
-                                child: Center(child: Text('$index')),
+                                child: Center(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraint) {
+                                      return Icon(Icons.add_circle_rounded,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                          size:
+                                              constraint.biggest.height * 0.4);
+                                    },
+                                  ),
+                                ),
                                 decoration: BoxDecoration(
                                   border: Border.all(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .secondaryVariant,
+                                    width: 4,
                                   ),
                                   borderRadius: BorderRadius.circular(20),
+                                  color: Colors.black.withAlpha(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.5),
+                                      spreadRadius: 2,
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
