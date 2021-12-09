@@ -332,48 +332,35 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 
   void _onMultiImageButtonPressed() async {
-    await _displayPickImageDialog(context,
-        (double? maxWidth, double? maxHeight, int? quality) async {
-      try {
-        final pickedFileList = await _picker.pickMultiImage(
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          imageQuality: quality,
-        );
-        if (pickedFileList != null) {
-          setState(() {
-            _imageFileList.addAll(pickedFileList);
-          });
-        }
-      } catch (e) {
+    try {
+      final pickedFileList = await _picker.pickMultiImage();
+      if (pickedFileList != null) {
         setState(() {
-          _pickImageError = e;
+          _imageFileList.addAll(pickedFileList);
         });
       }
-    });
+    } catch (e) {
+      setState(() {
+        _pickImageError = e;
+      });
+    }
   }
 
   void _onCameraButtonPressed() async {
-    await _displayPickImageDialog(context,
-        (double? maxWidth, double? maxHeight, int? quality) async {
-      try {
-        final pickedFile = await _picker.pickImage(
-          source: ImageSource.camera,
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          imageQuality: quality,
-        );
-        if (pickedFile != null) {
-          setState(() {
-            _imageFileList.add(pickedFile);
-          });
-        }
-      } catch (e) {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+      );
+      if (pickedFile != null) {
         setState(() {
-          _pickImageError = e;
+          _imageFileList.add(pickedFile);
         });
       }
-    });
+    } catch (e) {
+      setState(() {
+        _pickImageError = e;
+      });
+    }
   }
 
   @override
@@ -417,10 +404,6 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
 
   Widget _previewImages(int index) {
     if (_imageFileList.isNotEmpty) {
-      /*
-      return ListView.builder(
-        itemCount: _imageFileList!.length,
-        itemBuilder: (context, index) {*/
       // Why network for web?
       // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
       return kIsWeb
@@ -438,8 +421,6 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                 borderRadius: BorderRadius.circular(20),
               ),
             );
-      //},
-      //);
     } else if (_pickImageError != null) {
       return Text(
         'Pick image error: $_pickImageError',
@@ -698,64 +679,6 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         _onVideoButtonPressed(ImageSource.camera);
         break;
     }
-  }
-
-  Future<void> _displayPickImageDialog(
-      BuildContext context, OnPickImageCallback onPick) async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Add optional parameters'),
-            content: Column(
-              children: <Widget>[
-                TextField(
-                  controller: maxWidthController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: "Enter maxWidth if desired"),
-                ),
-                TextField(
-                  controller: maxHeightController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: "Enter maxHeight if desired"),
-                ),
-                TextField(
-                  controller: qualityController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      hintText: "Enter quality if desired"),
-                ),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('CANCEL'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                  child: const Text('PICK'),
-                  onPressed: () {
-                    double? width = maxWidthController.text.isNotEmpty
-                        ? double.parse(maxWidthController.text)
-                        : null;
-                    double? height = maxHeightController.text.isNotEmpty
-                        ? double.parse(maxHeightController.text)
-                        : null;
-                    int? quality = qualityController.text.isNotEmpty
-                        ? int.parse(qualityController.text)
-                        : null;
-                    onPick(width, height, quality);
-                    Navigator.of(context).pop();
-                  }),
-            ],
-          );
-        });
   }
 }
 
