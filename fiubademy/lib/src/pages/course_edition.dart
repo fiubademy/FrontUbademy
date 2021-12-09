@@ -279,10 +279,8 @@ class MultimediaPicker extends StatefulWidget {
 }
 
 class _MultimediaPickerState extends State<MultimediaPicker> {
-  final List<List<dynamic>> _imageFileList = [];
+  final List<List<dynamic>> _fileList = [];
 
-  VideoPlayerController? _controller;
-  VideoPlayerController? _toBeDisposed;
   String? _retrieveDataError;
 
   final ImagePicker _picker = ImagePicker();
@@ -293,7 +291,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
           source: source, maxDuration: const Duration(seconds: 10));
       if (videoFile != null) {
         setState(() {
-          _imageFileList.add(List.unmodifiable([videoFile, 1]));
+          _fileList.add(List.unmodifiable([videoFile, 1]));
         });
       }
     } catch (error) {
@@ -308,7 +306,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       if (pickedFileList != null) {
         setState(() {
           // Add all images as unmodifiable lists [file, 0].
-          _imageFileList.addAll(List.generate(pickedFileList.length,
+          _fileList.addAll(List.generate(pickedFileList.length,
               (index) => List.unmodifiable([pickedFileList[index], 0])));
         });
       }
@@ -325,7 +323,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       );
       if (pickedFile != null) {
         setState(() {
-          _imageFileList.add(List.unmodifiable([pickedFile, 0]));
+          _fileList.add(List.unmodifiable([pickedFile, 0]));
         });
       }
     } catch (error) {
@@ -334,70 +332,47 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     }
   }
 
-  Future<void> _disposeVideoController() async {
-    if (_toBeDisposed != null) {
-      await _toBeDisposed!.dispose();
-    }
-    _toBeDisposed = _controller;
-    _controller = null;
-  }
-
-  Widget _previewVideo() {
-    if (_controller == null) {
-      return const Text(
-        'You have not yet picked a video',
-        textAlign: TextAlign.center,
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: AspectRatioVideo(_controller),
-    );
-  }
-
-  Widget _previewImages(int index) {
-    // Why network for web?
-    // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
-    return kIsWeb
-        ? Image.network(_imageFileList[index][0].path)
-        : Container(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Center(
-                child: Image.file(
-                  File(_imageFileList[index][0].path),
-                ),
-              ),
-            ),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Theme.of(context).colorScheme.secondaryVariant,
-                width: 4,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              color: Colors.grey.withOpacity(0.6),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 4,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-          );
-  }
-
-  Widget _handlePreview(int index) {
+  Widget _buildFileWidget(int index) {
     final Text? retrieveError = _getRetrieveErrorWidget();
     if (retrieveError != null) {
       return retrieveError;
     }
 
-    if (_imageFileList[index][1] == 1) {
-      return Text('Video');
+    if (_fileList[index][1] == 1) {
+      // Video
+      return AspectRatioVideo(videoFile: _fileList[index][0]);
     } else {
-      return _previewImages(index);
+      // Image
+      // Why network for web?
+      // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
+      return kIsWeb
+          ? Image.network(_fileList[index][0].path)
+          : Container(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Center(
+                  child: Image.file(
+                    File(_fileList[index][0].path),
+                  ),
+                ),
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.secondaryVariant,
+                  width: 4,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.grey.withOpacity(0.6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+            );
     }
   }
 
@@ -414,16 +389,16 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
 
     if (response.type == RetrieveType.video) {
       setState(() {
-        _imageFileList.add(List.unmodifiable([response.file!, 1]));
+        _fileList.add(List.unmodifiable([response.file!, 1]));
       });
     } else {
       setState(() {
         // Add All elements as unmodifiable lists [file, 0]
         if (response.files != null) {
-          _imageFileList.addAll(List.generate(response.files!.length,
+          _fileList.addAll(List.generate(response.files!.length,
               (index) => List.unmodifiable([response.files!, 0])));
         } else {
-          _imageFileList.add(List.unmodifiable([response.file!, 0]));
+          _fileList.add(List.unmodifiable([response.file!, 0]));
         }
       });
     }
@@ -457,9 +432,9 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                           crossAxisCount: 2,
                         ),
                         padding: const EdgeInsets.all(16),
-                        itemCount: _imageFileList.length + 1,
+                        itemCount: _fileList.length + 1,
                         itemBuilder: (context, index) {
-                          if (index == _imageFileList.length) {
+                          if (index == _fileList.length) {
                             return InkWell(
                               onTap: () {
                                 _displayImageTypeDialog();
@@ -499,7 +474,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                               ),
                             );
                           }
-                          return _handlePreview(index);
+                          return _buildFileWidget(index);
                         },
                       );
                     default:
@@ -517,7 +492,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                   }
                 },
               )
-            : _handlePreview(0),
+            : _buildFileWidget(0),
       ),
     );
   }
@@ -656,69 +631,90 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         break;
     }
   }
-
-  @override
-  void deactivate() {
-    if (_controller != null) {
-      _controller!.setVolume(0.0);
-      _controller!.pause();
-    }
-    super.deactivate();
-  }
-
-  @override
-  void dispose() {
-    _disposeVideoController();
-    super.dispose();
-  }
 }
 
 class AspectRatioVideo extends StatefulWidget {
-  AspectRatioVideo(this.controller);
+  final XFile _videoFile;
 
-  final VideoPlayerController? controller;
+  AspectRatioVideo({Key? key, required XFile videoFile})
+      : _videoFile = videoFile,
+        super(key: key);
 
   @override
-  AspectRatioVideoState createState() => AspectRatioVideoState();
+  _AspectRatioVideoState createState() => _AspectRatioVideoState();
 }
 
-class AspectRatioVideoState extends State<AspectRatioVideo> {
-  VideoPlayerController? get controller => widget.controller;
-  bool initialized = false;
-
-  void _onVideoControllerUpdate() {
-    if (!mounted) {
-      return;
-    }
-    if (initialized != controller!.value.isInitialized) {
-      initialized = controller!.value.isInitialized;
-      setState(() {});
-    }
-  }
+class _AspectRatioVideoState extends State<AspectRatioVideo> {
+  late VideoPlayerController _controller;
 
   @override
   void initState() {
     super.initState();
-    controller!.addListener(_onVideoControllerUpdate);
-  }
-
-  @override
-  void dispose() {
-    controller!.removeListener(_onVideoControllerUpdate);
-    super.dispose();
+    _controller = VideoPlayerController.file(File(widget._videoFile.path))
+      ..initialize().then((value) => setState(() {}));
   }
 
   @override
   Widget build(BuildContext context) {
-    if (initialized) {
-      return Center(
-        child: AspectRatio(
-          aspectRatio: controller!.value.aspectRatio,
-          child: VideoPlayer(controller!),
+    return Container(
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: double.maxFinite,
+              height: 24,
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
+                color: Colors.black54,
+              ),
+              child: Text(
+                widget._videoFile.name,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+          Align(alignment: Alignment.topRight, child: Icon(Icons.delete))
+        ],
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.secondaryVariant,
+          width: 4,
         ),
-      );
-    } else {
-      return Container();
-    }
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.grey.withOpacity(0.6),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 4,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }
