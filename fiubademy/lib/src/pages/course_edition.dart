@@ -326,6 +326,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
 
     final XFile? file = await _picker.pickVideo(
         source: source, maxDuration: const Duration(seconds: 10));
+
     await _playVideo(file);
     return;
   }
@@ -341,7 +342,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         );
         if (pickedFileList != null) {
           setState(() {
-            _imageFileList = pickedFileList;
+            _imageFileList.addAll(pickedFileList);
           });
         }
       } catch (e) {
@@ -364,7 +365,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         );
         if (pickedFile != null) {
           setState(() {
-            _imageFileList = [pickedFile];
+            _imageFileList.add(pickedFile);
           });
         }
       } catch (e) {
@@ -414,7 +415,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     );
   }
 
-  Widget _previewImages() {
+  Widget _previewImages(int index) {
     if (_imageFileList.isNotEmpty) {
       /*
       return ListView.builder(
@@ -423,11 +424,11 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       // Why network for web?
       // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
       return kIsWeb
-          ? Image.network(_imageFileList[0].path)
+          ? Image.network(_imageFileList[index].path)
           : Container(
               child: Center(
                 child: Image.file(
-                  File(_imageFileList[0].path),
+                  File(_imageFileList[index].path),
                 ),
               ),
               decoration: BoxDecoration(
@@ -452,7 +453,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     }
   }
 
-  Widget _handlePreview() {
+  Widget _handlePreview(int index) {
     final Text? retrieveError = _getRetrieveErrorWidget();
     if (retrieveError != null) {
       return retrieveError;
@@ -461,7 +462,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     if (isVideo) {
       return _previewVideo();
     } else {
-      return _previewImages();
+      return _previewImages(index);
     }
   }
 
@@ -541,7 +542,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                               ),
                             );
                           }
-                          return _handlePreview();
+                          return _handlePreview(index);
                         },
                       );
                     default:
@@ -559,7 +560,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                   }
                 },
               )
-            : _handlePreview(),
+            : _handlePreview(0),
       ),
     );
   }
