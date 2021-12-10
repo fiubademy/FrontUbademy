@@ -482,6 +482,37 @@ class Server {
     }
   }
 
+  static Future<Map<String, dynamic>> getMyFavouriteCourses(
+      Auth auth, int page) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/my_fav_courses/$page", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        body['error'] = null;
+        return body;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error': 'Failed to get courses. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
   /* Returns a list of studentsIDs in the course, null on error. */
 
   static Future<Map<String, dynamic>> getCourseStudents(
@@ -676,6 +707,32 @@ class Server {
     };
     final response = await http.get(
       Uri.https(url, "/courses/my_courses/collaborator/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        List<Map<String, dynamic>> courses =
+            List<Map<String, dynamic>>.from(body["content"]);
+        return courses.isNotEmpty;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  static Future<bool> isFavourite(Auth auth, String courseID) async {
+    final Map<String, String> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(url, "/courses/my_fav_courses/1", queryParams),
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },

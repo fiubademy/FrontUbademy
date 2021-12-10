@@ -15,6 +15,7 @@ class Course {
   // Flags
   final bool _blocked;
   final bool _open;
+  final bool isFavourite;
   CourseRole role;
 
   // Owner data
@@ -41,7 +42,8 @@ class Course {
         _open = !(courseData['in_edition']),
         _ratingCount = courseData['ratingCount'],
         _ratingAvg = courseData['ratingAvg'] ?? 0,
-        role = courseData['role'];
+        role = courseData['role'],
+        isFavourite = courseData['isFavourite'];
 /*
   static Course create2(String courseID, Map<String, dynamic> courseData) {
     /*

@@ -40,6 +40,12 @@ class MyCoursesPage extends StatelessWidget {
               }
               courseData['ownerName'] = idsToNameMapping[ownerID];
               courseData['role'] = CourseRole.owner;
+
+              if (await Server.isFavourite(auth, courseData['id'])) {
+                courseData['isFavourite'] = true;
+              } else {
+                courseData['isFavourite'] = false;
+              }
             }
 
             List<Course> courses = List.generate(coursesData.length,

@@ -56,8 +56,7 @@ class NextPage extends StatelessWidget {
                   }
                 },
               ),*/
-              builder: (context) =>
-                  CourseViewPage(course: myCourse, isFavorite: true),
+              builder: (context) => CourseViewPage(course: myCourse),
             ),
           );
         },
@@ -75,7 +74,9 @@ class FavouriteIcon extends StatefulWidget {
       required this.isFavourite,
       this.onToggle,
       required this.courseID})
-      : super(key: key);
+      : super(key: key) {
+    print(isFavourite);
+  }
 
   @override
   _FavouriteIconState createState() => _FavouriteIconState();
@@ -101,8 +102,8 @@ class _FavouriteIconState extends State<FavouriteIcon> {
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
     Map<String, dynamic> result = isFavourite
-        ? await Server.removeFavourite(auth, widget.courseID)
-        : await Server.addFavourite(auth, widget.courseID);
+        ? await Server.addFavourite(auth, widget.courseID)
+        : await Server.removeFavourite(auth, widget.courseID);
     if (result['error'] != null) {
       final snackBar = SnackBar(content: Text('${result['error']}'));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -110,6 +111,7 @@ class _FavouriteIconState extends State<FavouriteIcon> {
         isFavourite = !isFavourite;
       });
     }
+    print(isFavourite);
     setState(() {
       isLoading = false;
     });
@@ -127,15 +129,11 @@ class _FavouriteIconState extends State<FavouriteIcon> {
 
 class CourseViewPage extends StatelessWidget {
   final Course _course;
-  bool _isFavorite;
-  bool isLoadingFavourite = false;
 
   CourseViewPage({
     Key? key,
     required Course course,
-    required bool isFavorite,
   })  : _course = course,
-        _isFavorite = isFavorite,
         super(key: key);
 
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
@@ -165,7 +163,9 @@ class CourseViewPage extends StatelessWidget {
               }
               return Scaffold(
                 appBar: AppBar(title: const Text('Ubademy'), actions: [
-                  FavouriteIcon(isFavourite: false, courseID: _course.courseID)
+                  FavouriteIcon(
+                      isFavourite: _course.isFavourite,
+                      courseID: _course.courseID)
                 ]),
                 body: _buildCourse(context),
               );

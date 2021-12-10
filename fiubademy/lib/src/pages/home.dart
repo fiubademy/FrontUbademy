@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/pages/my_favourites.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -155,9 +156,15 @@ Widget _buildDrawer(BuildContext context) {
               ),
               ListTile(
                 leading: const Icon(Icons.favorite),
-                title: const Text('Favourites'),
+                title: const Text('My Favourites'),
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return const MyFavouritesPage();
+                    }),
+                  );
                 },
               ),
               const Divider(),
@@ -284,6 +291,14 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
         courseData['role'] = CourseRole.collaborator;
       } else {
         courseData['role'] = CourseRole.notStudent;
+      }
+
+      if (await Server.isFavourite(auth, courseData['id'])) {
+        courseData['isFavourite'] = true;
+        print(courseData['isFavourite']);
+      } else {
+        courseData['isFavourite'] = false;
+        print(courseData['isFavourite']);
       }
     }
 

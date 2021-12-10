@@ -34,8 +34,7 @@ class CourseCard extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) =>
-                      CourseViewPage(course: _course, isFavorite: false)));
+                  builder: (context) => CourseViewPage(course: _course)));
         },
         child: Column(
           children: [

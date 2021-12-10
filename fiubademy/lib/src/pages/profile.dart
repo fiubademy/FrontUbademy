@@ -1,6 +1,7 @@
 import 'package:fiubademy/src/pages/edit_profile.dart';
 import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
+import 'package:fiubademy/src/pages/my_favourites.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/services/user.dart';
@@ -197,7 +198,12 @@ class _ProfileCoursesCard extends StatelessWidget {
             ),
           ),
           ListTile(
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const MyFavouritesPage()));
+            },
             title: const Text(
               'My Favourites',
             ),
