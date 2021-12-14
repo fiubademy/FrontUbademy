@@ -18,9 +18,35 @@ class Firebase {
   static Future<DownloadTask> downloadFile(String fileName) async {
     final ref = FirebaseStorage.instance.ref(fileName);
     final Directory systemTempDir = Directory.systemTemp;
-    final File tempFile = File('${systemTempDir.path}/temp-${ref.name}');
+    final File tempFile = File('${systemTempDir.path}/${ref.name}');
     if (tempFile.existsSync()) await tempFile.delete();
 
     return Future.value(ref.writeToFile(tempFile));
+  }
+
+  static Future<void> deleteFile(XFile file, String courseID) async {
+    await FirebaseStorage.instance
+        .ref()
+        .child(courseID)
+        .child(file.name)
+        .delete();
+  }
+
+  static Future<XFile> downloadFileFromReference(Reference fileRef) async {
+    final Directory systemTempDir = Directory.systemTemp;
+    final File tempFile = File('${systemTempDir.path}/${fileRef.name}');
+    if (tempFile.existsSync()) await tempFile.delete();
+    await fileRef.writeToFile(tempFile);
+    return XFile(tempFile.path);
+  }
+
+  static Future<List<XFile>> getFiles(String courseID) async {
+    ListResult listResult =
+        await FirebaseStorage.instance.ref().child(courseID).listAll();
+    List<XFile> files = [];
+    for (var fileRef in listResult.items) {
+      files.add(await downloadFileFromReference(fileRef));
+    }
+    return files;
   }
 }
