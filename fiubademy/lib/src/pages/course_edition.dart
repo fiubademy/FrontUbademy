@@ -340,39 +340,23 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
 
     if (_fileList[index][1] == 1) {
       // Video
-      return AspectRatioVideo(videoFile: _fileList[index][0]);
+      return AspectRatioVideo(
+        videoFile: _fileList[index][0],
+        onDelete: () {
+          setState(() {
+            _fileList.removeWhere((item) => item[0] == _fileList[index][0]);
+          });
+        },
+      );
     } else {
-      // Image
-      // Why network for web?
-      // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
-      return kIsWeb
-          ? Image.network(_fileList[index][0].path)
-          : Container(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Center(
-                  child: Image.file(
-                    File(_fileList[index][0].path),
-                  ),
-                ),
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.secondaryVariant,
-                  width: 4,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.grey.withOpacity(0.6),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 4,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-            );
+      return AspectRatioImage(
+        imageFile: _fileList[index][0],
+        onDelete: () {
+          setState(() {
+            _fileList.removeWhere((item) => item[0] == _fileList[index][0]);
+          });
+        },
+      );
     }
   }
 
@@ -404,6 +388,56 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
     }
   }
 
+  Widget _buildFileGrid() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        mainAxisSpacing: 16.0,
+        crossAxisSpacing: 16.0,
+        crossAxisCount: 2,
+      ),
+      padding: const EdgeInsets.all(16),
+      itemCount: _fileList.length + 1,
+      itemBuilder: (context, index) {
+        if (index == _fileList.length) {
+          return InkWell(
+            onTap: () {
+              _displayImageTypeDialog();
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              child: Center(
+                child: LayoutBuilder(
+                  builder: (context, constraint) {
+                    return Icon(Icons.add_circle_rounded,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: constraint.biggest.height * 0.4);
+                  },
+                ),
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.secondaryVariant,
+                  width: 4,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.black.withAlpha(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 4,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        return _buildFileWidget(index);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -411,88 +445,27 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         title: const Text('Subscaffold'),
       ),
       body: Center(
-        child: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-            ? FutureBuilder<void>(
+        child: kIsWeb || defaultTargetPlatform != TargetPlatform.android
+            ? _buildFileGrid()
+            : FutureBuilder<void>(
                 future: retrieveLostData(),
                 builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                   switch (snapshot.connectionState) {
                     case ConnectionState.none:
                     case ConnectionState.waiting:
-                      return const Text(
-                        'You have not yet picked an image.',
-                        textAlign: TextAlign.center,
-                      );
-                    case ConnectionState.done:
-                      return //_handlePreview();
-                          GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          mainAxisSpacing: 16.0,
-                          crossAxisSpacing: 16.0,
-                          crossAxisCount: 2,
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _fileList.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == _fileList.length) {
-                            return InkWell(
-                              onTap: () {
-                                _displayImageTypeDialog();
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                child: Center(
-                                  child: LayoutBuilder(
-                                    builder: (context, constraint) {
-                                      return Icon(Icons.add_circle_rounded,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          size:
-                                              constraint.biggest.height * 0.4);
-                                    },
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondaryVariant,
-                                    width: 4,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.black.withAlpha(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          return _buildFileWidget(index);
-                        },
-                      );
+                      return const Center(child: CircularProgressIndicator());
                     default:
                       if (snapshot.hasError) {
                         return Text(
                           'Pick image/video error: ${snapshot.error}}',
                           textAlign: TextAlign.center,
                         );
-                      } else {
-                        return const Text(
-                          'You have not yet picked an image.',
-                          textAlign: TextAlign.center,
-                        );
                       }
+
+                      return _buildFileGrid();
                   }
                 },
-              )
-            : _buildFileWidget(0),
+              ),
       ),
     );
   }
@@ -633,10 +606,85 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 }
 
+class AspectRatioImage extends StatelessWidget {
+  final XFile imageFile;
+  final void Function()? onDelete;
+
+  const AspectRatioImage({Key? key, required this.imageFile, this.onDelete})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Center(
+              // Image
+              // Why network for web?
+              // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
+              child: kIsWeb
+                  ? Image.network(imageFile.path)
+                  : Image.file(File(imageFile.path)),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: double.maxFinite,
+              height: 24,
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
+                color: Colors.black54,
+              ),
+              child: Text(
+                imageFile.name,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              onPressed: () => onDelete?.call(),
+              icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+            ),
+          ),
+        ],
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.secondaryVariant,
+          width: 4,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.grey.withOpacity(0.6),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 4,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class AspectRatioVideo extends StatefulWidget {
   final XFile _videoFile;
+  void Function()? onDelete;
 
-  AspectRatioVideo({Key? key, required XFile videoFile})
+  AspectRatioVideo({Key? key, required XFile videoFile, this.onDelete})
       : _videoFile = videoFile,
         super(key: key);
 
@@ -690,7 +738,13 @@ class _AspectRatioVideoState extends State<AspectRatioVideo> {
               ),
             ),
           ),
-          Align(alignment: Alignment.topRight, child: Icon(Icons.delete))
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              onPressed: () => widget.onDelete?.call(),
+              icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+            ),
+          ),
         ],
       ),
       decoration: BoxDecoration(

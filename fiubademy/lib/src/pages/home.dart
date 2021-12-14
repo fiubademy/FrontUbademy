@@ -295,10 +295,8 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
 
       if (await Server.isFavourite(auth, courseData['id'])) {
         courseData['isFavourite'] = true;
-        print(courseData['isFavourite']);
       } else {
         courseData['isFavourite'] = false;
-        print(courseData['isFavourite']);
       }
     }
 
@@ -315,6 +313,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
           setState(() {
             _titleFilter = value;
           });
+          if (!mounted) return;
           _pagingController.refresh();
         },
       ),
@@ -335,6 +334,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
                       setState(() {
                         _categoryFilter = newValue ?? 'All Categories';
                       });
+                      if (!mounted) return;
                       _pagingController.refresh();
                     },
                     items: _categories.map(
@@ -358,6 +358,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
                       setState(() {
                         _subscriptionFilter = newValue ?? 'All Subscriptions';
                       });
+                      if (!mounted) return;
                       _pagingController.refresh();
                     },
                     items: _subscriptions.map(

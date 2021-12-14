@@ -238,9 +238,6 @@ class Server {
       },
     );
 
-    print(response.statusCode);
-    print(response.body);
-
     switch (response.statusCode) {
       case HttpStatus.created:
         return null;
