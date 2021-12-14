@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:fiubademy/src/services/firebase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -30,8 +32,23 @@ class CourseEditionPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
               child: Column(
                 children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('General Information',
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  const SizedBox(height: 16.0),
                   CourseEditionForm(course: _course),
-                  MultimediaPicker(),
+                  const SizedBox(height: 8.0),
+                  const Divider(),
+                  const SizedBox(height: 8.0),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Multimedia Content',
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  const SizedBox(height: 16.0),
+                  MultimediaPicker(course: _course),
                 ],
               ),
             ),
@@ -69,7 +86,7 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
     super.initState();
   }
 
-  void _create() async {
+  void _edit() async {
     setState(() {
       _isLoading = true;
     });
@@ -77,7 +94,6 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       Auth auth = Provider.of<Auth>(context, listen: false);
-      User user = Provider.of<User>(context, listen: false);
       int minSubLevel;
       switch (_courseMinSubscriptionLevel) {
         case 'Standard':
@@ -89,15 +105,14 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
         default:
           minSubLevel = 0;
       }
-      String? result = await Server.createCourse(
+      String? result = await Server.updateCourse(
         auth,
-        _courseTitle!,
-        _courseDescription!,
-        _courseCategory!,
-        _tags,
-        minSubLevel,
-        user.latitude!,
-        user.longitude!,
+        courseID: widget._course.courseID,
+        name: _courseTitle!,
+        description: _courseDescription!,
+        category: _courseCategory!,
+        hashtags: _tags,
+        minSubscription: minSubLevel,
       );
       if (result == null) {
         Navigator.pop(context);
@@ -207,7 +222,7 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
             child: _isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: () => _create(),
+                    onPressed: () => _edit(),
                     child: const Text('SAVE'),
                   ),
           ),
@@ -272,18 +287,33 @@ class MaterialDropdownButton extends FormField<String> {
 }
 
 class MultimediaPicker extends StatefulWidget {
-  const MultimediaPicker({Key? key}) : super(key: key);
+  final Course _course;
+
+  const MultimediaPicker({Key? key, required Course course})
+      : _course = course,
+        super(key: key);
 
   @override
   _MultimediaPickerState createState() => _MultimediaPickerState();
 }
 
 class _MultimediaPickerState extends State<MultimediaPicker> {
+  // List<dynamic> has (file, type), 0 for image, 1 for video
   final List<List<dynamic>> _fileList = [];
 
   String? _retrieveDataError;
 
   final ImagePicker _picker = ImagePicker();
+
+  void _uploadFiles() async {
+    try {
+      for (var fileTuple in _fileList) {
+        await Firebase.uploadFile(fileTuple[0], widget._course.courseID);
+      }
+    } on FirebaseException catch (e) {
+      print(e);
+    }
+  }
 
   void _onVideoButtonPressed(ImageSource source) async {
     try {
@@ -389,63 +419,68 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
   }
 
   Widget _buildFileGrid() {
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        mainAxisSpacing: 16.0,
-        crossAxisSpacing: 16.0,
-        crossAxisCount: 2,
-      ),
-      padding: const EdgeInsets.all(16),
-      itemCount: _fileList.length + 1,
-      itemBuilder: (context, index) {
-        if (index == _fileList.length) {
-          return InkWell(
-            onTap: () {
-              _displayImageTypeDialog();
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              child: Center(
-                child: LayoutBuilder(
-                  builder: (context, constraint) {
-                    return Icon(Icons.add_circle_rounded,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: constraint.biggest.height * 0.4);
-                  },
-                ),
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.secondaryVariant,
-                  width: 4,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.black.withAlpha(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 4,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        return _buildFileWidget(index);
+    return NotificationListener<OverscrollIndicatorNotification>(
+      onNotification: (OverscrollIndicatorNotification overscroll) {
+        overscroll.disallowGlow();
+        return false;
       },
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const ScrollPhysics(),
+        padding: const EdgeInsets.all(8.0),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          mainAxisSpacing: 16.0,
+          crossAxisSpacing: 16.0,
+          crossAxisCount: 2,
+        ),
+        itemCount: _fileList.length + 1,
+        itemBuilder: (context, index) {
+          if (index == _fileList.length) {
+            return InkWell(
+              onTap: () {
+                _displayImageTypeDialog();
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                child: Center(
+                  child: LayoutBuilder(
+                    builder: (context, constraint) {
+                      return Icon(Icons.add_circle_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: constraint.biggest.height * 0.4);
+                    },
+                  ),
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.secondaryVariant,
+                    width: 4,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.black.withAlpha(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 4,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          return _buildFileWidget(index);
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Subscaffold'),
-      ),
-      body: Center(
-        child: kIsWeb || defaultTargetPlatform != TargetPlatform.android
+    return Column(
+      children: [
+        kIsWeb || defaultTargetPlatform != TargetPlatform.android
             ? _buildFileGrid()
             : FutureBuilder<void>(
                 future: retrieveLostData(),
@@ -466,7 +501,16 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
                   }
                 },
               ),
-      ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton(
+            onPressed: () {
+              _uploadFiles();
+            },
+            child: const Text('SAVE'),
+          ),
+        ),
+      ],
     );
   }
 

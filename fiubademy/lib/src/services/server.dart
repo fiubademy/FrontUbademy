@@ -620,6 +620,44 @@ class Server {
     }
   }
 
+  static Future<String?> updateCourse(Auth auth,
+      {required String courseID,
+      required String name,
+      required String description,
+      required String category,
+      required List<String> hashtags,
+      required int minSubscription}) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    Map<String, dynamic> requestBody = {
+      "name": name,
+      "description": description,
+      "hashtags": hashtags,
+      "sub_level": minSubscription,
+      "category": category,
+    };
+
+    final response = await http.patch(
+      Uri.https(url, "/courses/id/$courseID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(requestBody),
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to edit course. Please try again.';
+    }
+  }
+
 /*Edits User's Username in the API. Returns null on success or error string in failure.*/
 
   static Future<String> updateProfile(Auth auth, String newUsername) async {

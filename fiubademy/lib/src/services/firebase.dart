@@ -4,18 +4,14 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class Firebase {
-  static Future<UploadTask?> uploadFile(XFile file) async {
-    Reference ref = FirebaseStorage.instance
-        .ref()
-        .child('playground')
-        .child('/some-image.jpg');
-
-    final metadata = SettableMetadata(contentType: 'image/jpeg');
+  static Future<UploadTask?> uploadFile(XFile file, String courseID) async {
+    Reference ref =
+        FirebaseStorage.instance.ref().child(courseID).child(file.name);
 
     if (kIsWeb) {
-      return Future.value(ref.putData(await file.readAsBytes(), metadata));
+      return Future.value(ref.putData(await file.readAsBytes()));
     } else {
-      return Future.value(ref.putFile(File(file.path), metadata));
+      return Future.value(ref.putFile(File(file.path)));
     }
   }
 
