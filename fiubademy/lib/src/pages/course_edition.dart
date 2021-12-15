@@ -126,11 +126,6 @@ class _CourseEditionPageState extends State<CourseEditionPage> {
                   const Divider(),
                   const SizedBox(height: 8.0),
                   ..._buildCourseState(),
-                  ElevatedButton(
-                      onPressed: () {
-                        setState(() {});
-                      },
-                      child: Text('Set State')),
                 ],
               ),
             ),

@@ -57,7 +57,22 @@ class Firebase {
     return files;
   }
 
-  static Future<ListResult> getFileNames(String courseID) async {
-    return await FirebaseStorage.instance.ref().child(courseID).listAll();
+  static Future<List<Reference>> getFileNames(String courseID) async {
+    ListResult listResult =
+        await FirebaseStorage.instance.ref().child(courseID).listAll();
+    List<DateTime> dateTimes = [
+      for (var fileRef in listResult.items)
+        (await fileRef.getMetadata()).timeCreated!
+    ];
+    List<List<dynamic>> filesWithMetadata =
+        List<List<dynamic>>.generate(listResult.items.length, (index) {
+      return List<dynamic>.unmodifiable(
+          [listResult.items[index], dateTimes[index]]);
+    });
+
+    filesWithMetadata.sort((a, b) => a[1].compareTo(b[1]));
+    List<Reference> files = List<Reference>.generate(
+        filesWithMetadata.length, (index) => filesWithMetadata[index][0]);
+    return files;
   }
 }
