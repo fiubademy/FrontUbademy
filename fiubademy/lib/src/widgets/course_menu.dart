@@ -1,4 +1,5 @@
 import 'package:fiubademy/src/pages/course_collaborators.dart';
+import 'package:fiubademy/src/pages/course_content.dart';
 import 'package:fiubademy/src/pages/course_edition.dart';
 import 'package:fiubademy/src/pages/course_students.dart';
 import 'package:fiubademy/src/pages/courseview.dart';
@@ -24,6 +25,8 @@ class CourseCreatorMenu extends StatelessWidget {
       onSelected: (int value) {
         switch (value) {
           case 0:
+            Navigator.push(context,
+                MaterialPageRoute(builder: (content) => CourseContentPage()));
             break;
           case 1:
             Navigator.push(
@@ -104,15 +107,30 @@ class CourseStudentMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
+    return PopupMenuButton<int>(
+      onSelected: (value) {
+        switch (value) {
+          case 0:
+            Navigator.push(context,
+                MaterialPageRoute(builder: (content) => CourseContentPage()));
+            break;
+          case 1:
+            break;
+          case 2:
+            break;
+        }
+      },
       itemBuilder: (context) => [
         const PopupMenuItem(
+          value: 0,
           child: Text('View'),
         ),
         const PopupMenuItem(
+          value: 1,
           child: Text('Exams'),
         ),
         const PopupMenuItem(
+          value: 2,
           child: Text('Forum'),
         ),
       ],
@@ -130,6 +148,18 @@ class CourseCollaboratorMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton(
+      onSelected: (value) {
+        switch (value) {
+          case 0:
+            Navigator.push(context,
+                MaterialPageRoute(builder: (content) => CourseContentPage()));
+            break;
+          case 1:
+            break;
+          case 2:
+            break;
+        }
+      },
       itemBuilder: (context) => [
         const PopupMenuItem(
           child: Text('View'),
@@ -166,7 +196,7 @@ class CourseNotStudentMenu extends StatelessWidget {
       itemBuilder: (context) => [
         const PopupMenuItem(
           value: 0,
-          child: const Text('View'),
+          child: Text('View'),
         ),
       ],
     );
