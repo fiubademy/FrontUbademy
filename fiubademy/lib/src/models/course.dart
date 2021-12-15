@@ -14,7 +14,7 @@ class Course {
 
   // Flags
   final bool _blocked;
-  final bool _open;
+  bool _open;
   final bool isFavourite;
   CourseRole role;
 
@@ -112,6 +112,8 @@ class Course {
     if (_open) return 'Open';
     return 'To be published';
   }
+
+  set open(bool openness) => _open = openness;
 
   List<String> get tags => _tags;
 

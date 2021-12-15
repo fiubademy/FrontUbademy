@@ -7,12 +7,92 @@ import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/widgets/course_media_picker.dart';
 
-class CourseEditionPage extends StatelessWidget {
+class CourseEditionPage extends StatefulWidget {
   final Course _course;
 
   const CourseEditionPage({Key? key, required Course course})
       : _course = course,
         super(key: key);
+
+  @override
+  _CourseEditionPageState createState() => _CourseEditionPageState();
+}
+
+class _CourseEditionPageState extends State<CourseEditionPage> {
+  bool isLoading = false;
+
+  void _publish() async {
+    setState(() {
+      isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result =
+        await Server.publishCourse(auth, widget._course.courseID);
+    if (result['error'] != null) {
+      final snackBar = SnackBar(content: Text('${result['error']}'));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        widget._course.open = true;
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  List<Widget> _buildCourseState() {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'State',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          Text(
+            widget._course.stateName == 'Open' ? 'Published' : 'In Edition',
+            style: Theme.of(context).textTheme.subtitle1,
+          )
+        ],
+      ),
+      const SizedBox(height: 16.0),
+      if (widget._course.stateName != 'Open')
+        SizedBox(
+          width: double.maxFinite,
+          child: ElevatedButton(
+            onPressed: () {
+              showDialog<String>(
+                context: context,
+                builder: (context) => AlertDialog(
+                    title: const Text('Publish Course'),
+                    content: Text(
+                        'Once published, you won\'t be able to edit the course anymore.\n\nAre you sure you want to publish ${widget._course.title}?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('CANCEL'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          _publish();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('PUBLISH'),
+                      ),
+                    ]),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondaryVariant),
+            child: const Text('PUBLISH'),
+          ),
+        ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +111,7 @@ class CourseEditionPage extends StatelessWidget {
                         style: Theme.of(context).textTheme.headline6),
                   ),
                   const SizedBox(height: 16.0),
-                  CourseEditionForm(course: _course),
+                  CourseEditionForm(course: widget._course),
                   const SizedBox(height: 8.0),
                   const Divider(),
                   const SizedBox(height: 8.0),
@@ -41,7 +121,11 @@ class CourseEditionPage extends StatelessWidget {
                         style: Theme.of(context).textTheme.headline6),
                   ),
                   const SizedBox(height: 16.0),
-                  CourseMultimediaPicker(course: _course),
+                  CourseMultimediaPicker(course: widget._course),
+                  const SizedBox(height: 8.0),
+                  const Divider(),
+                  const SizedBox(height: 8.0),
+                  ..._buildCourseState(),
                 ],
               ),
             ),
@@ -144,30 +228,36 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
       child: Column(
         children: [
           TextFormField(
+            enabled: widget._course.stateName != 'Open',
+            readOnly: widget._course.stateName != 'Open',
             initialValue: widget._course.title,
             validator: (value) => _validateTitle(value),
             onSaved: (value) => _courseTitle = value,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+                enabled: widget._course.stateName != 'Open',
                 hintText: 'My Brand New Course',
                 labelText: 'Title*',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 helperText: '*Required'),
           ),
           const SizedBox(height: 16.0),
           TextFormField(
+            enabled: widget._course.stateName != 'Open',
             initialValue: widget._course.description,
             validator: (value) => _validateDescription(value),
             onSaved: (value) => _courseDescription = value,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+              enabled: widget._course.stateName != 'Open',
               hintText: 'A detailed description about your course',
               labelText: 'Description*',
               hintMaxLines: 2,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             maxLines: null,
           ),
           const SizedBox(height: 16.0),
           MaterialDropdownButton(
+            enabled: widget._course.stateName != 'Open',
             options: Course.categories(),
             initialValue: widget._course.category,
             hint: 'Category',
@@ -180,12 +270,14 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
           ),
           const SizedBox(height: 16.0),
           MaterialDropdownButton(
+            enabled: widget._course.stateName != 'Open',
             options: const <String>['Free', 'Standard', 'Premium'],
             initialValue: widget._course.minSubscriptionName,
             onSaved: (value) => _courseMinSubscriptionLevel = value,
           ),
           const SizedBox(height: 16.0),
           TagEditor(
+            enabled: widget._course.stateName != 'Open',
             length: _tags.length,
             delimiters: const [',', ' '],
             hasAddButton: true,
@@ -206,11 +298,13 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7),
               ),
-              onDeleted: () {
-                setState(() {
-                  _tags.removeWhere((element) => element == _tags[index]);
-                });
-              },
+              onDeleted: widget._course.stateName == 'Open'
+                  ? null
+                  : () {
+                      setState(() {
+                        _tags.removeWhere((element) => element == _tags[index]);
+                      });
+                    },
             ),
           ),
           Align(
@@ -218,7 +312,9 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
             child: _isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: () => _edit(),
+                    onPressed: widget._course.stateName == 'Open'
+                        ? null
+                        : () => _edit(),
                     child: const Text('SAVE'),
                   ),
           ),
@@ -233,12 +329,14 @@ class MaterialDropdownButton extends FormField<String> {
   final List<String> options;
   final String? hint;
   final String? defaultOption;
+  final enabled;
 
   MaterialDropdownButton({
     Key? key,
     required this.options,
     this.hint,
     this.defaultOption,
+    this.enabled = true,
     String? initialValue,
     FormFieldSetter<String>? onSaved,
     FormFieldValidator<String>? validator,
@@ -252,6 +350,7 @@ class MaterialDropdownButton extends FormField<String> {
           builder: (FormFieldState<String> state) {
             return InputDecorator(
               decoration: InputDecoration(
+                enabled: enabled,
                 errorText: state.errorText,
                 hintText: hint,
                 isDense: true,
@@ -262,11 +361,13 @@ class MaterialDropdownButton extends FormField<String> {
                 child: DropdownButton<String>(
                   value: state.value,
                   isDense: true,
-                  onChanged: (String? newValue) {
-                    if (newValue != state.value) {
-                      state.didChange(newValue);
-                    }
-                  },
+                  onChanged: enabled
+                      ? (String? newValue) {
+                          if (newValue != state.value) {
+                            state.didChange(newValue);
+                          }
+                        }
+                      : null,
                   items: options.map(
                     (String value) {
                       return DropdownMenuItem<String>(

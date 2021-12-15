@@ -862,4 +862,41 @@ class Server {
         return map;
     }
   }
+
+  static Future<Map<String, dynamic>> publishCourse(
+      Auth auth, String courseID) async {
+    final Map<String, dynamic> queryParams = {
+      'in_edition': 'false',
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.put(
+      Uri.https(url, "/courses/id/$courseID/status", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': true,
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': false
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to publish course. Please try again in a few minutes',
+          'content': false
+        };
+        return map;
+    }
+  }
 }

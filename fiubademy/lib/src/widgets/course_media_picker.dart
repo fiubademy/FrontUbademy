@@ -189,22 +189,26 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       // Video
       return AspectRatioVideo(
         videoFile: _fileList[index][0],
-        onDelete: (XFile file) {
-          setState(() {
-            _fileList.removeWhere((item) => item[0] == file);
-            widget.onDelete?.call(file);
-          });
-        },
+        onDelete: widget.course.stateName == 'Open'
+            ? null
+            : (XFile file) {
+                setState(() {
+                  _fileList.removeWhere((item) => item[0] == file);
+                  widget.onDelete?.call(file);
+                });
+              },
       );
     } else {
       return AspectRatioImage(
         imageFile: _fileList[index][0],
-        onDelete: (XFile file) {
-          setState(() {
-            _fileList.removeWhere((item) => item[0] == file);
-            widget.onDelete?.call(file);
-          });
-        },
+        onDelete: widget.course.stateName == 'Open'
+            ? null
+            : (XFile file) {
+                setState(() {
+                  _fileList.removeWhere((item) => item[0] == file);
+                  widget.onDelete?.call(file);
+                });
+              },
       );
     }
   }
@@ -328,9 +332,11 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
         Align(
           alignment: Alignment.centerRight,
           child: ElevatedButton(
-            onPressed: () {
-              widget.onSave?.call();
-            },
+            onPressed: widget.course.stateName == 'Open'
+                ? null
+                : () {
+                    widget.onSave?.call();
+                  },
             child: const Text('SAVE'),
           ),
         ),
@@ -518,13 +524,14 @@ class AspectRatioImage extends StatelessWidget {
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              onPressed: () => onDelete?.call(imageFile),
-              icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+          if (onDelete != null)
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                onPressed: () => onDelete?.call(imageFile),
+                icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+              ),
             ),
-          ),
         ],
       ),
       decoration: BoxDecoration(
@@ -605,13 +612,14 @@ class _AspectRatioVideoState extends State<AspectRatioVideo> {
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              onPressed: () => widget.onDelete?.call(widget._videoFile),
-              icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+          if (widget.onDelete != null)
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                onPressed: () => widget.onDelete?.call(widget._videoFile),
+                icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+              ),
             ),
-          ),
         ],
       ),
       decoration: BoxDecoration(
