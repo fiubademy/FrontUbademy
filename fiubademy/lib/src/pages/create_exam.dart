@@ -2,202 +2,253 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-class Questions extends ChangeNotifier {
-  final List<String> _questions;
+class Question {
+  String _type;
+  String _description;
+  List<String> _options;
 
-  static const List<String> _types = [
-    "Development",
-    "Multiple Choice",
-    "Single Choice",
-    "True or False"
-  ];
+  Question()
+      : _type = 'Development',
+        _description = "",
+        _options = [];
 
-  Questions() : _questions = [];
+  static List<String> get types =>
+      ['Development', 'Multiple Choice', 'Single Choice', 'True or False'];
 
-  int get length => _questions.length;
+  String get type => _type;
 
-  String operator [](int index) => _questions[index];
-
-  void add(String newQuestion) {
-    _questions.add(newQuestion);
-    notifyListeners();
+  set type(String newType) {
+    _type = newType;
+    _options.clear();
   }
 
-  void removeAt(int index) {
-    _questions.removeAt(index);
-    notifyListeners();
+  set description(String newDescription) {
+    _description = newDescription;
   }
 
-  static List<String> get types => _types;
+  List<String> get options => _options;
+
+  addOption(String newOption) {
+    if (_type == 'Development' || _type == 'True or False') {
+      throw Error();
+    }
+
+    if (_options.contains(newOption)) {
+      return;
+    }
+
+    _options.add(newOption);
+  }
+
+  removeOptionAt(int index) {
+    if (_type == 'Development' || _type == 'True or False') {
+      throw Error();
+    }
+
+    _options.removeAt(index);
+  }
 }
 
-class ExamCreationPage extends StatelessWidget {
+class ExamCreationPage extends StatefulWidget {
   const ExamCreationPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => Questions(),
-      builder: (context, child) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('New Exam')),
-          floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add_rounded),
-            onPressed: () {
-              Provider.of<Questions>(context, listen: false).add("Development");
-            },
-          ),
-          body: const SafeArea(
-            child: ExamEdition(),
-          ),
-        );
-      },
-    );
-  }
+  _ExamCreationPageState createState() => _ExamCreationPageState();
 }
 
-class ExamEdition extends StatefulWidget {
-  const ExamEdition({Key? key}) : super(key: key);
-
-  @override
-  _ExamEditionState createState() => _ExamEditionState();
-}
-
-class _ExamEditionState extends State<ExamEdition> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: Provider.of<Questions>(context).length,
-              itemBuilder: (context, index) {
-                return QuestionEdition(index: index);
-              },
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class QuestionEdition extends StatefulWidget {
-  final int index;
-  final void Function()? callback;
-
-  QuestionEdition({Key? key, required this.index, this.callback})
-      : super(key: key);
-
-  @override
-  _QuestionEditionState createState() => _QuestionEditionState();
-}
-
-class _QuestionEditionState extends State<QuestionEdition> {
-  String? _question;
-  List<String> _options = [];
-  var _newOptioncontroller = TextEditingController();
+class _ExamCreationPageState extends State<ExamCreationPage> {
+  bool _isLoading = false;
+  final List<Question> _questions = [Question()];
+  final List<Question> _newQuestions = [];
+  final List<Question> _deletedQuestions = [];
+  final _formKey = GlobalKey<FormState>();
+  Map<int, TextEditingController> optionControllers = {};
 
   @override
   void initState() {
     super.initState();
-    // TODO Use proper type and stuff
-    // _question = Provider.of<Questions>(context, listen: false)[widget.index];
+  }
+
+  void _saveExam() {
+    setState(() {
+      _isLoading = true;
+    });
+    if (!_formKey.currentState!.validate()) {}
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text('Pregunta ${widget.index + 1}',
-                    style: Theme.of(context).textTheme.headline6),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {
-                    Provider.of<Questions>(context, listen: false)
-                        .removeAt(widget.index);
-                  },
-                  icon: const Icon(Icons.delete),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16.0),
-            DropdownButton(
-              value: _question,
-              isExpanded: true,
-              hint: const Text("Type"),
-              items: Questions.types.map<DropdownMenuItem<String>>(
-                (String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                },
-              ).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  if (newValue != null && newValue != _question) {
-                    _question = newValue;
-                    _options.clear();
-                  }
-                });
-              },
-            ),
-            const TextField(
-              maxLines: null,
-              decoration: InputDecoration(
-                hintText: 'Description',
-              ),
-            ),
-            if (_question == 'Single Choice' ||
-                _question == 'Multiple Choice') ...[
-              const SizedBox(height: 24.0),
-              Text('Options', style: Theme.of(context).textTheme.subtitle1),
-              const SizedBox(height: 16.0),
-              for (int i = 0; i < _options.length; i++)
-                Row(
-                  children: [
-                    Text(_options[i]),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _options.removeAt(i);
-                        });
-                      },
-                      icon: const Icon(Icons.clear_rounded),
-                    ),
-                  ],
-                ),
-              TextField(
-                controller: _newOptioncontroller,
-                decoration: InputDecoration(
-                  hintText: 'New option',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.check_rounded),
-                    onPressed: () {
-                      setState(() {
-                        if (_newOptioncontroller.text != '') {
-                          _options.add(_newOptioncontroller.text);
-                          _newOptioncontroller.clear();
-                        }
-                      });
+    return Scaffold(
+      appBar: AppBar(title: const Text('New Exam'), actions: [
+        IconButton(onPressed: () {}, icon: const Icon(Icons.save))
+      ]),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add_rounded),
+        onPressed: () {
+          setState(() {
+            _newQuestions.add(Question());
+          });
+        },
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: Scrollbar(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+                    itemCount: _questions.length + _newQuestions.length,
+                    itemBuilder: (context, index) {
+                      final optionController = optionControllers.putIfAbsent(
+                          index, () => TextEditingController());
+                      if (index < _questions.length) {
+                        return QuestionEdition(
+                          initialValue: _questions[index],
+                          optionController: optionController,
+                          onDelete: () => setState(() {
+                            _deletedQuestions.add(_questions.removeAt(index));
+                          }),
+                          index: index,
+                        );
+                      } else {
+                        return QuestionEdition(
+                          initialValue:
+                              _newQuestions[index - _questions.length],
+                          optionController: optionController,
+                          onDelete: () => setState(() {
+                            _newQuestions.removeAt(index - _questions.length);
+                          }),
+                          index: index,
+                        );
+                      }
                     },
                   ),
                 ),
               ),
+              ElevatedButton(
+                onPressed: () {
+                  _saveExam();
+                },
+                child: const Text('CREATE'),
+              ),
             ],
-          ],
+          ),
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    for (var controller in optionControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+}
+
+class QuestionEdition extends FormField<Question> {
+  QuestionEdition({
+    Key? key,
+    Question? initialValue,
+    required TextEditingController optionController,
+    VoidCallback? onDelete,
+    required int index,
+  }) : super(
+          key: key,
+          initialValue: initialValue ?? Question(),
+          validator: (question) => 'ERROR',
+          builder: (FormFieldState<Question> state) {
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('Question ${index + 1}',
+                            style: Theme.of(state.context).textTheme.headline6),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => onDelete?.call(),
+                          icon: const Icon(Icons.delete),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    DropdownButton(
+                      value: state.value!.type,
+                      isExpanded: true,
+                      hint: const Text("Type"),
+                      items: Question.types.map<DropdownMenuItem<String>>(
+                        (String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        },
+                      ).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null && newValue != state.value!.type) {
+                          state.value!.type = newValue;
+                          state.didChange(state.value);
+                        }
+                      },
+                    ),
+                    const TextField(
+                      maxLines: null,
+                      decoration: InputDecoration(
+                        hintText: 'Description',
+                      ),
+                    ),
+                    if (state.value!.type == 'Single Choice' ||
+                        state.value!.type == 'Multiple Choice') ...[
+                      const SizedBox(height: 24.0),
+                      Text('Options',
+                          style: Theme.of(state.context).textTheme.subtitle1),
+                      const SizedBox(height: 16.0),
+                      for (int i = 0; i < state.value!.options.length; i++)
+                        Row(
+                          children: [
+                            Text(state.value!._options[i]),
+                            const Spacer(),
+                            IconButton(
+                              onPressed: () {
+                                state.value!.removeOptionAt(i);
+                                state.didChange(state.value);
+                              },
+                              icon: const Icon(Icons.clear_rounded),
+                            ),
+                          ],
+                        ),
+                      TextField(
+                        controller: optionController,
+                        decoration: InputDecoration(
+                          hintText: 'New option',
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.check_rounded),
+                            onPressed: () {
+                              if (optionController.text != '') {
+                                state.value!.addOption(optionController.text);
+                                optionController.clear();
+                                state.didChange(state.value);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
 }

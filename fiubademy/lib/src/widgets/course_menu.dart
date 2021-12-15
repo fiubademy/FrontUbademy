@@ -3,6 +3,7 @@ import 'package:fiubademy/src/pages/course_content.dart';
 import 'package:fiubademy/src/pages/course_edition.dart';
 import 'package:fiubademy/src/pages/course_students.dart';
 import 'package:fiubademy/src/pages/courseview.dart';
+import 'package:fiubademy/src/pages/create_exam.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/models/course.dart';
 
@@ -39,6 +40,12 @@ class CourseCreatorMenu extends StatelessWidget {
             );
             break;
           case 2:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExamCreationPage(),
+              ),
+            );
             break;
           case 3:
             Navigator.push(
