@@ -19,12 +19,15 @@ class CourseMultimediaPicker extends StatefulWidget {
 }
 
 class _CourseMultimediaPickerState extends State<CourseMultimediaPicker> {
-  List<XFile> _fileList = [];
-  List<XFile> _deletedFileList = [];
-  List<XFile> _newFileList = [];
+  final List<XFile> _fileList = [];
+  final List<XFile> _deletedFileList = [];
+  final List<XFile> _newFileList = [];
 
   Future<void> getFiles() async {
-    _fileList = await Firebase.getFiles(widget.course.courseID);
+    _fileList.clear();
+    _deletedFileList.clear();
+    _newFileList.clear();
+    _fileList.addAll(await Firebase.getFiles(widget.course.courseID));
   }
 
   void _deleteFile(XFile deletedFile) {
@@ -40,15 +43,14 @@ class _CourseMultimediaPickerState extends State<CourseMultimediaPicker> {
 
   void _saveFiles() async {
     try {
-      int counter = 0;
       for (var file in _newFileList) {
-        await Firebase.uploadFile(file, widget.course.courseID,
-            fileName: (_fileList.length + counter).toString());
-        counter++;
+        await Firebase.uploadFile(file, widget.course.courseID);
       }
+      _newFileList.clear();
       for (var file in _deletedFileList) {
         await Firebase.deleteFile(file, widget.course.courseID);
       }
+      _deletedFileList.clear();
     } on FirebaseException catch (error) {
       final snackBar = SnackBar(content: Text('$error'));
       if (!mounted) return;
@@ -58,6 +60,9 @@ class _CourseMultimediaPickerState extends State<CourseMultimediaPicker> {
 
   @override
   Widget build(BuildContext context) {
+    /* For some reason, Files that are deleted can still be used for
+     * Image.file(deletedFile)
+     */
     return FutureBuilder(
         future: getFiles(),
         builder: (context, snapshot) {
@@ -188,9 +193,10 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       return retrieveError;
     }
 
+    XFile file = _fileList[index][0];
+
     if (_fileList[index][1] == 1) {
       // Video
-      XFile file = _fileList[index][0];
       return Container(
         child: Stack(
           children: [
@@ -258,7 +264,7 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
       );
     } else {
       return AspectRatioImage(
-        imageFile: _fileList[index][0],
+        imageFile: file,
         onDelete: widget.course.stateName == 'Open'
             ? null
             : (XFile file) {
@@ -319,7 +325,8 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
           crossAxisSpacing: 16.0,
           crossAxisCount: 2,
         ),
-        itemCount: _fileList.length + 1,
+        itemCount:
+            _fileList.length + (widget.course.stateName == 'Open' ? 0 : 1),
         itemBuilder: (context, index) {
           if (index == _fileList.length) {
             return InkWell(
