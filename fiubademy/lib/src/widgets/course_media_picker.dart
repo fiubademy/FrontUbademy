@@ -40,8 +40,11 @@ class _CourseMultimediaPickerState extends State<CourseMultimediaPicker> {
 
   void _saveFiles() async {
     try {
+      int counter = 0;
       for (var file in _newFileList) {
-        await Firebase.uploadFile(file, widget.course.courseID);
+        await Firebase.uploadFile(file, widget.course.courseID,
+            fileName: (_fileList.length + counter).toString());
+        counter++;
       }
       for (var file in _deletedFileList) {
         await Firebase.deleteFile(file, widget.course.courseID);
@@ -187,16 +190,71 @@ class _MultimediaPickerState extends State<MultimediaPicker> {
 
     if (_fileList[index][1] == 1) {
       // Video
-      return AspectRatioVideo(
-        videoFile: _fileList[index][0],
-        onDelete: widget.course.stateName == 'Open'
-            ? null
-            : (XFile file) {
-                setState(() {
-                  _fileList.removeWhere((item) => item[0] == file);
-                  widget.onDelete?.call(file);
-                });
-              },
+      XFile file = _fileList[index][0];
+      return Container(
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Center(
+                child: AspectRatioVideo(
+                  videoFile: file,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.maxFinite,
+                height: 24,
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
+                  color: Colors.black54,
+                ),
+                child: Text(
+                  '${file.name.split('.')[1]} Video',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondary,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ),
+            if (widget.onDelete != null)
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _fileList.removeWhere((item) => item[0] == file);
+                      widget.onDelete?.call(file);
+                    });
+                  },
+                  icon: const Icon(Icons.delete_rounded, color: Colors.black54),
+                ),
+              ),
+          ],
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.secondaryVariant,
+            width: 4,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.grey.withOpacity(0.6),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 4,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
       );
     } else {
       return AspectRatioImage(
@@ -556,10 +614,11 @@ class AspectRatioImage extends StatelessWidget {
 
 class AspectRatioVideo extends StatefulWidget {
   final XFile _videoFile;
-  final void Function(XFile file)? onDelete;
 
-  const AspectRatioVideo({Key? key, required XFile videoFile, this.onDelete})
-      : _videoFile = videoFile,
+  const AspectRatioVideo({
+    Key? key,
+    required XFile videoFile,
+  })  : _videoFile = videoFile,
         super(key: key);
 
   @override
@@ -578,66 +637,9 @@ class _AspectRatioVideoState extends State<AspectRatioVideo> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.maxFinite,
-              height: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(16),
-                ),
-                color: Colors.black54,
-              ),
-              child: Text(
-                '${widget._videoFile.name.split('.')[1]} Video',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSecondary,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          if (widget.onDelete != null)
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                onPressed: () => widget.onDelete?.call(widget._videoFile),
-                icon: const Icon(Icons.delete_rounded, color: Colors.black54),
-              ),
-            ),
-        ],
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondaryVariant,
-          width: 4,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.grey.withOpacity(0.6),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 4,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return AspectRatio(
+      aspectRatio: _controller.value.aspectRatio,
+      child: VideoPlayer(_controller),
     );
   }
 

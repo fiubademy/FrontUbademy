@@ -25,8 +25,10 @@ class CourseCreatorMenu extends StatelessWidget {
       onSelected: (int value) {
         switch (value) {
           case 0:
-            Navigator.push(context,
-                MaterialPageRoute(builder: (content) => CourseContentPage()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
             Navigator.push(
@@ -111,8 +113,10 @@ class CourseStudentMenu extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case 0:
-            Navigator.push(context,
-                MaterialPageRoute(builder: (content) => CourseContentPage()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
             break;
@@ -151,8 +155,10 @@ class CourseCollaboratorMenu extends StatelessWidget {
       onSelected: (value) {
         switch (value) {
           case 0:
-            Navigator.push(context,
-                MaterialPageRoute(builder: (content) => CourseContentPage()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
             break;

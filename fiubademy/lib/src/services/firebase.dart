@@ -4,9 +4,12 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class Firebase {
-  static Future<UploadTask?> uploadFile(XFile file, String courseID) async {
-    Reference ref =
-        FirebaseStorage.instance.ref().child(courseID).child(file.name);
+  static Future<UploadTask?> uploadFile(XFile file, String courseID,
+      {String? fileName}) async {
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child(courseID)
+        .child(fileName ?? file.name);
 
     if (kIsWeb) {
       return Future.value(ref.putData(await file.readAsBytes()));
@@ -48,5 +51,9 @@ class Firebase {
       files.add(await downloadFileFromReference(fileRef));
     }
     return files;
+  }
+
+  static Future<ListResult> getFileNames(String courseID) async {
+    return await FirebaseStorage.instance.ref().child(courseID).listAll();
   }
 }
