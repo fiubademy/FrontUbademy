@@ -238,9 +238,6 @@ class Server {
       },
     );
 
-    print(response.statusCode);
-    print(response.body);
-
     switch (response.statusCode) {
       case HttpStatus.created:
         return null;
@@ -623,6 +620,44 @@ class Server {
     }
   }
 
+  static Future<String?> updateCourse(Auth auth,
+      {required String courseID,
+      required String name,
+      required String description,
+      required String category,
+      required List<String> hashtags,
+      required int minSubscription}) async {
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    Map<String, dynamic> requestBody = {
+      "name": name,
+      "description": description,
+      "hashtags": hashtags,
+      "sub_level": minSubscription,
+      "category": category,
+    };
+
+    final response = await http.patch(
+      Uri.https(url, "/courses/id/$courseID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(requestBody),
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to edit course. Please try again.';
+    }
+  }
+
 /*Edits User's Username in the API. Returns null on success or error string in failure.*/
 
   static Future<String> updateProfile(Auth auth, String newUsername) async {
@@ -822,6 +857,43 @@ class Server {
         Map<String, dynamic> map = {
           'error':
               'Failed to remove to favourite. Please try again in a few minutes',
+          'content': false
+        };
+        return map;
+    }
+  }
+
+  static Future<Map<String, dynamic>> publishCourse(
+      Auth auth, String courseID) async {
+    final Map<String, dynamic> queryParams = {
+      'in_edition': 'false',
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.put(
+      Uri.https(url, "/courses/id/$courseID/status", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': true,
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': false
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to publish course. Please try again in a few minutes',
           'content': false
         };
         return map;

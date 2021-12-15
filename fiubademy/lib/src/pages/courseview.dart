@@ -74,9 +74,7 @@ class FavouriteIcon extends StatefulWidget {
       required this.isFavourite,
       this.onToggle,
       required this.courseID})
-      : super(key: key) {
-    print(isFavourite);
-  }
+      : super(key: key) {}
 
   @override
   _FavouriteIconState createState() => _FavouriteIconState();
@@ -111,7 +109,6 @@ class _FavouriteIconState extends State<FavouriteIcon> {
         isFavourite = !isFavourite;
       });
     }
-    print(isFavourite);
     setState(() {
       isLoading = false;
     });

@@ -247,6 +247,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
         // Keep only part past 'Exception: '. Yes, it's ugly.
         final snackBar =
             SnackBar(content: Text(error.toString().substring(11)));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
       if (!mounted) return;
@@ -295,10 +296,8 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
 
       if (await Server.isFavourite(auth, courseData['id'])) {
         courseData['isFavourite'] = true;
-        print(courseData['isFavourite']);
       } else {
         courseData['isFavourite'] = false;
-        print(courseData['isFavourite']);
       }
     }
 
@@ -315,6 +314,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
           setState(() {
             _titleFilter = value;
           });
+          if (!mounted) return;
           _pagingController.refresh();
         },
       ),
@@ -335,6 +335,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
                       setState(() {
                         _categoryFilter = newValue ?? 'All Categories';
                       });
+                      if (!mounted) return;
                       _pagingController.refresh();
                     },
                     items: _categories.map(
@@ -358,6 +359,7 @@ class _CourseSearchListViewState extends State<CourseSearchListView> {
                       setState(() {
                         _subscriptionFilter = newValue ?? 'All Subscriptions';
                       });
+                      if (!mounted) return;
                       _pagingController.refresh();
                     },
                     items: _subscriptions.map(

@@ -150,7 +150,7 @@ class _PasswordChangeFormState extends State<PasswordChangeForm> {
     if (value == null || value.isEmpty) {
       return 'Please enter a password';
     }
-    if (value.length <= 8) {
+    if (value.length < 8) {
       return 'Password must have 8 or more characters';
     }
     return null;
@@ -163,7 +163,7 @@ class _PasswordChangeFormState extends State<PasswordChangeForm> {
     if (_passwordController.text != value) {
       return 'Password confirmation must equal password';
     }
-    if (value.length <= 8) {
+    if (value.length < 8) {
       return 'Password must have 8 or more characters';
     }
     return null;

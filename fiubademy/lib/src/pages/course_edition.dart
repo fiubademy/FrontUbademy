@@ -1,23 +1,98 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:material_tag_editor/tag_editor.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/user.dart';
+import 'package:fiubademy/src/widgets/course_media_picker.dart';
 
-class CourseEditionPage extends StatelessWidget {
+class CourseEditionPage extends StatefulWidget {
   final Course _course;
 
   const CourseEditionPage({Key? key, required Course course})
       : _course = course,
         super(key: key);
+
+  @override
+  _CourseEditionPageState createState() => _CourseEditionPageState();
+}
+
+class _CourseEditionPageState extends State<CourseEditionPage> {
+  bool isLoading = false;
+
+  void _publish() async {
+    setState(() {
+      isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result =
+        await Server.publishCourse(auth, widget._course.courseID);
+    if (result['error'] != null) {
+      final snackBar = SnackBar(content: Text('${result['error']}'));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        widget._course.open = true;
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  List<Widget> _buildCourseState() {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'State',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          Text(
+            widget._course.stateName == 'Open' ? 'Published' : 'In Edition',
+            style: Theme.of(context).textTheme.subtitle1,
+          )
+        ],
+      ),
+      const SizedBox(height: 16.0),
+      if (widget._course.stateName != 'Open')
+        SizedBox(
+          width: double.maxFinite,
+          child: ElevatedButton(
+            onPressed: () {
+              showDialog<String>(
+                context: context,
+                builder: (context) => AlertDialog(
+                    title: const Text('Publish Course'),
+                    content: Text(
+                        'Once published, you won\'t be able to edit the course anymore.\n\nAre you sure you want to publish ${widget._course.title}?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('CANCEL'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          _publish();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('PUBLISH'),
+                      ),
+                    ]),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).colorScheme.secondaryVariant),
+            child: const Text('PUBLISH'),
+          ),
+        ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +105,27 @@ class CourseEditionPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
               child: Column(
                 children: [
-                  CourseEditionForm(course: _course),
-                  MultimediaPicker(),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('General Information',
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  const SizedBox(height: 16.0),
+                  CourseEditionForm(course: widget._course),
+                  const SizedBox(height: 8.0),
+                  const Divider(),
+                  const SizedBox(height: 8.0),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Multimedia Content',
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  const SizedBox(height: 16.0),
+                  CourseMultimediaPicker(course: widget._course),
+                  const SizedBox(height: 8.0),
+                  const Divider(),
+                  const SizedBox(height: 8.0),
+                  ..._buildCourseState(),
                 ],
               ),
             ),
@@ -61,7 +155,6 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
   String? _courseCategory;
   String? _courseMinSubscriptionLevel;
   List<String> _tags = [];
-  List<XFile> _files = [];
 
   @override
   void initState() {
@@ -69,7 +162,7 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
     super.initState();
   }
 
-  void _create() async {
+  void _edit() async {
     setState(() {
       _isLoading = true;
     });
@@ -77,7 +170,6 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       Auth auth = Provider.of<Auth>(context, listen: false);
-      User user = Provider.of<User>(context, listen: false);
       int minSubLevel;
       switch (_courseMinSubscriptionLevel) {
         case 'Standard':
@@ -89,20 +181,23 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
         default:
           minSubLevel = 0;
       }
-      String? result = await Server.createCourse(
+      String? result = await Server.updateCourse(
         auth,
-        _courseTitle!,
-        _courseDescription!,
-        _courseCategory!,
-        _tags,
-        minSubLevel,
-        user.latitude!,
-        user.longitude!,
+        courseID: widget._course.courseID,
+        name: _courseTitle!,
+        description: _courseDescription!,
+        category: _courseCategory!,
+        hashtags: _tags,
+        minSubscription: minSubLevel,
       );
       if (result == null) {
-        Navigator.pop(context);
+        SnackBar snackBar =
+            const SnackBar(content: Text('Successfully updated course'));
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       } else {
         final snackBar = SnackBar(content: Text(result));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
@@ -133,30 +228,36 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
       child: Column(
         children: [
           TextFormField(
+            enabled: widget._course.stateName != 'Open',
+            readOnly: widget._course.stateName != 'Open',
             initialValue: widget._course.title,
             validator: (value) => _validateTitle(value),
             onSaved: (value) => _courseTitle = value,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+                enabled: widget._course.stateName != 'Open',
                 hintText: 'My Brand New Course',
                 labelText: 'Title*',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
                 helperText: '*Required'),
           ),
           const SizedBox(height: 16.0),
           TextFormField(
+            enabled: widget._course.stateName != 'Open',
             initialValue: widget._course.description,
             validator: (value) => _validateDescription(value),
             onSaved: (value) => _courseDescription = value,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
+              enabled: widget._course.stateName != 'Open',
               hintText: 'A detailed description about your course',
               labelText: 'Description*',
               hintMaxLines: 2,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
             maxLines: null,
           ),
           const SizedBox(height: 16.0),
           MaterialDropdownButton(
+            enabled: widget._course.stateName != 'Open',
             options: Course.categories(),
             initialValue: widget._course.category,
             hint: 'Category',
@@ -169,12 +270,14 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
           ),
           const SizedBox(height: 16.0),
           MaterialDropdownButton(
+            enabled: widget._course.stateName != 'Open',
             options: const <String>['Free', 'Standard', 'Premium'],
             initialValue: widget._course.minSubscriptionName,
             onSaved: (value) => _courseMinSubscriptionLevel = value,
           ),
           const SizedBox(height: 16.0),
           TagEditor(
+            enabled: widget._course.stateName != 'Open',
             length: _tags.length,
             delimiters: const [',', ' '],
             hasAddButton: true,
@@ -195,11 +298,13 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(7),
               ),
-              onDeleted: () {
-                setState(() {
-                  _tags.removeWhere((element) => element == _tags[index]);
-                });
-              },
+              onDeleted: widget._course.stateName == 'Open'
+                  ? null
+                  : () {
+                      setState(() {
+                        _tags.removeWhere((element) => element == _tags[index]);
+                      });
+                    },
             ),
           ),
           Align(
@@ -207,7 +312,9 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
             child: _isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: () => _create(),
+                    onPressed: widget._course.stateName == 'Open'
+                        ? null
+                        : () => _edit(),
                     child: const Text('SAVE'),
                   ),
           ),
@@ -222,12 +329,14 @@ class MaterialDropdownButton extends FormField<String> {
   final List<String> options;
   final String? hint;
   final String? defaultOption;
+  final enabled;
 
   MaterialDropdownButton({
     Key? key,
     required this.options,
     this.hint,
     this.defaultOption,
+    this.enabled = true,
     String? initialValue,
     FormFieldSetter<String>? onSaved,
     FormFieldValidator<String>? validator,
@@ -241,6 +350,7 @@ class MaterialDropdownButton extends FormField<String> {
           builder: (FormFieldState<String> state) {
             return InputDecorator(
               decoration: InputDecoration(
+                enabled: enabled,
                 errorText: state.errorText,
                 hintText: hint,
                 isDense: true,
@@ -251,11 +361,13 @@ class MaterialDropdownButton extends FormField<String> {
                 child: DropdownButton<String>(
                   value: state.value,
                   isDense: true,
-                  onChanged: (String? newValue) {
-                    if (newValue != state.value) {
-                      state.didChange(newValue);
-                    }
-                  },
+                  onChanged: enabled
+                      ? (String? newValue) {
+                          if (newValue != state.value) {
+                            state.didChange(newValue);
+                          }
+                        }
+                      : null,
                   items: options.map(
                     (String value) {
                       return DropdownMenuItem<String>(
@@ -269,452 +381,4 @@ class MaterialDropdownButton extends FormField<String> {
             );
           },
         );
-}
-
-class MultimediaPicker extends StatefulWidget {
-  const MultimediaPicker({Key? key}) : super(key: key);
-
-  @override
-  _MultimediaPickerState createState() => _MultimediaPickerState();
-}
-
-class _MultimediaPickerState extends State<MultimediaPicker> {
-  final List<List<dynamic>> _fileList = [];
-
-  String? _retrieveDataError;
-
-  final ImagePicker _picker = ImagePicker();
-
-  void _onVideoButtonPressed(ImageSource source) async {
-    try {
-      final XFile? videoFile = await _picker.pickVideo(
-          source: source, maxDuration: const Duration(seconds: 10));
-      if (videoFile != null) {
-        setState(() {
-          _fileList.add(List.unmodifiable([videoFile, 1]));
-        });
-      }
-    } catch (error) {
-      final snackBar = SnackBar(content: Text('$error'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
-  }
-
-  void _onMultiImageButtonPressed() async {
-    try {
-      final pickedFileList = await _picker.pickMultiImage();
-      if (pickedFileList != null) {
-        setState(() {
-          // Add all images as unmodifiable lists [file, 0].
-          _fileList.addAll(List.generate(pickedFileList.length,
-              (index) => List.unmodifiable([pickedFileList[index], 0])));
-        });
-      }
-    } catch (error) {
-      final snackBar = SnackBar(content: Text('$error'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
-  }
-
-  void _onCameraButtonPressed() async {
-    try {
-      final pickedFile = await _picker.pickImage(
-        source: ImageSource.camera,
-      );
-      if (pickedFile != null) {
-        setState(() {
-          _fileList.add(List.unmodifiable([pickedFile, 0]));
-        });
-      }
-    } catch (error) {
-      final snackBar = SnackBar(content: Text('$error'));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
-  }
-
-  Widget _buildFileWidget(int index) {
-    final Text? retrieveError = _getRetrieveErrorWidget();
-    if (retrieveError != null) {
-      return retrieveError;
-    }
-
-    if (_fileList[index][1] == 1) {
-      // Video
-      return AspectRatioVideo(videoFile: _fileList[index][0]);
-    } else {
-      // Image
-      // Why network for web?
-      // See https://pub.dev/packages/image_picker#getting-ready-for-the-web-platform
-      return kIsWeb
-          ? Image.network(_fileList[index][0].path)
-          : Container(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Center(
-                  child: Image.file(
-                    File(_fileList[index][0].path),
-                  ),
-                ),
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.secondaryVariant,
-                  width: 4,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.grey.withOpacity(0.6),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 4,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-            );
-    }
-  }
-
-  Future<void> retrieveLostData() async {
-    final LostDataResponse response = await _picker.retrieveLostData();
-
-    if (response.isEmpty) {
-      return;
-    }
-
-    if (response.file == null) {
-      _retrieveDataError = response.exception!.code;
-    }
-
-    if (response.type == RetrieveType.video) {
-      setState(() {
-        _fileList.add(List.unmodifiable([response.file!, 1]));
-      });
-    } else {
-      setState(() {
-        // Add All elements as unmodifiable lists [file, 0]
-        if (response.files != null) {
-          _fileList.addAll(List.generate(response.files!.length,
-              (index) => List.unmodifiable([response.files!, 0])));
-        } else {
-          _fileList.add(List.unmodifiable([response.file!, 0]));
-        }
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Subscaffold'),
-      ),
-      body: Center(
-        child: !kIsWeb && defaultTargetPlatform == TargetPlatform.android
-            ? FutureBuilder<void>(
-                future: retrieveLostData(),
-                builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.none:
-                    case ConnectionState.waiting:
-                      return const Text(
-                        'You have not yet picked an image.',
-                        textAlign: TextAlign.center,
-                      );
-                    case ConnectionState.done:
-                      return //_handlePreview();
-                          GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          mainAxisSpacing: 16.0,
-                          crossAxisSpacing: 16.0,
-                          crossAxisCount: 2,
-                        ),
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _fileList.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == _fileList.length) {
-                            return InkWell(
-                              onTap: () {
-                                _displayImageTypeDialog();
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                child: Center(
-                                  child: LayoutBuilder(
-                                    builder: (context, constraint) {
-                                      return Icon(Icons.add_circle_rounded,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          size:
-                                              constraint.biggest.height * 0.4);
-                                    },
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondaryVariant,
-                                    width: 4,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.black.withAlpha(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.5),
-                                      spreadRadius: 2,
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-                          return _buildFileWidget(index);
-                        },
-                      );
-                    default:
-                      if (snapshot.hasError) {
-                        return Text(
-                          'Pick image/video error: ${snapshot.error}}',
-                          textAlign: TextAlign.center,
-                        );
-                      } else {
-                        return const Text(
-                          'You have not yet picked an image.',
-                          textAlign: TextAlign.center,
-                        );
-                      }
-                  }
-                },
-              )
-            : _buildFileWidget(0),
-      ),
-    );
-  }
-
-  Text? _getRetrieveErrorWidget() {
-    if (_retrieveDataError != null) {
-      final Text result = Text(_retrieveDataError!);
-      _retrieveDataError = null;
-      return result;
-    }
-    return null;
-  }
-
-  void _displayImageTypeDialog() async {
-    int? result = await showGeneralDialog(
-        context: context,
-        barrierLabel: "Label",
-        barrierDismissible: true,
-        barrierColor: Colors.black.withOpacity(0.5),
-        transitionDuration: const Duration(milliseconds: 700),
-        transitionBuilder: (context, anim1, anim2, child) {
-          return SlideTransition(
-            position: Tween(begin: const Offset(0, 1), end: const Offset(0, 0))
-                .animate(anim1),
-            child: child,
-          );
-        },
-        pageBuilder: (context, anim1, anim2) {
-          return Align(
-            alignment: Alignment.bottomCenter,
-            child: IntrinsicHeight(
-              child: Container(
-                width: double.maxFinite,
-                clipBehavior: Clip.antiAlias,
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                margin: const EdgeInsets.only(bottom: 24, left: 12, right: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: Material(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context, 0);
-                            },
-                            child: const Icon(Icons.photo_library_rounded),
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(20),
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          const Text(
-                            'Gallery',
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context, 1);
-                            },
-                            child: const Icon(Icons.video_library_rounded),
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(20),
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          const Text(
-                            'Video',
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context, 2);
-                            },
-                            child: const Icon(Icons.camera_alt_rounded),
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(20),
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          const Text(
-                            'Camera',
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context, 3);
-                            },
-                            child: const Icon(Icons.video_camera_back_rounded),
-                            style: ElevatedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: const EdgeInsets.all(20),
-                            ),
-                          ),
-                          const SizedBox(height: 8.0),
-                          const Text('Record'),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        });
-
-    if (result == null) return;
-    switch (result) {
-      case 0:
-        _onMultiImageButtonPressed();
-        break;
-      case 1:
-        _onVideoButtonPressed(ImageSource.gallery);
-        break;
-      case 2:
-        _onCameraButtonPressed();
-        break;
-      case 3:
-        _onVideoButtonPressed(ImageSource.camera);
-        break;
-    }
-  }
-}
-
-class AspectRatioVideo extends StatefulWidget {
-  final XFile _videoFile;
-
-  AspectRatioVideo({Key? key, required XFile videoFile})
-      : _videoFile = videoFile,
-        super(key: key);
-
-  @override
-  _AspectRatioVideoState createState() => _AspectRatioVideoState();
-}
-
-class _AspectRatioVideoState extends State<AspectRatioVideo> {
-  late VideoPlayerController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = VideoPlayerController.file(File(widget._videoFile.path))
-      ..initialize().then((value) => setState(() {}));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.maxFinite,
-              height: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(16),
-                ),
-                color: Colors.black54,
-              ),
-              child: Text(
-                widget._videoFile.name,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSecondary,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ),
-          Align(alignment: Alignment.topRight, child: Icon(Icons.delete))
-        ],
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondaryVariant,
-          width: 4,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.grey.withOpacity(0.6),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 4,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 }
