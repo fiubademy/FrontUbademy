@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:fiubademy/src/services/server.dart';
-
 class User extends ChangeNotifier {
   String? _userID;
   String _username;
@@ -20,6 +18,8 @@ class User extends ChangeNotifier {
   String? get userID => _userID;
   String get username => _username;
   String get email => _email;
+  double? get latitude => _latitude;
+  double? get longitude => _longitude;
   int get subscriptionLevel => _subscriptionLevel;
   String get subscriptionName {
     switch (_subscriptionLevel) {
@@ -34,7 +34,7 @@ class User extends ChangeNotifier {
     }
   }
 
-  void updateData(Map<String, dynamic> newUserData) {
+  void updateData(Map<String, dynamic> newUserData) async {
     _userID = newUserData['user_id'];
     _username = newUserData['username'];
     _email = newUserData['email'];
@@ -44,12 +44,23 @@ class User extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setPosition(double latitude, double longitude) {
+    _latitude = latitude;
+    _longitude = longitude;
+    notifyListeners();
+  }
+
+  set username(String newUsername) {
+    _username = newUsername;
+    notifyListeners();
+  }
+
   void deleteData() {
-    _userID = '';
+    _userID = null;
     _username = 'Failed to load username';
     _email = 'Failed to load email';
-    _latitude = double.infinity;
-    _longitude = double.infinity;
+    _latitude = null;
+    _longitude = null;
     _subscriptionLevel = 0;
     notifyListeners();
   }

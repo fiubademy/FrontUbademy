@@ -7,7 +7,6 @@ class Auth extends ChangeNotifier {
 
   Auth() {
     const storage = FlutterSecureStorage();
-    bool retrievedSaved = false;
     storage.read(key: 'userToken').then((value) {
       _userToken = value;
       if (value != null) notifyListeners();
@@ -23,19 +22,11 @@ class Auth extends ChangeNotifier {
 
   void setAuth(String id, String token) {
     const storage = FlutterSecureStorage();
-    bool changed = false;
-    if (token != _userToken) {
+    if (token != _userToken || id != _userID) {
       storage.write(key: 'userToken', value: token);
-      changed = true;
-      _userToken = token;
-    }
-    if (id != _userID) {
       storage.write(key: 'userID', value: id);
-      changed = true;
+      _userToken = token;
       _userID = id;
-    }
-    if (changed) {
-      print('Saved $userID $userToken');
       notifyListeners();
     }
   }

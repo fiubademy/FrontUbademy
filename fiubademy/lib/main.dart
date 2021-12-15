@@ -1,23 +1,27 @@
-import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'package:fiubademy/src/pages/login.dart';
 import 'package:fiubademy/src/pages/home.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/pages/courseview.dart';
-import 'package:fiubademy/src/pages/create_exam.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const FiubademyApp());
 }
 
 class FiubademyApp extends StatelessWidget {
   const FiubademyApp({Key? key}) : super(key: key);
 
-  void _updateUser(BuildContext context, Auth auth, User user) async {
+  // Only called when auth changes
+  void _updateUser(Auth auth, User user) async {
     if (auth.userID == null) {
       user.deleteData();
       return;
@@ -30,6 +34,7 @@ class FiubademyApp extends StatelessWidget {
     user.updateData(userData);
   }
 
+  // TODO Search for all TextEditingController and dispose them;
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -41,10 +46,8 @@ class FiubademyApp extends StatelessWidget {
             create: (context) => User(),
             update: (context, auth, user) {
               if (user == null) throw ArgumentError.notNull('user');
-              print('Updating user');
-              print(auth.userID);
               if (auth.userID != user.userID) {
-                _updateUser(context, auth, user);
+                _updateUser(auth, user);
               }
               return user;
             },
@@ -56,11 +59,17 @@ class FiubademyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),
-            home: ExamCreationPage(),
-            /*Provider.of<Auth>(context).userToken == null
-                ? const LogInPage()
-                : const HomePage(),*/
-            // Idea: use anonymous function. if null, also Navigator pop all.
+            home: Consumer<Auth>(
+              builder: (context, auth, child) {
+                bool isLoggedIn = auth.userToken != null;
+                if (!isLoggedIn) {
+                  Future.delayed(const Duration(seconds: 1), () {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  });
+                }
+                return isLoggedIn ? const HomePage() : const LogInPage();
+              },
+            ),
           );
         });
   }

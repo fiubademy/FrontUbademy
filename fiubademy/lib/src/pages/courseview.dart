@@ -1,7 +1,12 @@
+import 'package:fiubademy/src/pages/profile.dart';
+import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/server.dart';
+import 'package:fiubademy/src/services/user.dart';
+
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
 import 'package:fiubademy/src/models/course.dart';
@@ -11,31 +16,128 @@ class NextPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic> courseData = {
+      'name': 'Course Title Here',
+      'ownerID': '1234234',
+      'ownerName': 'Owner Name Here',
+      'sub_level': 1,
+      'description': 'A small description of the course',
+      'category': 'Business',
+      'latitude': -34.6037,
+      'longitude': -58.3816,
+      'hashtags': ['Tag A', 'Tag B', 'Tag C'],
+      'time_created': '2021-11-29T15:19:57+0000',
+      'blocked': false,
+      'in_edition': false,
+      'ratingCount': 24,
+      'ratingAvg': 2.8,
+    };
+
+    Course myCourse = Course.fromMap(courseData);
+
     return ElevatedButton(
         onPressed: () {
           Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => CourseViewPage(courseID: "courseID")));
+            context,
+            MaterialPageRoute(
+              /*
+              builder: (context) => FutureBuilder(
+                future: myCourse,
+                builder:
+                    (BuildContext context, AsyncSnapshot<Course> snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Container();
+                    default:
+                      if (snapshot.hasError) {
+                        return Container();
+                      }
+                      return CourseViewPage(course: snapshot.data!);
+                  }
+                },
+              ),*/
+              builder: (context) => CourseViewPage(course: myCourse),
+            ),
+          );
         },
         child: const Text('Go!'));
   }
 }
 
-class CourseViewPage extends StatelessWidget {
+class FavouriteIcon extends StatefulWidget {
+  bool isFavourite;
+  void Function()? onToggle;
   final String courseID;
 
-  CourseViewPage({Key? key, required this.courseID}) : super(key: key);
+  FavouriteIcon(
+      {Key? key,
+      required this.isFavourite,
+      this.onToggle,
+      required this.courseID})
+      : super(key: key) {}
+
+  @override
+  _FavouriteIconState createState() => _FavouriteIconState();
+}
+
+class _FavouriteIconState extends State<FavouriteIcon> {
+  bool isLoading = false;
+  bool isFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavourite = widget.isFavourite;
+  }
+
+  void _toggleFavourite() async {
+    if (isLoading) {
+      return;
+    }
+    setState(() {
+      isLoading = true;
+      isFavourite = !isFavourite;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result = isFavourite
+        ? await Server.addFavourite(auth, widget.courseID)
+        : await Server.removeFavourite(auth, widget.courseID);
+    if (result['error'] != null) {
+      final snackBar = SnackBar(content: Text('${result['error']}'));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      setState(() {
+        isFavourite = !isFavourite;
+      });
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+        onPressed: () => _toggleFavourite(),
+        icon: isFavourite
+            ? const Icon(Icons.favorite, color: Colors.red)
+            : const Icon(Icons.favorite_outline));
+  }
+}
+
+class CourseViewPage extends StatelessWidget {
+  final Course _course;
+
+  CourseViewPage({
+    Key? key,
+    required Course course,
+  })  : _course = course,
+        super(key: key);
 
   /*Future<Map<String, dynamic>> loadCourse(String courseID) {
     return 
   }*/
 
-  void _toggleFavorite() {
-    return;
-  }
-
-  final Future<void> _delay = Future.delayed(const Duration(seconds: 1));
+  final Future<void> _delay = Future.delayed(const Duration(seconds: 0));
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +159,10 @@ class CourseViewPage extends StatelessWidget {
                 return Text('Error: ${snapshot.error}');
               }
               return Scaffold(
-                appBar: AppBar(title: Text('Ubademy'), actions: [
-                  IconButton(
-                      onPressed: () => _toggleFavorite(),
-                      icon: const Icon(Icons.favorite_outline)),
+                appBar: AppBar(title: const Text('Ubademy'), actions: [
+                  FavouriteIcon(
+                      isFavourite: _course.isFavourite,
+                      courseID: _course.courseID)
                 ]),
                 body: _buildCourse(context),
               );
@@ -91,9 +193,12 @@ class CourseViewPage extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 8.0),
               ..._buildRatings(context),
-              const SizedBox(height: 8.0),
-              const Divider(),
-              const Center(child: _CourseLeaveButton()),
+              if (_course.role == CourseRole.notStudent ||
+                  _course.role == CourseRole.student) ...[
+                const SizedBox(height: 8.0),
+                const Divider(),
+                CourseToggleEnrollButton(course: _course),
+              ]
             ],
           ),
         ),
@@ -103,7 +208,7 @@ class CourseViewPage extends StatelessWidget {
 
   Widget _buildTitle(BuildContext context) {
     return Text(
-      'Análisis Matemático II',
+      _course.title,
       style: Theme.of(context).textTheme.headline5,
     );
   }
@@ -116,10 +221,27 @@ class CourseViewPage extends StatelessWidget {
           color: Theme.of(context).colorScheme.secondaryVariant,
         ),
         const SizedBox(width: 8.0),
-        Text('by Maulhardt', style: Theme.of(context).textTheme.subtitle2),
+        InkWell(
+          onTap: () async {
+            Auth auth = Provider.of<Auth>(context, listen: false);
+            Map<String, dynamic>? userData =
+                await Server.getUser(auth, _course.ownerID);
+            if (userData == null) return;
+            User user = User();
+            user.updateData(userData);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfilePage(user: user),
+              ),
+            );
+          },
+          child: Text('by ${_course.ownerName}',
+              style: Theme.of(context).textTheme.subtitle2),
+        ),
         const Spacer(),
         Text(
-          'Free',
+          _course.minSubscriptionName,
           style: Theme.of(context).textTheme.subtitle2,
         ),
         const SizedBox(width: 8.0),
@@ -137,8 +259,7 @@ class CourseViewPage extends StatelessWidget {
       const SizedBox(
         height: 16.0,
       ),
-      Text(
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras euismod nisl vel sem sagittis eleifend at sed enim. Integer efficitur eleifend mollis. Donec arcu odio, finibus in vulputate et, interdum vel quam. Pellentesque leo lorem, finibus ut pharetra eu, sagittis sed felis. Aliquam et euismod nisl, et tempus nisl. Nunc dignissim aliquam fringilla. Ut mattis interdum sapien, id vestibulum ligula. Curabitur imperdiet diam at tellus scelerisque egestas in ut diam. Sed vel nunc id mi egestas blandit a vitae purus. Nullam non nibh non turpis aliquet viverra ac a lectus. Suspendisse ex nibh, porttitor ut auctor quis, tristique vel nibh. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae'),
+      Text(_course.description),
     ];
   }
 
@@ -154,21 +275,42 @@ class CourseViewPage extends StatelessWidget {
           const Icon(Icons.calendar_today, color: Colors.grey),
           const VerticalDivider(),
           const SizedBox(width: 8.0),
-          Text('Created 16 Mar 2021',
+          Text(
+              'Created ${_course.creationDay} ${_course.creationMonthName} ${_course.creationYear}',
               style: Theme.of(context).textTheme.subtitle1),
         ],
       )),
       const SizedBox(
         height: 16.0,
       ),
+      // TODO Add category in details
       IntrinsicHeight(
         child: Row(
           children: [
             const Icon(Icons.location_on, color: Colors.grey),
             const VerticalDivider(),
             const SizedBox(width: 8.0),
-            Text('Facultad de Ingeniería, UBA',
-                style: Theme.of(context).textTheme.subtitle1),
+            FutureBuilder(
+              future: getLocationName(_course.latitude, _course.longitude),
+              builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return Text('Fetching location',
+                        style: Theme.of(context).textTheme.subtitle1);
+                  default:
+                    if (snapshot.hasError) {
+                      return Text('Failed to fetch location',
+                          style: Theme.of(context).textTheme.subtitle1);
+                    }
+                    if (snapshot.data == null) {
+                      return Text('Failed to fetch location',
+                          style: Theme.of(context).textTheme.subtitle1);
+                    }
+                    return Text(snapshot.data!,
+                        style: Theme.of(context).textTheme.subtitle1);
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -181,9 +323,21 @@ class CourseViewPage extends StatelessWidget {
             const Icon(Icons.tag_rounded, color: Colors.grey),
             const VerticalDivider(),
             // Expanded is necessary otherwise throws error
-            Expanded(
-              child: CourseTags(),
-            ),
+            _course.tags.isEmpty
+                ? Row(
+                    children: [
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'No tags',
+                        style: Theme.of(context).textTheme.subtitle1,
+                      ),
+                    ],
+                  )
+                : Expanded(
+                    child: CourseTags(
+                      tags: _course.tags,
+                    ),
+                  ),
           ],
         ),
       ),
@@ -194,22 +348,24 @@ class CourseViewPage extends StatelessWidget {
     return [
       Text('Reviews and Ratings', style: Theme.of(context).textTheme.headline6),
       const SizedBox(height: 16.0),
-      CourseRating(),
+      CourseRating(avg: _course.ratingAvg, count: _course.ratingCount),
       const SizedBox(height: 8.0),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           TextButton(
-            onPressed: () {
-              if (true) {
-                const snackBar = SnackBar(
-                    content: Text(
-                        'You need to finish the course to write a review'));
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              } //else {
-              //Navigator.push(context, route);
-              //}
-            },
+            onPressed: _course.role != CourseRole.student
+                ? null
+                : () {
+                    if (true) {
+                      const snackBar = SnackBar(
+                          content: Text(
+                              'You need to finish the course to write a review'));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    } //else {
+                    //Navigator.push(context, route);
+                    //}
+                  },
             child: const Text('Write a review'),
           ),
           TextButton(onPressed: () {}, child: const Text('See all reviews'))
@@ -219,79 +375,132 @@ class CourseViewPage extends StatelessWidget {
   }
 }
 
-class _CourseSignUpButton extends StatelessWidget {
-  const _CourseSignUpButton({Key? key}) : super(key: key);
+class CourseToggleEnrollButton extends StatefulWidget {
+  final Course _course;
 
-  void _signUpToCourse() {
-    return;
-  }
+  const CourseToggleEnrollButton({Key? key, required Course course})
+      : _course = course,
+        super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-        onPressed: () {
-          showDialog<String>(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: const Text('Sign up'),
-                content: const Text(
-                    'Are you sure you want to sign up to Course Name?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _signUpToCourse();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('SIGN UP'),
-                  ),
-                ]),
-          );
-        },
-        child: const Text('SIGN UP TO COURSE'));
-  }
+  _CourseToggleEnrollButtonState createState() =>
+      _CourseToggleEnrollButtonState();
 }
 
-class _CourseLeaveButton extends StatelessWidget {
-  const _CourseLeaveButton({Key? key}) : super(key: key);
+class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
+  late bool _isEnrolled;
+  bool _isLoading = false;
 
-  void _leaveCourse() {
-    return;
+  @override
+  void initState() {
+    _isEnrolled = widget._course.role == CourseRole.student;
+    super.initState();
+  }
+
+  void _enrollToCourse() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result = await Server.enrollToCourse(auth, widget._course.courseID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        _isEnrolled = true;
+        widget._course.role = CourseRole.student;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _unsubscribeFromCourse() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.unsubscribeFromCourse(auth, widget._course.courseID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        _isEnrolled = false;
+        widget._course.role = CourseRole.notStudent;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-        onPressed: () {
-          showDialog<String>(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: const Text('Leave Course'),
-                content:
-                    const Text('Are you sure you want to leave Course Name?'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('CANCEL'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      _leaveCourse();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('LEAVE'),
-                  ),
-                ]),
-          );
-        },
-        style: ElevatedButton.styleFrom(primary: Colors.red[700]),
-        child: const Text('LEAVE COURSE'));
+    return Center(
+      child: _isLoading
+          ? const CircularProgressIndicator()
+          : (_isEnrolled
+              ? ElevatedButton(
+                  onPressed: () {
+                    showDialog<String>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                          title: const Text('Unsubscribe from Course'),
+                          content: Text(
+                              'Are you sure you want to leave ${widget._course.title}?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('CANCEL'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _unsubscribeFromCourse();
+                                Navigator.pop(context);
+                              },
+                              child: const Text('UNSUBSCRIBE'),
+                            ),
+                          ]),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(primary: Colors.red[700]),
+                  child: const Text('UNSUBSCRIBE FROM COURSE'),
+                )
+              : ElevatedButton(
+                  onPressed: () {
+                    showDialog<String>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                          title: const Text('Enroll to Course'),
+                          content: Text(
+                              'Are you sure you want to enroll to ${widget._course.title}?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('CANCEL'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                _enrollToCourse();
+                                Navigator.pop(context);
+                              },
+                              child: const Text('ENROLL'),
+                            ),
+                          ]),
+                    );
+                  },
+                  child: const Text('ENROLL TO COURSE'),
+                )),
+    );
   }
 }
