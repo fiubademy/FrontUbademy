@@ -945,6 +945,60 @@ class Server {
     }
   }
 
+  static Future<String?> updateExam(
+      Auth auth, String courseID, String examID, String examTitle) async {
+    final Map<String, String> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    Map<String, dynamic> body = {
+      'exam_title': examTitle,
+    };
+
+    final response = await http.patch(
+      Uri.https(url, "/exams/edit_exam/$examID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to edit exam title. Please try again.';
+    }
+  }
+
+  static Future<String?> deleteExam(
+      Auth auth, String courseID, String examID) async {
+    final Map<String, String> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.delete(
+      Uri.https(url, "/exams/$examID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please login again';
+      default:
+        return 'Failed to delete exam. Please try again.';
+    }
+  }
+
   static Future<Map<String, dynamic>> addExamQuestion(
       Auth auth,
       String courseID,
@@ -1109,7 +1163,7 @@ class Server {
     final Map<String, dynamic> body = {
       'question_type': type,
       'question_content': questionDescription,
-      'choice_responses': options,
+      'choice_responses': questionOptions,
     };
 
     final response = await http.patch(
@@ -1119,6 +1173,9 @@ class Server {
       },
       body: jsonEncode(body),
     );
+
+    print(response.statusCode);
+    print(response.body);
 
     switch (response.statusCode) {
       case HttpStatus.ok:

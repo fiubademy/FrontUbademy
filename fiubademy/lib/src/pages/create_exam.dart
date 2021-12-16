@@ -64,6 +64,8 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
 
     Auth auth = Provider.of<Auth>(context, listen: false);
 
+    bool err = false;
+
     // New exam
     if (examID == null) {
       String title = _titleController.text;
@@ -73,9 +75,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         title,
       );
       if (result['error'] != null) {
-        final snackBar = SnackBar(
-          content: Text('${result['error']}'),
-        );
+        final snackBar = SnackBar(content: Text('${result['error']}'));
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         _isLoading = false;
@@ -83,13 +83,26 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
       } else {
         examID = result['content'];
       }
+    } else {
+      if (widget.examTitle != _titleController.text) {
+        String? result = await Server.updateExam(
+          auth,
+          widget.course.courseID,
+          examID!,
+          _titleController.text,
+        );
+        if (result != null) {
+          final snackBar = SnackBar(content: Text(result));
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          err = true;
+        }
+      }
     }
 
     if (examID == null) {
       throw Error();
     }
-
-    bool err = false;
 
     // General case
 

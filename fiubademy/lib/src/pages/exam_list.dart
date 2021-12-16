@@ -123,13 +123,19 @@ class _ExamListState extends State<ExamList> {
 
   @override
   Widget build(BuildContext context) {
-    return PagedListView<int, Exam>(
-      padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-      pagingController: _pagingController,
-      builderDelegate: PagedChildBuilderDelegate<Exam>(
-        itemBuilder: (context, item, index) => ExamCard(
-          exam: item,
-          course: widget.course,
+    return RefreshIndicator(
+      onRefresh: () => Future.sync(
+        () => _pagingController.refresh(),
+      ),
+      child: PagedListView<int, Exam>(
+        padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+        pagingController: _pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Exam>(
+          itemBuilder: (context, item, index) => ExamCard(
+            exam: item,
+            course: widget.course,
+            onDelete: () => _pagingController.refresh(),
+          ),
         ),
       ),
     );
@@ -139,12 +145,26 @@ class _ExamListState extends State<ExamList> {
 class ExamCard extends StatelessWidget {
   final Exam exam;
   final Course course;
+  final VoidCallback? onDelete;
 
   const ExamCard({
     Key? key,
     required this.exam,
     required this.course,
+    this.onDelete,
   }) : super(key: key);
+
+  void _deleteExam(context) async {
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.deleteExam(auth, course.courseID, exam.examID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      onDelete?.call();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,33 +173,56 @@ class ExamCard extends StatelessWidget {
         onTap: () {},
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(exam.title,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: Theme.of(context).textTheme.headline6),
-                  ),
-                  if (course.role == CourseRole.owner)
-                    IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ExamCreationPage(
-                                  course: course,
-                                  examID: exam.examID,
-                                  examTitle: exam.title,
-                                  questions: exam._questions),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.edit_rounded))
-                ],
-              ),
+            ListTile(
+              title: Text(exam.title),
+              trailing: course.role == CourseRole.owner
+                  ? Wrap(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ExamCreationPage(
+                                    course: course,
+                                    examID: exam.examID,
+                                    examTitle: exam.title,
+                                    questions: exam._questions),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit_rounded),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            showDialog<String>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                  title: const Text('Delete Exam'),
+                                  content: Text(
+                                      'Are you sure you want to delete exam \'${exam.title}?\''),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('CANCEL'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        _deleteExam(context);
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('DELETE'),
+                                    ),
+                                  ]),
+                            );
+                          },
+                          icon: const Icon(Icons.delete_forever_rounded),
+                        )
+                      ],
+                    )
+                  : null,
             ),
           ],
         ),
