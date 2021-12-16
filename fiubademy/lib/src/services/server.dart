@@ -899,4 +899,251 @@ class Server {
         return map;
     }
   }
+
+  static Future<Map<String, dynamic>> createExam(
+      Auth auth, String courseID, String examTitle) async {
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final Map<String, dynamic> body = {
+      'examDate': DateTime.now().toIso8601String(),
+      'examTitle': examTitle,
+    };
+
+    final response = await http.post(
+      Uri.https(url, "/exams/create_exam/$courseID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: body,
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': jsonDecode(response.body)['exam_id'],
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': null,
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error': 'Failed to create exam. Please try again in a few minutes',
+          'content': null,
+        };
+        return map;
+    }
+  }
+
+  static Future<Map<String, dynamic>> addExamQuestion(
+      Auth auth,
+      String courseID,
+      String examID,
+      String questionType,
+      String questionDescription,
+      List<String> questionOptions) async {
+    final Map<String, dynamic> queryParams = {
+      'exam_id': examID,
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    String type;
+    switch (questionType) {
+      case 'Development':
+        type = 'DES';
+        break;
+      case 'Multiple Choice':
+        type = 'MC';
+        break;
+      case 'Single Choice':
+        type = 'SC';
+        break;
+      case 'True or False':
+        type = 'VOF';
+        break;
+      default:
+        throw Error();
+    }
+
+    if (questionType == 'True or False') {
+      questionOptions.add('True');
+      questionOptions.add('False');
+    }
+
+    List<Map<String, dynamic>> options = [];
+    for (int i = 0; i < questionOptions.length; i++) {
+      options.add({
+        'number': i,
+        'content': questionOptions[i],
+      });
+    }
+
+    final Map<String, dynamic> body = {
+      'question_type': type,
+      'question_content': questionDescription,
+      'choice_responses': jsonEncode(options),
+    };
+
+    final response = await http.post(
+      Uri.https(url, "/exams/$examID/add_question", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: body,
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': jsonDecode(response.body)['question_id'],
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': null,
+        };
+        return map;
+      case HttpStatus.badRequest:
+        Map<String, dynamic> map = {
+          'error': 'Failed to create question. Invalid fields',
+          'content': null,
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to create question. Please try again in a few minutes',
+          'content': null,
+        };
+        return map;
+    }
+  }
+
+  static Future<String?> deleteExamQuestion(
+    Auth auth,
+    String courseID,
+    String questionID,
+  ) async {
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.delete(
+      Uri.https(url, "/exams/questions/$questionID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      case HttpStatus.notFound:
+        return 'Failed to delete question. Question does not exist';
+      default:
+        return 'Failed to delete question. Please try again in a few minutes';
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateExamQuestion(
+      Auth auth,
+      String courseID,
+      String questionID,
+      String questionType,
+      String questionDescription,
+      List<String> questionOptions) async {
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    String type;
+    switch (questionType) {
+      case 'Development':
+        type = 'DES';
+        break;
+      case 'Multiple Choice':
+        type = 'MC';
+        break;
+      case 'Single Choice':
+        type = 'SC';
+        break;
+      case 'True or False':
+        type = 'VOF';
+        break;
+      default:
+        throw Error();
+    }
+
+    if (questionType == 'True or False') {
+      questionOptions.add('True');
+      questionOptions.add('False');
+    }
+
+    List<Map<String, dynamic>> options = [];
+    for (int i = 0; i < questionOptions.length; i++) {
+      options.add({
+        'number': i,
+        'content': questionOptions[i],
+      });
+    }
+
+    final Map<String, dynamic> body = {
+      'question_type': type,
+      'question_content': questionDescription,
+      'choice_responses': jsonEncode(options),
+    };
+
+    final response = await http.patch(
+      Uri.https(url, "/exams/edit_question/$questionID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: body,
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': jsonDecode(response.body)['question_id'],
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again',
+          'content': null,
+        };
+        return map;
+      case HttpStatus.badRequest:
+        Map<String, dynamic> map = {
+          'error': 'Failed to create question. Invalid fields',
+          'content': null,
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to create question. Please try again in a few minutes',
+          'content': null,
+        };
+        return map;
+    }
+  }
 }

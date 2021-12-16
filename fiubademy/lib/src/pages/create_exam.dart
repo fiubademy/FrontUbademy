@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
 class Question {
   String _type;
-  String _description;
+  String description;
   List<String> _options;
 
   Question()
       : _type = 'Development',
-        _description = "",
+        description = "",
         _options = [];
 
   static List<String> get types =>
@@ -20,10 +18,6 @@ class Question {
   set type(String newType) {
     _type = newType;
     _options.clear();
-  }
-
-  set description(String newDescription) {
-    _description = newDescription;
   }
 
   List<String> get options => _options;
@@ -58,7 +52,7 @@ class ExamCreationPage extends StatefulWidget {
 
 class _ExamCreationPageState extends State<ExamCreationPage> {
   bool _isLoading = false;
-  final List<Question> _questions = [Question()];
+  final List<Question> _questions = [];
   final List<Question> _newQuestions = [];
   final List<Question> _deletedQuestions = [];
   final _formKey = GlobalKey<FormState>();
@@ -73,6 +67,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
     setState(() {
       _isLoading = true;
     });
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {}
 
     setState(() {
@@ -83,26 +78,55 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New Exam'), actions: [
-        IconButton(onPressed: () {}, icon: const Icon(Icons.save))
-      ]),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add_rounded),
-        onPressed: () {
-          setState(() {
-            _newQuestions.add(Question());
-          });
-        },
+      appBar: AppBar(title: const Text('New Exam')),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: null,
+            child: const Icon(Icons.save_rounded),
+            onPressed: () {
+              _saveExam();
+            },
+          ),
+          const SizedBox(height: 16.0),
+          FloatingActionButton(
+            heroTag: null,
+            child: const Icon(Icons.add_rounded),
+            onPressed: () {
+              setState(() {
+                _newQuestions.add(Question());
+              });
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    labelText: 'Exam Title',
+                    hintText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Title must not be empty';
+                    }
+                    return null;
+                  },
+                ),
+              ),
               Expanded(
                 child: Scrollbar(
                   child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+                    padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                     itemCount: _questions.length + _newQuestions.length,
                     itemBuilder: (context, index) {
                       final optionController = optionControllers.putIfAbsent(
@@ -131,12 +155,6 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
                   ),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  _saveExam();
-                },
-                child: const Text('CREATE'),
-              ),
             ],
           ),
         ),
@@ -163,7 +181,18 @@ class QuestionEdition extends FormField<Question> {
   }) : super(
           key: key,
           initialValue: initialValue ?? Question(),
-          validator: (question) => 'ERROR',
+          validator: (question) {
+            if (question!.description.isEmpty) {
+              return 'Description must not be empty';
+            }
+            if (question.type == 'Development' ||
+                question.type == 'True or False') {
+              return null;
+            }
+            if (question.options.length < 2) {
+              return 'Options must be two or more';
+            }
+          }, // FIXME Poner algo interesante
           builder: (FormFieldState<Question> state) {
             return Card(
               child: Padding(
@@ -202,17 +231,40 @@ class QuestionEdition extends FormField<Question> {
                         }
                       },
                     ),
-                    const TextField(
+                    TextField(
                       maxLines: null,
+                      onChanged: (String? newValue) {
+                        if (newValue != null &&
+                            newValue != state.value!.description) {
+                          state.value!.description = newValue;
+                          state.didChange(state.value);
+                        }
+                      },
                       decoration: InputDecoration(
                         hintText: 'Description',
+                        errorText:
+                            (state.hasError && state.value!.description.isEmpty)
+                                ? 'Description must not be empty'
+                                : null,
                       ),
                     ),
                     if (state.value!.type == 'Single Choice' ||
                         state.value!.type == 'Multiple Choice') ...[
                       const SizedBox(height: 24.0),
-                      Text('Options',
-                          style: Theme.of(state.context).textTheme.subtitle1),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Options',
+                              style:
+                                  Theme.of(state.context).textTheme.subtitle1),
+                          if (state.hasError && state.value!.options.length < 2)
+                            Text('Options must be two or more',
+                                style: TextStyle(
+                                    color: Theme.of(state.context)
+                                        .colorScheme
+                                        .error)),
+                        ],
+                      ),
                       const SizedBox(height: 16.0),
                       for (int i = 0; i < state.value!.options.length; i++)
                         Row(
