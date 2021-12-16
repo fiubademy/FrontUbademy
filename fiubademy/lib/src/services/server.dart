@@ -916,8 +916,11 @@ class Server {
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
-      body: body,
+      body: jsonEncode(body),
     );
+
+    print(response.statusCode);
+    print(response.body);
 
     switch (response.statusCode) {
       case HttpStatus.ok:
@@ -989,7 +992,7 @@ class Server {
     final Map<String, dynamic> body = {
       'question_type': type,
       'question_content': questionDescription,
-      'choice_responses': jsonEncode(options),
+      'choice_responses': options,
     };
 
     final response = await http.post(
@@ -997,7 +1000,7 @@ class Server {
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
-      body: body,
+      body: jsonEncode(body),
     );
 
     switch (response.statusCode) {
@@ -1060,7 +1063,7 @@ class Server {
     }
   }
 
-  static Future<Map<String, dynamic>> updateExamQuestion(
+  static Future<String?> updateExamQuestion(
       Auth auth,
       String courseID,
       String questionID,
@@ -1106,7 +1109,7 @@ class Server {
     final Map<String, dynamic> body = {
       'question_type': type,
       'question_content': questionDescription,
-      'choice_responses': jsonEncode(options),
+      'choice_responses': options,
     };
 
     final response = await http.patch(
@@ -1114,34 +1117,89 @@ class Server {
       headers: <String, String>{
         HttpHeaders.contentTypeHeader: 'application/json',
       },
-      body: body,
+      body: jsonEncode(body),
     );
 
     switch (response.statusCode) {
       case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      case HttpStatus.badRequest:
+        return 'Failed to update question. Invalid fields';
+      default:
+        return 'Failed to update question. Please try again in a few minutes';
+    }
+  }
+
+  static Future<Map<String, dynamic>> getExams(
+      Auth auth, String courseID) async {
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/exams/course/$courseID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> body = jsonDecode(response.body);
         Map<String, dynamic> map = {
           'error': null,
-          'content': jsonDecode(response.body)['question_id'],
+          'content': body,
         };
         return map;
       case _invalidToken:
         auth.deleteAuth();
         Map<String, dynamic> map = {
-          'error': 'Invalid credentials. Please log in again',
-          'content': null,
+          'error': 'Invalid credentials. Please log in again'
         };
         return map;
-      case HttpStatus.badRequest:
+      default:
         Map<String, dynamic> map = {
-          'error': 'Failed to create question. Invalid fields',
-          'content': null,
+          'error': 'Failed to get exams. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getExamQuestions(
+      Auth auth, String courseID, String examID) async {
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/exams/$examID/questions", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': body,
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
         };
         return map;
       default:
         Map<String, dynamic> map = {
           'error':
-              'Failed to create question. Please try again in a few minutes',
-          'content': null,
+              'Failed to get exam questions. Please try again in a few minutes'
         };
         return map;
     }

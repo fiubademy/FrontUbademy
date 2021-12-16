@@ -1,68 +1,66 @@
-// Yes. This class could definitely be more OOP.
-// Feel free to make the changes
-import 'dart:js_util';
-
 class Question {
-  int _type;
-  String _description;
-  List<String>? _options;
+  String? id;
+  String _type;
+  String description;
+  List<String> _options;
 
-  Question(int type, String description)
-      : _type = 0,
-        _description = "" {
-    if (type < 0 || type > 3) {
-      throw ArgumentError.value(type);
-    }
-  }
+  Question()
+      : _type = 'Development',
+        description = "",
+        _options = [];
 
-  int get type => _type;
-  String typeName(int type) {
-    switch (type) {
-      case 0:
+  Question.fromMap(Map<String, dynamic> questionData)
+      : id = questionData['QuestionID'],
+        _type = typeFromServer(questionData['QuestionType']),
+        description = questionData['QuestionContent'],
+        _options = questionData['ChoiceOptions'] == null
+            ? []
+            : List<String>.from(questionData['ChoiceOptions']);
+
+  static String typeFromServer(String serverType) {
+    switch (serverType) {
+      case 'DES':
         return 'Development';
-      case 1:
+      case 'MC':
         return 'Multiple Choice';
-      case 2:
+      case 'SC':
         return 'Single Choice';
-      case 3:
+      case 'VOF':
         return 'True or False';
       default:
-        return 'Error';
+        throw Error();
     }
   }
 
-  String get description => _description;
-  List<String> get options {
-    if (_options == null) {
-      throw StateError('Invalid operation for this type of question');
-    }
-    return _options!;
-  }
+  static List<String> get types =>
+      ['Development', 'Multiple Choice', 'Single Choice', 'True or False'];
 
-  set type(int newType) {
-    if (newType == _type) return;
+  String get type => _type;
+
+  set type(String newType) {
     _type = newType;
-    if (_type == 0 || _type == 3) {
-      _options = null;
-    }
+    _options.clear();
   }
 
-  set description(String newDescription) {
-    if (newDescription == _description) return;
-    _description = newDescription;
-  }
+  List<String> get options => _options;
 
   addOption(String newOption) {
-    if (_type == 0 || _type == 3) {
-      throw TypeError();
+    if (_type == 'Development' || _type == 'True or False') {
+      throw Error();
     }
-    _options ??= [];
-    _options!.add(newOption);
+
+    if (_options.contains(newOption)) {
+      return;
+    }
+
+    _options.add(newOption);
   }
 
-  deleteOptionAt(int index) {
-    if (_options == null) {
-      throw StateError('Invalid operation for this type of question');
+  removeOptionAt(int index) {
+    if (_type == 'Development' || _type == 'True or False') {
+      throw Error();
     }
+
+    _options.removeAt(index);
   }
 }

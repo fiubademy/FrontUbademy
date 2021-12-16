@@ -1,50 +1,23 @@
+import 'package:fiubademy/src/models/course.dart';
+import 'package:fiubademy/src/models/question.dart';
+import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/server.dart';
 import 'package:flutter/material.dart';
-
-class Question {
-  String _type;
-  String description;
-  List<String> _options;
-
-  Question()
-      : _type = 'Development',
-        description = "",
-        _options = [];
-
-  static List<String> get types =>
-      ['Development', 'Multiple Choice', 'Single Choice', 'True or False'];
-
-  String get type => _type;
-
-  set type(String newType) {
-    _type = newType;
-    _options.clear();
-  }
-
-  List<String> get options => _options;
-
-  addOption(String newOption) {
-    if (_type == 'Development' || _type == 'True or False') {
-      throw Error();
-    }
-
-    if (_options.contains(newOption)) {
-      return;
-    }
-
-    _options.add(newOption);
-  }
-
-  removeOptionAt(int index) {
-    if (_type == 'Development' || _type == 'True or False') {
-      throw Error();
-    }
-
-    _options.removeAt(index);
-  }
-}
+import 'package:provider/provider.dart';
 
 class ExamCreationPage extends StatefulWidget {
-  const ExamCreationPage({Key? key}) : super(key: key);
+  final Course course;
+  final String? examID;
+  final String? examTitle;
+  final List<Question>? questions;
+
+  const ExamCreationPage(
+      {Key? key,
+      required this.course,
+      this.examID,
+      this.examTitle,
+      this.questions})
+      : super(key: key);
 
   @override
   _ExamCreationPageState createState() => _ExamCreationPageState();
@@ -52,27 +25,142 @@ class ExamCreationPage extends StatefulWidget {
 
 class _ExamCreationPageState extends State<ExamCreationPage> {
   bool _isLoading = false;
-  final List<Question> _questions = [];
+  String? examID;
+  List<Question> _questions = [];
   final List<Question> _newQuestions = [];
   final List<Question> _deletedQuestions = [];
   final _formKey = GlobalKey<FormState>();
   Map<int, TextEditingController> optionControllers = {};
+  final _titleController = TextEditingController();
 
   @override
   void initState() {
+    examID = widget.examID;
+    if (widget.examTitle != null) _titleController.text = widget.examTitle!;
+    _questions = widget.questions ?? [];
     super.initState();
   }
 
-  void _saveExam() {
-    setState(() {
-      _isLoading = true;
-    });
+  void _saveExam() async {
+    if (_isLoading) return;
+    _isLoading = true;
     FocusScope.of(context).unfocus();
-    if (!_formKey.currentState!.validate()) {}
 
-    setState(() {
+    if (!_formKey.currentState!.validate()) {
       _isLoading = false;
-    });
+      return;
+    }
+
+    // No questions left
+    if (_questions.isEmpty && _newQuestions.isEmpty) {
+      const snackBar = SnackBar(
+        content: Text('Please add at least one question'),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      _isLoading = false;
+      return;
+    }
+
+    Auth auth = Provider.of<Auth>(context, listen: false);
+
+    // New exam
+    if (examID == null) {
+      String title = _titleController.text;
+      Map<String, dynamic> result = await Server.createExam(
+        auth,
+        widget.course.courseID,
+        title,
+      );
+      if (result['error'] != null) {
+        final snackBar = SnackBar(
+          content: Text('${result['error']}'),
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        _isLoading = false;
+        return;
+      } else {
+        examID = result['content'];
+      }
+    }
+
+    if (examID == null) {
+      throw Error();
+    }
+
+    bool err = false;
+
+    // General case
+
+    for (int i = 0; i < _deletedQuestions.length; i++) {
+      print('Deleted questions: ${_deletedQuestions.length}');
+      Question questionToDelete = _deletedQuestions.last;
+      String? result = await Server.deleteExamQuestion(
+        auth,
+        widget.course.courseID,
+        questionToDelete.id!,
+      );
+      if (result != null) {
+        final snackBar = SnackBar(
+          content: Text(result),
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        err = true;
+      } else {
+        _deletedQuestions.removeLast();
+      }
+    }
+
+    for (var question in _questions) {
+      print('Existing questions: ${_questions.length}');
+      String? result = await Server.updateExamQuestion(
+          auth,
+          widget.course.courseID,
+          question.id!,
+          question.type,
+          question.description,
+          question.options);
+      if (result != null) {
+        final snackBar = SnackBar(
+          content: Text(result),
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        err = true;
+      }
+    }
+
+    for (int i = 0; i < _newQuestions.length; i++) {
+      print('New Questions: ${_newQuestions.length}');
+      Question question = _newQuestions.first;
+      Map<String, dynamic> result = await Server.addExamQuestion(
+        auth,
+        widget.course.courseID,
+        examID!,
+        question.type,
+        question.description,
+        question.options,
+      );
+      if (result['error'] != null) {
+        final snackBar = SnackBar(
+          content: Text('${result['error']}'),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        err = true;
+      } else {
+        question.id = result['content'];
+        _questions.add(_newQuestions.removeAt(0));
+      }
+    }
+
+    if (!err) {
+      const snackBar = SnackBar(content: Text('Successfully saved the exam'));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+    _isLoading = false;
   }
 
   @override
@@ -109,6 +197,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
                 child: TextFormField(
+                  controller: _titleController,
                   decoration: const InputDecoration(
                     isDense: true,
                     labelText: 'Exam Title',
@@ -167,6 +256,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
     for (var controller in optionControllers.values) {
       controller.dispose();
     }
+    _titleController.dispose();
     super.dispose();
   }
 }
@@ -232,12 +322,13 @@ class QuestionEdition extends FormField<Question> {
                       },
                     ),
                     TextField(
+                      controller:
+                          TextEditingController(text: state.value!.description),
                       maxLines: null,
                       onChanged: (String? newValue) {
                         if (newValue != null &&
                             newValue != state.value!.description) {
                           state.value!.description = newValue;
-                          state.didChange(state.value);
                         }
                       },
                       decoration: InputDecoration(
@@ -269,7 +360,7 @@ class QuestionEdition extends FormField<Question> {
                       for (int i = 0; i < state.value!.options.length; i++)
                         Row(
                           children: [
-                            Text(state.value!._options[i]),
+                            Text(state.value!.options[i]),
                             const Spacer(),
                             IconButton(
                               onPressed: () {
