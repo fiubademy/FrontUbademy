@@ -179,7 +179,10 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New Exam')),
+      appBar: AppBar(
+        title:
+            examID != null ? const Text('Edit Exam') : const Text('New Exam'),
+      ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [

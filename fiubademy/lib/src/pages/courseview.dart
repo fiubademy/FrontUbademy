@@ -99,11 +99,11 @@ class _FavouriteIconState extends State<FavouriteIcon> {
       isFavourite = !isFavourite;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    Map<String, dynamic> result = isFavourite
+    String? result = isFavourite
         ? await Server.addFavourite(auth, widget.courseID)
         : await Server.removeFavourite(auth, widget.courseID);
-    if (result['error'] != null) {
-      final snackBar = SnackBar(content: Text('${result['error']}'));
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       setState(() {
         isFavourite = !isFavourite;

@@ -74,13 +74,15 @@ class _ProfileChangeFormState extends State<ProfileChangeForm> {
     FocusScope.of(context).unfocus();
     if (_editProfileFormKey.currentState!.validate()) {
       Auth auth = Provider.of<Auth>(context, listen: false);
-      String result =
+      String? result =
           await Server.updateProfile(auth, _usernameController.text);
-      if (result == 'Your username has been correctly changed.') {
+      if (result == null) {
         Provider.of<User>(context, listen: false).username =
             _usernameController.text;
+        result = 'Your username has been successfully changed';
       }
       final snackBar = SnackBar(content: Text(result));
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
     setState(() {
@@ -176,12 +178,13 @@ class _PasswordChangeFormState extends State<PasswordChangeForm> {
     FocusScope.of(context).unfocus();
     if (_updatePasswordFormKey.currentState!.validate()) {
       Auth auth = Provider.of<Auth>(context, listen: false);
-      String result = await Server.changePassword(
+      String? result = await Server.changePassword(
           auth, _oldPasswordController.text, _passwordController.text);
-      if (result == 'Your password has been succesfully changed.') {
+      if (result == null) {
         _oldPasswordController.clear();
         _passwordController.clear();
         _passwordConfirmationController.clear();
+        result = 'Your password has been succesfully changed.';
       }
       final snackBar = SnackBar(content: Text(result));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);

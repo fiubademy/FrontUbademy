@@ -27,10 +27,9 @@ class _CourseEditionPageState extends State<CourseEditionPage> {
       isLoading = true;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    Map<String, dynamic> result =
-        await Server.publishCourse(auth, widget._course.courseID);
-    if (result['error'] != null) {
-      final snackBar = SnackBar(content: Text('${result['error']}'));
+    String? result = await Server.publishCourse(auth, widget._course.courseID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {

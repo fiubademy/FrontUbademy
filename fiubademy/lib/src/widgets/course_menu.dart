@@ -126,6 +126,12 @@ class CourseStudentMenu extends StatelessWidget {
                     builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExamListPage(course: _course),
+              ),
+            );
             break;
           case 2:
             break;
@@ -158,7 +164,7 @@ class CourseCollaboratorMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
+    return PopupMenuButton<int>(
       onSelected: (value) {
         switch (value) {
           case 0:
@@ -168,6 +174,13 @@ class CourseCollaboratorMenu extends StatelessWidget {
                     builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
+            print('Collab exams');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExamListPage(course: _course),
+              ),
+            );
             break;
           case 2:
             break;
@@ -175,12 +188,15 @@ class CourseCollaboratorMenu extends StatelessWidget {
       },
       itemBuilder: (context) => [
         const PopupMenuItem(
+          value: 0,
           child: Text('View'),
         ),
         const PopupMenuItem(
+          value: 1,
           child: Text('Exams'),
         ),
         const PopupMenuItem(
+          value: 2,
           child: Text('Forum'),
         ),
       ],

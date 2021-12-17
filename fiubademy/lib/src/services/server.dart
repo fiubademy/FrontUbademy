@@ -106,6 +106,8 @@ class Server {
   /* Logs out the user manually */
 
   static Future<bool> logout(Auth auth) async {
+    if (auth.userToken == null) return false;
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -127,6 +129,8 @@ class Server {
   /* Gets a user, given my permissions */
 
   static Future<Map<String, dynamic>?> getUser(Auth auth, String userID) async {
+    if (auth.userToken == null) return null;
+
     final response = await http.get(
       Uri.https(url, "/users/ID/$userID"),
       headers: <String, String>{
@@ -146,6 +150,8 @@ class Server {
 
   static Future<bool> updatePosition(
       Auth auth, double latitude, double longitude) async {
+    if (auth.userToken == null) return false;
+
     final Map<String, String> body = {
       'latitude': latitude.toString(),
       'longitude': longitude.toString(),
@@ -172,6 +178,10 @@ class Server {
   /* Enrolls self to a course. Returns null on success. An error message otherwise. */
 
   static Future<String?> enrollToCourse(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -191,7 +201,7 @@ class Server {
         return 'Failed to enroll. Please try again in a few minutes';
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to enroll. Please try again in a few minutes';
     }
@@ -201,6 +211,10 @@ class Server {
 
   static Future<String?> unsubscribeFromCourse(
       Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -216,7 +230,7 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       case HttpStatus.notFound:
       default:
         return 'Failed to unsubscribe. Please try again in a few minutes';
@@ -227,6 +241,10 @@ class Server {
 
   static Future<String?> addCollaborator(
       Auth auth, String collaboratorID, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -243,7 +261,7 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       case HttpStatus.notFound:
         return 'Failed to add collaborator. User does not exist';
       case HttpStatus.conflict:
@@ -258,6 +276,10 @@ class Server {
 
   static Future<String?> unsubscribeCollaborator(
       Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -274,7 +296,7 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       case HttpStatus.notFound:
         return 'Failed to unsubscribe as collaborator. Please try again in a few minutes';
       default:
@@ -287,6 +309,10 @@ class Server {
 
   static Future<String?> removeCollaborator(
       Auth auth, String collaboratorID, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -305,7 +331,7 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       case HttpStatus.unauthorized:
         return 'Failed to remove collaborator. Not enough permissions';
       case HttpStatus.notFound:
@@ -319,6 +345,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getCourses(Auth auth, int page,
       {String? title, int? subLevel, String? category}) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -355,6 +385,8 @@ class Server {
 
   static Future<Map<String, dynamic>?> getCourse(
       Auth auth, String courseID) async {
+    if (auth.userToken == null) return null;
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
       'id': courseID,
@@ -384,6 +416,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getMyOwnedCourses(
       Auth auth, int page) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -417,6 +453,9 @@ class Server {
 
   static Future<Map<String, dynamic>> getMyCollaborationCourses(
       Auth auth, int page) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -450,6 +489,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getMyEnrolledCourses(
       Auth auth, int page) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -481,6 +524,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getMyFavouriteCourses(
       Auth auth, int page) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -514,6 +561,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getCourseStudents(
       Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -548,6 +599,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getCourseCollaborators(
       Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -587,6 +642,10 @@ class Server {
       int minSubscription,
       double latitude,
       double longitude) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -614,7 +673,7 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to create course. Please try again.';
     }
@@ -627,6 +686,10 @@ class Server {
       required String category,
       required List<String> hashtags,
       required int minSubscription}) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -652,15 +715,19 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to edit course. Please try again.';
     }
   }
 
-/*Edits User's Username in the API. Returns null on success or error string in failure.*/
+  /* Edits User's Username in the API. Returns null on success or an error string in failure. */
 
-  static Future<String> updateProfile(Auth auth, String newUsername) async {
+  static Future<String?> updateProfile(Auth auth, String newUsername) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> body = {'username': newUsername};
     final response =
         await http.patch(Uri.https(url, "/users/${auth.userToken}"),
@@ -670,19 +737,23 @@ class Server {
             body: jsonEncode(body));
     switch (response.statusCode) {
       case HttpStatus.ok:
-        return 'Your username has been correctly changed.';
+        return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to edit username. Please try again in a few minutes';
     }
   }
 
-  /* Changes user password when giving it the correct old user's password. Returns an OK message on success, and an error string on failure. */
+  /* Changes user password when giving it the correct old user's password. Returns null on error or an error string on failure. */
 
-  static Future<String> changePassword(
+  static Future<String?> changePassword(
       Auth auth, String oldPassword, String newPassword) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> body = {
       "oldPassword": oldPassword,
       "newPassword": newPassword
@@ -696,20 +767,24 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.accepted:
-        return 'Your password has been succesfully changed.';
+        return null;
       case HttpStatus.notAcceptable:
         return 'Failed to change password. New password must have 8 or more characters.';
       case HttpStatus.badRequest:
         return 'Failed to change password. Your old Password is not correct.';
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to change password. Please try again in a few minutes';
     }
   }
 
   static Future<bool> isEnrolled(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return false;
+    }
+
     final Map<String, String> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -736,6 +811,10 @@ class Server {
   }
 
   static Future<bool> isCollaborator(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return false;
+    }
+
     final Map<String, String> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -762,6 +841,10 @@ class Server {
   }
 
   static Future<bool> isFavourite(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return false;
+    }
+
     final Map<String, String> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -787,8 +870,11 @@ class Server {
     }
   }
 
-  static Future<Map<String, dynamic>> addFavourite(
-      Auth auth, String courseID) async {
+  static Future<String?> addFavourite(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, dynamic> queryParams = {
       'fav': 'true',
       'courseId': courseID,
@@ -803,30 +889,20 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.accepted:
-        Map<String, dynamic> map = {
-          'error': null,
-          'content': true,
-        };
-        return map;
+        return null;
       case _invalidToken:
         auth.deleteAuth();
-        Map<String, dynamic> map = {
-          'error': 'Invalid credentials. Please log in again',
-          'content': false
-        };
-        return map;
+        return 'Invalid credentials. Please log in again';
       default:
-        Map<String, dynamic> map = {
-          'error':
-              'Failed to add to favourite. Please try again in a few minutes',
-          'content': false
-        };
-        return map;
+        return 'Failed to add to favourite. Please try again in a few minutes';
     }
   }
 
-  static Future<Map<String, dynamic>> removeFavourite(
-      Auth auth, String courseID) async {
+  static Future<String?> removeFavourite(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, dynamic> queryParams = {
       'fav': 'false',
       'courseId': courseID,
@@ -841,30 +917,20 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.accepted:
-        Map<String, dynamic> map = {
-          'error': null,
-          'content': true,
-        };
-        return map;
+        return null;
       case _invalidToken:
         auth.deleteAuth();
-        Map<String, dynamic> map = {
-          'error': 'Invalid credentials. Please log in again',
-          'content': false
-        };
-        return map;
+        return 'Invalid credentials. Please log in again';
       default:
-        Map<String, dynamic> map = {
-          'error':
-              'Failed to remove to favourite. Please try again in a few minutes',
-          'content': false
-        };
-        return map;
+        return 'Failed to remove to favourite. Please try again in a few minutes';
     }
   }
 
-  static Future<Map<String, dynamic>> publishCourse(
-      Auth auth, String courseID) async {
+  static Future<String?> publishCourse(Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, dynamic> queryParams = {
       'in_edition': 'false',
       'sessionToken': auth.userToken!,
@@ -878,30 +944,24 @@ class Server {
 
     switch (response.statusCode) {
       case HttpStatus.accepted:
-        Map<String, dynamic> map = {
-          'error': null,
-          'content': true,
-        };
-        return map;
+        return null;
       case _invalidToken:
         auth.deleteAuth();
-        Map<String, dynamic> map = {
-          'error': 'Invalid credentials. Please log in again',
-          'content': false
-        };
-        return map;
+        return 'Invalid credentials. Please log in again';
       default:
-        Map<String, dynamic> map = {
-          'error':
-              'Failed to publish course. Please try again in a few minutes',
-          'content': false
-        };
-        return map;
+        return 'Failed to publish course. Please try again in a few minutes';
     }
   }
 
   static Future<Map<String, dynamic>> createExam(
       Auth auth, String courseID, String examTitle) async {
+    if (auth.userToken == null) {
+      return {
+        'error': 'Invalid credentials. Please log in again',
+        'content': null,
+      };
+    }
+
     final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -918,9 +978,6 @@ class Server {
       },
       body: jsonEncode(body),
     );
-
-    print(response.statusCode);
-    print(response.body);
 
     switch (response.statusCode) {
       case HttpStatus.ok:
@@ -947,6 +1004,10 @@ class Server {
 
   static Future<String?> updateExam(
       Auth auth, String courseID, String examID, String examTitle) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -968,7 +1029,7 @@ class Server {
         return null;
       case _invalidToken:
         auth.deleteAuth();
-        return 'Invalid credentials. Please login again';
+        return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to edit exam title. Please try again.';
     }
@@ -976,6 +1037,10 @@ class Server {
 
   static Future<String?> deleteExam(
       Auth auth, String courseID, String examID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, String> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -1006,6 +1071,13 @@ class Server {
       String questionType,
       String questionDescription,
       List<String> questionOptions) async {
+    if (auth.userToken == null) {
+      return {
+        'error': 'Invalid credentials. Please log in again',
+        'content': null,
+      };
+    }
+
     final Map<String, dynamic> queryParams = {
       'exam_id': examID,
       'courseId': courseID,
@@ -1092,6 +1164,10 @@ class Server {
     String courseID,
     String questionID,
   ) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, dynamic> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -1124,6 +1200,10 @@ class Server {
       String questionType,
       String questionDescription,
       List<String> questionOptions) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
     final Map<String, dynamic> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
@@ -1192,6 +1272,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getExams(
       Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -1211,6 +1295,12 @@ class Server {
           'content': body,
         };
         return map;
+      case HttpStatus.notFound:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': [],
+        };
+        return map;
       case _invalidToken:
         auth.deleteAuth();
         Map<String, dynamic> map = {
@@ -1227,6 +1317,10 @@ class Server {
 
   static Future<Map<String, dynamic>> getExamQuestions(
       Auth auth, String courseID, String examID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
     final Map<String, dynamic> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
