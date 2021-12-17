@@ -456,6 +456,7 @@ class Server {
     if (auth.userToken == null) {
       return {'error': 'Invalid credentials. Please log in again'};
     }
+
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
     };
@@ -789,6 +790,7 @@ class Server {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
     };
+
     final response = await http.get(
       Uri.https(url, "/courses/my_courses/1", queryParams),
       headers: <String, String>{
@@ -816,7 +818,7 @@ class Server {
     }
 
     final Map<String, String> queryParams = {
-      'courseId': courseID,
+      'courseIdFilter': courseID,
       'sessionToken': auth.userToken!,
     };
     final response = await http.get(
@@ -1227,11 +1229,6 @@ class Server {
         throw Error();
     }
 
-    if (questionType == 'True or False') {
-      questionOptions.add('True');
-      questionOptions.add('False');
-    }
-
     List<Map<String, dynamic>> options = [];
     for (int i = 0; i < questionOptions.length; i++) {
       options.add({
@@ -1239,11 +1236,21 @@ class Server {
         'content': questionOptions[i],
       });
     }
+    if (questionType == 'True or False') {
+      options.add({
+        'number': 0,
+        'content': 'True',
+      });
+      options.add({
+        'number': 1,
+        'content': 'False',
+      });
+    }
 
     final Map<String, dynamic> body = {
       'question_type': type,
       'question_content': questionDescription,
-      'choice_responses': questionOptions,
+      'choice_responses': options,
     };
 
     final response = await http.patch(
@@ -1254,11 +1261,8 @@ class Server {
       body: jsonEncode(body),
     );
 
-    print(response.statusCode);
-    print(response.body);
-
     switch (response.statusCode) {
-      case HttpStatus.ok:
+      case HttpStatus.accepted:
         return null;
       case _invalidToken:
         auth.deleteAuth();
@@ -1353,6 +1357,35 @@ class Server {
               'Failed to get exam questions. Please try again in a few minutes'
         };
         return map;
+    }
+  }
+
+  static Future<String?> publishExam(
+      Auth auth, String courseID, String examID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.patch(
+      Uri.https(url, "/exams/$examID/publish", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      default:
+        return 'Failed to publish exam. Please try again in a few minutes';
     }
   }
 }

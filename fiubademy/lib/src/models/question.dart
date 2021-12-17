@@ -13,9 +13,13 @@ class Question {
       : id = questionData['QuestionID'],
         _type = typeFromServer(questionData['QuestionType']),
         description = questionData['QuestionContent'],
-        _options = questionData['ChoiceOptions'] == null
+        _options = (questionData['QuestionType'] == 'DES' ||
+                questionData['QuestionType'] == 'VOF')
             ? []
-            : List<String>.from(questionData['ChoiceOptions']);
+            : List<String>.generate(
+                questionData['ChoiceOptions'].length,
+                (index) => questionData['ChoiceOptions'][index]['Content'],
+              );
 
   static String typeFromServer(String serverType) {
     switch (serverType) {

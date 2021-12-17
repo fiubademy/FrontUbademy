@@ -9,6 +9,7 @@ class ExamCreationPage extends StatefulWidget {
   final Course course;
   final String? examID;
   final String? examTitle;
+  final bool inEdition;
   final List<Question>? questions;
 
   const ExamCreationPage(
@@ -16,6 +17,7 @@ class ExamCreationPage extends StatefulWidget {
       required this.course,
       this.examID,
       this.examTitle,
+      this.inEdition = true,
       this.questions})
       : super(key: key);
 
@@ -26,6 +28,7 @@ class ExamCreationPage extends StatefulWidget {
 class _ExamCreationPageState extends State<ExamCreationPage> {
   bool _isLoading = false;
   String? examID;
+  late bool inEdition;
   List<Question> _questions = [];
   final List<Question> _newQuestions = [];
   final List<Question> _deletedQuestions = [];
@@ -38,6 +41,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
     examID = widget.examID;
     if (widget.examTitle != null) _titleController.text = widget.examTitle!;
     _questions = widget.questions ?? [];
+    inEdition = widget.inEdition;
     super.initState();
   }
 
@@ -93,8 +97,9 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         );
         if (result != null) {
           final snackBar = SnackBar(content: Text(result));
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          }
           err = true;
         }
       }
@@ -117,7 +122,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         final snackBar = SnackBar(
           content: Text(result),
         );
-        if (!mounted) return;
+        if (!mounted) continue;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         err = true;
       } else {
@@ -137,7 +142,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         final snackBar = SnackBar(
           content: Text(result),
         );
-        if (!mounted) return;
+        if (!mounted) continue;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         err = true;
       }
@@ -157,6 +162,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         final snackBar = SnackBar(
           content: Text('${result['error']}'),
         );
+        if (!mounted) continue;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         err = true;
       } else {
@@ -167,10 +173,28 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
 
     if (!err) {
       const snackBar = SnackBar(content: Text('Successfully saved the exam'));
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
     }
     _isLoading = false;
+  }
+
+  void _publishExam() async {
+    setState(() {
+      inEdition = false;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.publishExam(auth, widget.course.courseID, examID!);
+    if (result != null) {
+      const snackBar = SnackBar(content: Text('Successfully saved the exam'));
+      if (!mounted) return;
+      setState(() {
+        inEdition = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   @override
@@ -180,28 +204,30 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         title:
             examID != null ? const Text('Edit Exam') : const Text('New Exam'),
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: null,
-            child: const Icon(Icons.save_rounded),
-            onPressed: () {
-              _saveExam();
-            },
-          ),
-          const SizedBox(height: 16.0),
-          FloatingActionButton(
-            heroTag: null,
-            child: const Icon(Icons.add_rounded),
-            onPressed: () {
-              setState(() {
-                _newQuestions.add(Question());
-              });
-            },
-          ),
-        ],
-      ),
+      floatingActionButton: inEdition
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  heroTag: null,
+                  child: const Icon(Icons.save_rounded),
+                  onPressed: () {
+                    _saveExam();
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                FloatingActionButton(
+                  heroTag: null,
+                  child: const Icon(Icons.add_rounded),
+                  onPressed: () {
+                    setState(() {
+                      _newQuestions.add(Question());
+                    });
+                  },
+                ),
+              ],
+            )
+          : null,
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -209,20 +235,40 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-                child: TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    labelText: 'Exam Title',
-                    hintText: 'Title',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Title must not be empty';
-                    }
-                    return null;
-                  },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        enabled: inEdition,
+                        controller: _titleController,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 16.0,
+                          ),
+                          labelText: 'Exam Title',
+                          hintText: 'Title',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Title must not be empty';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    if (examID != null) ...[
+                      const SizedBox(width: 16.0),
+                      TextButton(
+                        onPressed: inEdition ? () => _publishExam() : null,
+                        child: inEdition
+                            ? const Text('PUBLISH')
+                            : const Text('PUBLISHED'),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               Expanded(
@@ -235,6 +281,7 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
                           index, () => TextEditingController());
                       if (index < _questions.length) {
                         return QuestionEdition(
+                          enabled: inEdition,
                           initialValue: _questions[index],
                           optionController: optionController,
                           onDelete: () => setState(() {
@@ -278,6 +325,7 @@ class QuestionEdition extends FormField<Question> {
   QuestionEdition({
     Key? key,
     Question? initialValue,
+    bool enabled = true,
     required TextEditingController optionController,
     VoidCallback? onDelete,
     required int index,
@@ -309,8 +357,8 @@ class QuestionEdition extends FormField<Question> {
                             style: Theme.of(state.context).textTheme.headline6),
                         const Spacer(),
                         IconButton(
-                          onPressed: () => onDelete?.call(),
-                          icon: const Icon(Icons.delete),
+                          onPressed: enabled ? () => onDelete?.call() : null,
+                          icon: const Icon(Icons.delete_rounded),
                         ),
                       ],
                     ),
@@ -327,14 +375,18 @@ class QuestionEdition extends FormField<Question> {
                           );
                         },
                       ).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null && newValue != state.value!.type) {
-                          state.value!.type = newValue;
-                          state.didChange(state.value);
-                        }
-                      },
+                      onChanged: enabled
+                          ? (String? newValue) {
+                              if (newValue != null &&
+                                  newValue != state.value!.type) {
+                                state.value!.type = newValue;
+                                state.didChange(state.value);
+                              }
+                            }
+                          : null,
                     ),
                     TextField(
+                      enabled: enabled,
                       controller:
                           TextEditingController(text: state.value!.description),
                       maxLines: null,
@@ -376,15 +428,18 @@ class QuestionEdition extends FormField<Question> {
                             Text(state.value!.options[i]),
                             const Spacer(),
                             IconButton(
-                              onPressed: () {
-                                state.value!.removeOptionAt(i);
-                                state.didChange(state.value);
-                              },
+                              onPressed: enabled
+                                  ? () {
+                                      state.value!.removeOptionAt(i);
+                                      state.didChange(state.value);
+                                    }
+                                  : null,
                               icon: const Icon(Icons.clear_rounded),
                             ),
                           ],
                         ),
                       TextField(
+                        enabled: enabled,
                         controller: optionController,
                         decoration: InputDecoration(
                           hintText: 'New option',

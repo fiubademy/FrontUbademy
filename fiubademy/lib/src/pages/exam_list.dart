@@ -1,30 +1,12 @@
 import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/models/question.dart';
+import 'package:fiubademy/src/models/exam.dart';
 import 'package:fiubademy/src/pages/create_exam.dart';
+import 'package:fiubademy/src/pages/exam_solution.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
-
-class Exam {
-  final String _examID;
-  final String _title;
-  final bool _inEdition;
-  final List<Question> _questions;
-
-  Exam.fromMap(Map<String, dynamic> examData)
-      : _examID = examData['ExamID'],
-        _title = examData['ExamTitle'],
-        _inEdition = examData['Status'] == 'EDITION',
-        _questions = List.generate(examData['Questions'].length, (index) {
-          return Question.fromMap(examData['Questions'][index]);
-        });
-
-  String get examID => _examID;
-  String get title => _title;
-  bool get inEdition => _inEdition;
-}
 
 class ExamListPage extends StatelessWidget {
   final Course course;
@@ -169,61 +151,65 @@ class ExamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: () {},
-        child: Column(
-          children: [
-            ListTile(
-              title: Text(exam.title),
-              trailing: course.role == CourseRole.owner
-                  ? Wrap(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ExamCreationPage(
-                                    course: course,
-                                    examID: exam.examID,
-                                    examTitle: exam.title,
-                                    questions: exam._questions),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.edit_rounded),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            showDialog<String>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                  title: const Text('Delete Exam'),
-                                  content: Text(
-                                      'Are you sure you want to delete exam \'${exam.title}?\''),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('CANCEL'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        _deleteExam(context);
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('DELETE'),
-                                    ),
-                                  ]),
-                            );
-                          },
-                          icon: const Icon(Icons.delete_forever_rounded),
-                        )
-                      ],
-                    )
-                  : null,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ExamSolutionPage(exam: exam),
             ),
-          ],
+          );
+        },
+        child: ListTile(
+          title: Text(exam.title),
+          trailing: course.role == CourseRole.owner
+              ? Wrap(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ExamCreationPage(
+                                course: course,
+                                examID: exam.examID,
+                                examTitle: exam.title,
+                                inEdition: exam.inEdition,
+                                questions: exam.questions),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.edit_rounded),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                              title: const Text('Delete Exam'),
+                              content: Text(
+                                  'Are you sure you want to delete exam \'${exam.title}\'?\n\nAll student answers and marks will be deleted forever'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('CANCEL'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    _deleteExam(context);
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('DELETE'),
+                                ),
+                              ]),
+                        );
+                      },
+                      icon: const Icon(Icons.delete_forever_rounded),
+                    )
+                  ],
+                )
+              : null,
         ),
       ),
     );
