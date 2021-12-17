@@ -2,7 +2,7 @@ class Question {
   String? id;
   String _type;
   String description;
-  List<String> _options;
+  final List<String> _options;
 
   Question()
       : _type = 'Development',

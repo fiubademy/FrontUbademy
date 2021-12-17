@@ -8,10 +8,10 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 
 class Exam {
-  String _examID;
-  String _title;
-  bool _inEdition;
-  List<Question> _questions;
+  final String _examID;
+  final String _title;
+  final bool _inEdition;
+  final List<Question> _questions;
 
   Exam.fromMap(Map<String, dynamic> examData)
       : _examID = examData['ExamID'],
@@ -95,7 +95,6 @@ class _ExamListState extends State<ExamList> {
 
   Future<List<Exam>> onLoad(index) async {
     Auth auth = Provider.of<Auth>(context, listen: false);
-    int page = (index ~/ 5) + 1;
     final result = await Server.getExams(
       auth,
       widget.course.courseID,

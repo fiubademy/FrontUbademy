@@ -143,6 +143,13 @@ class _LogInFormState extends State<LogInForm> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 }
 
 class GoogleLogInButton extends StatefulWidget {
@@ -170,8 +177,8 @@ class _GoogleLogInButtonState extends State<GoogleLogInButton> {
             Server.loginWithGoogle(
                     auth,
                     _currentUser!.email,
-                    // TODO DisplayName not available? Needs review
-                    _currentUser!.displayName ?? "",
+                    _currentUser!.displayName ??
+                        "GoogleUser${_currentUser!.id}",
                     _currentUser!.id)
                 .then((result) {
               if (result != null) {

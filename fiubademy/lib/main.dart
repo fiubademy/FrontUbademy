@@ -34,7 +34,6 @@ class FiubademyApp extends StatelessWidget {
     user.updateData(userData);
   }
 
-  // TODO Search for all TextEditingController and dispose them;
   @override
   Widget build(BuildContext context) {
     return MultiProvider(

@@ -204,6 +204,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
 
   @override
   void dispose() {
+    _newCollaboratorController.dispose();
     _pagingController.dispose();
     super.dispose();
   }

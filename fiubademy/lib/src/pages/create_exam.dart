@@ -107,7 +107,6 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
     // General case
 
     for (int i = 0; i < _deletedQuestions.length; i++) {
-      print('Deleted questions: ${_deletedQuestions.length}');
       Question questionToDelete = _deletedQuestions.last;
       String? result = await Server.deleteExamQuestion(
         auth,
@@ -127,7 +126,6 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
     }
 
     for (var question in _questions) {
-      print('Existing questions: ${_questions.length}');
       String? result = await Server.updateExamQuestion(
           auth,
           widget.course.courseID,
@@ -146,7 +144,6 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
     }
 
     for (int i = 0; i < _newQuestions.length; i++) {
-      print('New Questions: ${_newQuestions.length}');
       Question question = _newQuestions.first;
       Map<String, dynamic> result = await Server.addExamQuestion(
         auth,

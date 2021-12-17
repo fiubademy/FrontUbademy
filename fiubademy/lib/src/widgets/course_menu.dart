@@ -174,7 +174,6 @@ class CourseCollaboratorMenu extends StatelessWidget {
                     builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
-            print('Collab exams');
             Navigator.push(
               context,
               MaterialPageRoute(

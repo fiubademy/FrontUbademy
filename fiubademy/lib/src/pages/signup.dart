@@ -199,4 +199,13 @@ class _SignUpFormState extends State<SignUpForm> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _passwordConfirmationController.dispose();
+    super.dispose();
+  }
 }
