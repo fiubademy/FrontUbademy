@@ -111,7 +111,8 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
 
     // General case
 
-    for (int i = 0; i < _deletedQuestions.length; i++) {
+    int iterMax = _deletedQuestions.length;
+    for (int i = 0; i < iterMax; i++) {
       Question questionToDelete = _deletedQuestions.last;
       String? result = await Server.deleteExamQuestion(
         auth,
@@ -148,7 +149,8 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
       }
     }
 
-    for (int i = 0; i < _newQuestions.length; i++) {
+    iterMax = _newQuestions.length;
+    for (int i = 0; i < iterMax; i++) {
       Question question = _newQuestions.first;
       Map<String, dynamic> result = await Server.addExamQuestion(
         auth,
@@ -177,7 +179,11 @@ class _ExamCreationPageState extends State<ExamCreationPage> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
-    _isLoading = false;
+
+    // Necessary to update indexes
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _publishExam() async {

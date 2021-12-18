@@ -1131,6 +1131,8 @@ class Server {
       body: jsonEncode(body),
     );
 
+    print('${response.statusCode} + $questionDescription}');
+
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> map = {
@@ -1351,6 +1353,8 @@ class Server {
           'error': 'Invalid credentials. Please log in again'
         };
         return map;
+      case HttpStatus.notFound:
+        return {'error': null, 'content': []};
       default:
         Map<String, dynamic> map = {
           'error':
@@ -1386,6 +1390,181 @@ class Server {
         return 'Invalid credentials. Please log in again';
       default:
         return 'Failed to publish exam. Please try again in a few minutes';
+    }
+  }
+
+  static Future<Map<String, dynamic>> getUncorrectedExams(
+      Auth auth, String courseID, String examID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.get(
+      Uri.https(
+          url, "/exams/$examID/students_without_qualification", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> body = jsonDecode(response.body);
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': body,
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      case HttpStatus.notFound:
+        String errMsg = jsonDecode(response.body);
+        if (errMsg == 'No users have answered this exam yet.') {
+          return {
+            'error': null,
+            'content': [],
+          };
+        }
+        return {
+          'error':
+              'Failed to get exams awaiting correction. Please try again in a few minutes'
+        };
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get exams awaiting correction. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
+  static Future<String?> submitQuestionAnswer(Auth auth, String courseID,
+      String examID, String questionID, String questionAnswer) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'user_id': auth.userID!,
+      'sessionToken': auth.userToken!,
+    };
+
+    final Map<String, dynamic> body = {
+      'response_content': questionAnswer,
+    };
+
+    final response = await http.post(
+      Uri.https(url, "/exams/$examID/answer/$questionID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      case HttpStatus.forbidden:
+        return 'Failed to submit exam answer. Already submitted';
+      default:
+        return 'Failed to get submit exam answer. Please try again in a few minutes';
+    }
+  }
+
+  static Future<Map<String, dynamic>> getQuestionAnswer(
+    Auth auth,
+    String courseID,
+    String questionID,
+    String userID,
+  ) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/exams/student/$userID/student_response/$questionID",
+          queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return {
+          'error': null,
+          'content': jsonDecode(response.body)['response_content']
+        };
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      default:
+        return {
+          'error':
+              'Failed to load student\'s answer. Please try again in a few minutes'
+        };
+    }
+  }
+
+  static Future<Map<String, dynamic>> markExam(
+    Auth auth,
+    String courseID,
+    String examID,
+    String userID,
+    int mark,
+    String feedback,
+  ) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+    };
+
+    final Map<String, dynamic> body = {
+      'mark': mark,
+      'comments': feedback,
+    };
+
+    final response = await http.post(
+        Uri.https(url, "/exams/$examID/qualify/$userID", queryParams),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: jsonEncode(body));
+
+    switch (response.statusCode) {
+      case HttpStatus.created:
+        return {'error': null, 'content': jsonDecode(response.body)};
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      case HttpStatus.badRequest:
+        return {'error': 'Failed to mark exam. Exam already corrected'};
+      default:
+        return {
+          'error': 'Failed to mark exam. Please try again in a few minutes'
+        };
     }
   }
 }

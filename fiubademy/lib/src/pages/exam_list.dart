@@ -2,6 +2,7 @@ import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/models/exam.dart';
 import 'package:fiubademy/src/pages/create_exam.dart';
 import 'package:fiubademy/src/pages/exam_solution.dart';
+import 'package:fiubademy/src/pages/exam_view.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:flutter/material.dart';
@@ -17,15 +18,18 @@ class ExamListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Exams')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ExamCreationPage(course: course)));
-        },
-        label: const Text('CREATE'),
-      ),
+      floatingActionButton: course.role == CourseRole.owner
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ExamCreationPage(course: course)));
+              },
+              label: const Text('CREATE'),
+            )
+          : null,
       body: SafeArea(
         child: ExamList(course: course),
       ),
@@ -136,12 +140,13 @@ class ExamCard extends StatelessWidget {
   }) : super(key: key);
 
   void _deleteExam(context) async {
+    final _scaffoldMessenger = ScaffoldMessenger.of(context);
     Auth auth = Provider.of<Auth>(context, listen: false);
     String? result =
         await Server.deleteExam(auth, course.courseID, exam.examID);
     if (result != null) {
       final snackBar = SnackBar(content: Text(result));
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      _scaffoldMessenger.showSnackBar(snackBar);
     } else {
       onDelete?.call();
     }
@@ -151,14 +156,23 @@ class ExamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ExamSolutionPage(exam: exam),
-            ),
-          );
-        },
+        onTap: course.role == CourseRole.student
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ExamSolutionPage(exam: exam, course: course),
+                  ),
+                );
+              }
+            : () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            ExamView(exam: exam, course: course)));
+              },
         child: ListTile(
           title: Text(exam.title),
           trailing: course.role == CourseRole.owner

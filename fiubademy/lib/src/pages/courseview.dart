@@ -65,8 +65,8 @@ class NextPage extends StatelessWidget {
 }
 
 class FavouriteIcon extends StatefulWidget {
-  bool isFavourite;
-  void Function()? onToggle;
+  final bool isFavourite;
+  final void Function()? onToggle;
   final String courseID;
 
   FavouriteIcon(
@@ -74,7 +74,7 @@ class FavouriteIcon extends StatefulWidget {
       required this.isFavourite,
       this.onToggle,
       required this.courseID})
-      : super(key: key) {}
+      : super(key: key);
 
   @override
   _FavouriteIconState createState() => _FavouriteIconState();
@@ -133,41 +133,15 @@ class CourseViewPage extends StatelessWidget {
   })  : _course = course,
         super(key: key);
 
-  /*Future<Map<String, dynamic>> loadCourse(String courseID) {
-    return 
-  }*/
-
-  final Future<void> _delay = Future.delayed(const Duration(seconds: 0));
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _delay, //Course.create(courseID, loadCourse(courseID)),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.waiting:
-              return Scaffold(
-                appBar: AppBar(
-                  title: const Text('Ubademy'),
-                ),
-                body: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            default:
-              if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              }
-              return Scaffold(
-                appBar: AppBar(title: const Text('Ubademy'), actions: [
-                  FavouriteIcon(
-                      isFavourite: _course.isFavourite,
-                      courseID: _course.courseID)
-                ]),
-                body: _buildCourse(context),
-              );
-          }
-        });
+    return Scaffold(
+      appBar: AppBar(title: const Text('Ubademy'), actions: [
+        FavouriteIcon(
+            isFavourite: _course.isFavourite, courseID: _course.courseID)
+      ]),
+      body: _buildCourse(context),
+    );
   }
 
   Widget _buildCourse(BuildContext context) {
@@ -403,6 +377,9 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
     String? result = await Server.enrollToCourse(auth, widget._course.courseID);
+
+    if (!mounted) return;
+
     if (result != null) {
       final snackBar = SnackBar(content: Text(result));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -425,6 +402,9 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
     Auth auth = Provider.of<Auth>(context, listen: false);
     String? result =
         await Server.unsubscribeFromCourse(auth, widget._course.courseID);
+
+    if (!mounted) return;
+
     if (result != null) {
       final snackBar = SnackBar(content: Text(result));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);

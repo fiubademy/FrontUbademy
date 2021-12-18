@@ -186,6 +186,9 @@ class _PasswordChangeFormState extends State<PasswordChangeForm> {
       Auth auth = Provider.of<Auth>(context, listen: false);
       String? result = await Server.changePassword(
           auth, _oldPasswordController.text, _passwordController.text);
+
+      if (!mounted) return;
+
       if (result == null) {
         _oldPasswordController.clear();
         _passwordController.clear();
@@ -195,6 +198,7 @@ class _PasswordChangeFormState extends State<PasswordChangeForm> {
       final snackBar = SnackBar(content: Text(result));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
+
     setState(() {
       _isLoading = false;
     });

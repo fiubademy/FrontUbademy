@@ -87,6 +87,9 @@ class _SignUpFormState extends State<SignUpForm> {
     if (_signUpFormKey.currentState!.validate()) {
       String? result = await Server.signup(_usernameController.text,
           _emailController.text, _passwordController.text);
+
+      if (!mounted) return;
+
       if (result == null) {
         await _login();
         Navigator.pop(context);
@@ -95,6 +98,9 @@ class _SignUpFormState extends State<SignUpForm> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
+
+    if (!mounted) return;
+
     setState(() {
       isLoading = false;
     });
@@ -104,6 +110,9 @@ class _SignUpFormState extends State<SignUpForm> {
     Auth auth = Provider.of<Auth>(context, listen: false);
     String? result = await Server.login(
         auth, _emailController.text, _passwordController.text);
+
+    if (!mounted) return;
+
     if (result != null) {
       final snackBar = SnackBar(content: Text(result));
       ScaffoldMessenger.of(context).showSnackBar(snackBar);

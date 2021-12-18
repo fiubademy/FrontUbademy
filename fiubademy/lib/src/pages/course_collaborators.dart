@@ -70,6 +70,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
         // Keep only part past 'Exception: '. Yes, it's ugly.
         final snackBar =
             SnackBar(content: Text(error.toString().substring(11)));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
       if (!mounted) return;
@@ -90,9 +91,11 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
         _pagingController.refresh();
       } else {
         final snackBar = SnackBar(content: Text(result));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
+    if (!mounted) return;
     setState(() {
       _isLoadingAdd = false;
     });
@@ -106,6 +109,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
     Auth auth = Provider.of<Auth>(context, listen: false);
     String? result =
         await Server.removeCollaborator(auth, collaboratorID, widget._courseID);
+    if (!mounted) return;
     if (result == null) {
       _pagingController.refresh();
     } else {

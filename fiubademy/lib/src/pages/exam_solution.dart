@@ -1,28 +1,30 @@
+import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/models/exam.dart';
 import 'package:fiubademy/src/models/question.dart';
 import 'package:fiubademy/src/services/auth.dart';
+import 'package:fiubademy/src/services/server.dart';
+import 'package:fiubademy/src/widgets/exam_cards.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class QuestionAnswer {
-  String _questionID;
-  String _answer;
+  final String _questionID;
+  final String _answer;
 
   QuestionAnswer(String questionID, String answer)
       : _questionID = questionID,
         _answer = answer;
+
+  String get questionID => _questionID;
+  String get answer => _answer;
 }
 
 class ExamSolutionPage extends StatelessWidget {
   final Exam exam;
-  List<QuestionAnswer> _answers = [];
+  final Course course;
 
-  ExamSolutionPage({Key? key, required this.exam})
-      : _answers = [],
-        super(key: key);
-
-  void _sendSolution() {}
+  const ExamSolutionPage({Key? key, required this.exam, required this.course})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,301 +33,170 @@ class ExamSolutionPage extends StatelessWidget {
         title: const Text('Exam'),
       ),
       body: SafeArea(
-        child: Form(
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-            itemCount: exam.questions.length + 1,
-            itemBuilder: (context, index) {
-              if (index == exam.questions.length) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 0),
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('SEND ANSWER'),
-                  ),
-                );
-              }
-              Question question = exam.questions[index];
-              switch (question.type) {
-                case 'Development':
-                  return DevelopmentQuestionCard(
-                    question: question,
-                    index: index,
-                    onSaved: (newValue) {
-                      newValue ??= "Unanswered";
-                      _answers.add(QuestionAnswer(question.id!, newValue));
-                    },
-                  );
-                case 'True or False':
-                  return TrueOrFalseQuestionCard(
-                    question: question,
-                    index: index,
-                    onSaved: (newValue) {
-                      String answer = 'Unanswered';
-                      if (newValue != null) {
-                        answer = newValue ? 'True' : 'False';
-                      }
-                      _answers.add(QuestionAnswer(question.id!, answer));
-                    },
-                  );
-                case 'Multiple Choice':
-                  return MultipleChoiceQuestionCard(
-                    question: question,
-                    index: index,
-                    initialValue: {
-                      for (var item in question.options) item: false
-                    },
-                    onSaved: (Map<String, bool>? newValue) {
-                      String answer = 'Unanswered';
-                      if (newValue != null) {
-                        for (var option in newValue.keys) {
-                          if (newValue[option]!) {
-                            answer += ';$option';
-                          }
-                        }
-                      }
-                      _answers.add(QuestionAnswer(question.id!, answer));
-                    },
-                  );
-                case 'Single Choice':
-                  return SingleChoiceQuestionCard(
-                    question: question,
-                    index: index,
-                    onSaved: (newValue) {
-                      String answer = newValue ?? 'Unanswered';
-                      _answers.add(QuestionAnswer(question.id!, answer));
-                    },
-                  );
-                default:
-                  throw Error();
-              }
-            },
-          ),
+        child: SingleChildScrollView(
+          child: ExamSolutionForm(exam: exam, course: course),
         ),
       ),
     );
   }
 }
 
-class DevelopmentQuestionCard extends StatelessWidget {
-  final Question question;
-  final int index;
-  final FormFieldSetter<String>? onSaved;
+class ExamSolutionForm extends StatefulWidget {
+  final Exam exam;
+  final Course course;
 
-  const DevelopmentQuestionCard({
-    Key? key,
-    required this.question,
-    required this.index,
-    this.onSaved,
-  }) : super(key: key);
+  const ExamSolutionForm({Key? key, required this.exam, required this.course})
+      : super(key: key);
+
+  @override
+  _ExamSolutionFormState createState() => _ExamSolutionFormState();
+}
+
+class _ExamSolutionFormState extends State<ExamSolutionForm> {
+  bool _isLoading = false;
+  final List<QuestionAnswer> _answers = [];
+  final _answerFormKey = GlobalKey<FormState>();
+
+  void _sendSolution() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    _answers.clear();
+    _answerFormKey.currentState!.save();
+    if (_answers.length != widget.exam.questions.length) {
+      const snackBar =
+          SnackBar(content: Text('Unknown error. Please try again'));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+    }
+
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    for (var answer in _answers) {
+      String? result = await Server.submitQuestionAnswer(
+          auth,
+          widget.course.courseID,
+          widget.exam.examID,
+          answer.questionID,
+          answer.answer);
+      if (result != null) {
+        final snackBar = SnackBar(content: Text(result));
+        if (!mounted) continue;
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context);
+  }
+
+  Widget _buildQuestionCard(index) {
+    Question question = widget.exam.questions[index];
+    switch (question.type) {
+      case 'Development':
+        return DevelopmentQuestionCard(
+          question: question,
+          index: index,
+          onSaved: (newValue) {
+            newValue ??= "Unanswered";
+            _answers.add(QuestionAnswer(question.id!, newValue));
+          },
+        );
+      case 'True or False':
+        return TrueOrFalseQuestionCard(
+          question: question,
+          index: index,
+          onSaved: (newValue) {
+            String answer = 'Unanswered';
+            if (newValue != null) {
+              answer = newValue ? 'True' : 'False';
+            }
+            _answers.add(QuestionAnswer(question.id!, answer));
+          },
+        );
+      case 'Multiple Choice':
+        return MultipleChoiceQuestionCard(
+          question: question,
+          index: index,
+          initialValue: {for (var item in question.options) item: false},
+          onSaved: (Map<String, bool>? newValue) {
+            String answer = 'Unanswered';
+            if (newValue != null) {
+              for (var option in newValue.keys) {
+                if (newValue[option]!) {
+                  answer += ';$option';
+                }
+              }
+            }
+            _answers.add(QuestionAnswer(question.id!, answer));
+          },
+        );
+      case 'Single Choice':
+        return SingleChoiceQuestionCard(
+          question: question,
+          index: index,
+          onSaved: (newValue) {
+            String answer = newValue ?? 'Unanswered';
+            _answers.add(QuestionAnswer(question.id!, answer));
+          },
+        );
+      default:
+        throw Error();
+    }
+  }
+
+  _buildSubmitButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4.0, 8.0, 4.0, 0),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ElevatedButton(
+              onPressed: () {
+                showDialog<String>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Submit Answer'),
+                    content: const Text(
+                        'Are you sure you want to submit your answer to this exam?\n\nPlease, make sure you double-checked your answers'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('CANCEL'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          _sendSolution();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('SUBMIT'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Text('SUBMIT ANSWER'),
+            ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Form(
+      key: _answerFormKey,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-            child: Text('Question ${index + 1}',
-                style: Theme.of(context).textTheme.headline6),
-          ),
-          ListTile(
-              title: Text('${question.description}\n\nWrite your answer:')),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-            child: TextFormField(
-              onSaved: onSaved,
-              maxLines: null,
-              minLines: 2,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-        ],
-      ),
+          //padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+          children: [
+            for (int i = 0; i < widget.exam.questions.length; i++)
+              _buildQuestionCard(i),
+            _buildSubmitButton(),
+          ]),
     );
   }
-}
-
-enum TrueOrFalse { answerTrue, answerFalse }
-
-class TrueOrFalseQuestionCard extends FormField<bool> {
-  TrueOrFalseQuestionCard({
-    Key? key,
-    required Question question,
-    required int index,
-    FormFieldSetter<bool>? onSaved,
-  }) : super(
-          key: key,
-          onSaved: onSaved,
-          builder: (FormFieldState<bool> state) {
-            return Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-                    child: Builder(builder: (context) {
-                      return Text('Question ${index + 1}',
-                          style: Theme.of(context).textTheme.headline6);
-                    }),
-                  ),
-                  ListTile(
-                      title: Text('${question.description}\n\nYour answer:')),
-                  RadioListTile<bool>(
-                    title: const Text('True'),
-                    value: true,
-                    groupValue: state.value,
-                    onChanged: (value) {
-                      state.didChange(value);
-                    },
-                  ),
-                  RadioListTile<bool>(
-                    title: const Text('False'),
-                    value: false,
-                    groupValue: state.value,
-                    onChanged: (value) {
-                      state.didChange(value);
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-}
-
-class MultipleChoiceQuestionCard extends FormField<Map<String, bool>> {
-  MultipleChoiceQuestionCard({
-    Key? key,
-    required Question question,
-    required int index,
-    FormFieldSetter<Map<String, bool>>? onSaved,
-    FormFieldValidator<Map<String, bool>>? validator,
-    required Map<String, bool> initialValue,
-  }) : super(
-          key: key,
-          onSaved: onSaved,
-          validator: validator,
-          initialValue: initialValue,
-          builder: (FormFieldState<Map<String, bool>> state) {
-            return Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-                    child: Builder(
-                      builder: (context) {
-                        return Text('Question ${index + 1}',
-                            style: Theme.of(context).textTheme.headline6);
-                      },
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                        '${question.description}\n\nSelect all the correct options:'),
-                  ),
-                  Builder(
-                    builder: (context) {
-                      final theme = Theme.of(context);
-                      final oldCheckboxTheme = theme.checkboxTheme;
-
-                      final newCheckBoxTheme = oldCheckboxTheme.copyWith(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3)),
-                      );
-                      return Theme(
-                        data: theme.copyWith(checkboxTheme: newCheckBoxTheme),
-                        child: Column(
-                          children: [
-                            for (final option in question.options)
-                              CheckboxListTile(
-                                title: Text(option),
-                                value: state.value![option],
-                                onChanged: (checked) {
-                                  if (checked == null) return;
-                                  state.value![option] = checked;
-                                  state.didChange(state.value);
-                                },
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-}
-
-class SingleChoiceQuestionCard extends FormField<String> {
-  SingleChoiceQuestionCard({
-    Key? key,
-    required Question question,
-    required int index,
-    FormFieldSetter<String>? onSaved,
-    FormFieldValidator<String>? validator,
-  }) : super(
-          key: key,
-          onSaved: onSaved,
-          validator: validator,
-          builder: (FormFieldState<String> state) {
-            return Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-                    child: Builder(
-                      builder: (context) {
-                        return Text('Question ${index + 1}',
-                            style: Theme.of(context).textTheme.headline6);
-                      },
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                        '${question.description}\n\nSelect the correct option:'),
-                  ),
-                  Builder(
-                    builder: (context) {
-                      final theme = Theme.of(context);
-                      final oldCheckboxTheme = theme.checkboxTheme;
-
-                      final newCheckBoxTheme = oldCheckboxTheme.copyWith(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3)),
-                      );
-                      return Theme(
-                        data: theme.copyWith(checkboxTheme: newCheckBoxTheme),
-                        child: Column(
-                          children: [
-                            for (final option in question.options)
-                              RadioListTile<String>(
-                                title: Text(option),
-                                value: option,
-                                groupValue: state.value,
-                                onChanged: (selected) {
-                                  state.didChange(selected);
-                                },
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
 }

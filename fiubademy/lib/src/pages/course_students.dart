@@ -63,6 +63,7 @@ class _CourseStudentsPageState extends State<CourseStudentsPage> {
         // Keep only part past 'Exception: '. Yes, it's ugly.
         final snackBar =
             SnackBar(content: Text(error.toString().substring(11)));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
       if (!mounted) return;
@@ -92,9 +93,11 @@ class _CourseStudentsPageState extends State<CourseStudentsPage> {
                   subtitle: Text(item.email),
                   onTap: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProfilePage(user: item)));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfilePage(user: item),
+                      ),
+                    );
                   },
                 ),
               ),
