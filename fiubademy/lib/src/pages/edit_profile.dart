@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fiubademy/src/services/auth.dart';
@@ -27,6 +28,14 @@ class EditProfilePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16.0),
                   const ProfileChangeForm(),
+                  const Divider(),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    'Change Avatar',
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                  const SizedBox(height: 16.0),
+                  const AvatarChangeForm(),
                   const Divider(),
                   const SizedBox(height: 8.0),
                   Text(
@@ -296,5 +305,93 @@ class _PasswordChangeFormState extends State<PasswordChangeForm> {
     _passwordController.dispose();
     _passwordConfirmationController.dispose();
     super.dispose();
+  }
+}
+
+class AvatarChangeForm extends StatefulWidget {
+  const AvatarChangeForm({Key? key}) : super(key: key);
+
+  @override
+  _AvatarChangeFormState createState() => _AvatarChangeFormState();
+}
+
+class _AvatarChangeFormState extends State<AvatarChangeForm> {
+  bool _isLoading = false;
+  late int _selectedAvatar;
+
+  @override
+  void initState() {
+    _selectedAvatar = Provider.of<User>(context, listen: false).avatarID;
+    super.initState();
+  }
+
+  void _changeAvatar() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        GridView.count(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          crossAxisCount: 4,
+          children: [
+            for (int i = 0; i < 12; i++)
+              if (i != _selectedAvatar)
+                InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () {
+                    setState(() {
+                      _selectedAvatar = i;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: IconAvatar(avatarID: i),
+                  ),
+                )
+              else
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.black12,
+                    shape: BoxShape.circle,
+                  ),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () {
+                      setState(() {
+                        _selectedAvatar = i;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: IconAvatar(avatarID: i),
+                    ),
+                  ),
+                ),
+          ],
+        ),
+        const SizedBox(height: 8.0),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _isLoading
+              ? const CircularProgressIndicator()
+              : ElevatedButton(
+                  onPressed: () {
+                    _changeAvatar();
+                  },
+                  child: const Text('SAVE'),
+                ),
+        ),
+      ],
+    );
   }
 }

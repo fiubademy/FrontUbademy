@@ -49,12 +49,20 @@ class ExamList extends StatefulWidget {
 class _ExamListState extends State<ExamList> {
   final PagingController<int, Exam> _pagingController =
       PagingController(firstPageKey: 0);
+  final List<String> _examStates = ['All Exams'];
+  final List<String> _sortingRules = ['By Date', 'By Name'];
+  String _stateFilter = 'All Exams';
+  String _sortingRule = 'By Date';
 
   @override
   void initState() {
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
+    if (widget.course.role == CourseRole.owner) {
+      _examStates.add('Published');
+      _examStates.add('In Edition');
+    }
     super.initState();
   }
 
@@ -81,9 +89,17 @@ class _ExamListState extends State<ExamList> {
 
   Future<List<Exam>> onLoad(index) async {
     Auth auth = Provider.of<Auth>(context, listen: false);
+    String? stateFilter;
+    if (_stateFilter == 'Published') {
+      stateFilter = 'PUBLISHED';
+    }
+    if (_stateFilter == 'In Edition') {
+      stateFilter = 'EDITION';
+    }
     final result = await Server.getExams(
       auth,
       widget.course.courseID,
+      state: stateFilter,
     );
     if (result['error'] != null) {
       throw Exception(result['error']);
@@ -103,26 +119,96 @@ class _ExamListState extends State<ExamList> {
 
     List<Exam> exams = List.generate(
         examsData.length, (index) => Exam.fromMap(examsData[index]));
+
+    if (_sortingRule == 'By Name') {
+      exams.sort((a, b) => a.title.compareTo(b.title));
+    }
+
     return Future<List<Exam>>.value(exams);
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => Future.sync(
-        () => _pagingController.refresh(),
-      ),
-      child: PagedListView<int, Exam>(
-        padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
-        pagingController: _pagingController,
-        builderDelegate: PagedChildBuilderDelegate<Exam>(
-          itemBuilder: (context, item, index) => ExamCard(
-            exam: item,
-            course: widget.course,
-            onDelete: () => _pagingController.refresh(),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 0.0),
+          child: Row(
+            mainAxisAlignment: widget.course.role == CourseRole.owner
+                ? MainAxisAlignment.spaceAround
+                : MainAxisAlignment.end,
+            children: [
+              if (widget.course.role == CourseRole.owner)
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    alignment: Alignment.center,
+                    isDense: true,
+                    value: _stateFilter,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _stateFilter = newValue ?? 'All Exams';
+                      });
+                      if (!mounted) return;
+                      _pagingController.refresh();
+                    },
+                    items: _examStates.map(
+                      (String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Center(
+                            child: Text(value),
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ),
+                ),
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  alignment: Alignment.center,
+                  isDense: true,
+                  value: _sortingRule,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _sortingRule = newValue ?? 'By Date';
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  items: _sortingRules.map(
+                    (String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Center(
+                          child: Text(value),
+                        ),
+                      );
+                    },
+                  ).toList(),
+                ),
+              ),
+            ],
           ),
         ),
-      ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => Future.sync(
+              () => _pagingController.refresh(),
+            ),
+            child: PagedListView<int, Exam>(
+              padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+              pagingController: _pagingController,
+              builderDelegate: PagedChildBuilderDelegate<Exam>(
+                itemBuilder: (context, item, index) => ExamCard(
+                  exam: item,
+                  course: widget.course,
+                  onDelete: () => _pagingController.refresh(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -175,25 +261,27 @@ class ExamCard extends StatelessWidget {
               },
         child: ListTile(
           title: Text(exam.title),
+          subtitle: Text(exam.creationDate.toString()),
           trailing: course.role == CourseRole.owner
               ? Wrap(
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ExamCreationPage(
-                                course: course,
-                                examID: exam.examID,
-                                examTitle: exam.title,
-                                inEdition: exam.inEdition,
-                                questions: exam.questions),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.edit_rounded),
-                    ),
+                    if (exam.inEdition)
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ExamCreationPage(
+                                  course: course,
+                                  examID: exam.examID,
+                                  examTitle: exam.title,
+                                  inEdition: exam.inEdition,
+                                  questions: exam.questions),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.edit_rounded),
+                      ),
                     IconButton(
                       onPressed: () {
                         showDialog<String>(

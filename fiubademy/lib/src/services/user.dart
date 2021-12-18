@@ -7,13 +7,15 @@ class User extends ChangeNotifier {
   double? _latitude;
   double? _longitude;
   int _subscriptionLevel;
+  int _avatarID;
 
   User()
       : _username = "Not Logged in",
         _email = 'example@mail.com',
         _latitude = 0.0,
         _longitude = 0.0,
-        _subscriptionLevel = 0;
+        _subscriptionLevel = 0,
+        _avatarID = 0;
 
   String? get userID => _userID;
   String get username => _username;
@@ -41,6 +43,7 @@ class User extends ChangeNotifier {
     _latitude = newUserData['latitude'];
     _longitude = newUserData['longitude'];
     _subscriptionLevel = newUserData['sub_level'];
+    _avatarID = newUserData['avatar'];
     notifyListeners();
   }
 
@@ -64,4 +67,6 @@ class User extends ChangeNotifier {
     _subscriptionLevel = 0;
     notifyListeners();
   }
+
+  int get avatarID => _avatarID;
 }

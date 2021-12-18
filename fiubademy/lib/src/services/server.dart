@@ -1276,8 +1276,8 @@ class Server {
     }
   }
 
-  static Future<Map<String, dynamic>> getExams(
-      Auth auth, String courseID) async {
+  static Future<Map<String, dynamic>> getExams(Auth auth, String courseID,
+      {String? state}) async {
     if (auth.userToken == null) {
       return {'error': 'Invalid credentials. Please log in again'};
     }
@@ -1285,6 +1285,8 @@ class Server {
     final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
     };
+
+    if (state != null) queryParams['exam_status'] = state;
 
     final response = await http.get(
       Uri.https(url, "/exams/course/$courseID", queryParams),
@@ -1480,7 +1482,7 @@ class Server {
       case HttpStatus.forbidden:
         return 'Failed to submit exam answer. Already submitted';
       default:
-        return 'Failed to get submit exam answer. Please try again in a few minutes';
+        return 'Failed to submit exam answer. Please try again in a few minutes';
     }
   }
 

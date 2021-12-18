@@ -141,7 +141,8 @@ class _ExamsToCorrectState extends State<ExamsToCorrect> {
       throw Exception(result['error']);
     }
 
-    List<String> usersIDs = List<String>.from(result['content']);
+    List<String> usersIDs =
+        List<String>.from(result['content'].map((item) => item['student_id']));
     List<User> users = [];
     for (var userID in usersIDs) {
       final userData = await Server.getUser(auth, userID);

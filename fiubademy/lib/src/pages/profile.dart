@@ -3,6 +3,7 @@ import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
 import 'package:fiubademy/src/pages/my_favourites.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
+import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:geocoding/geocoding.dart';
@@ -17,15 +18,23 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
           title: isSelf
               ? const Text('My Profile')
               : Text('${user.username}\'s Profile'),
-        ),
-        body: _ProfileBody(
-          user: user,
-          isSelf: isSelf,
-        ));
+          actions: [
+            Container(
+              alignment: Alignment.centerLeft,
+              height: 56,
+              width: 64,
+              child: IconAvatar(avatarID: user.avatarID, height: 48, width: 48),
+            ),
+          ]),
+      body: _ProfileBody(
+        user: user,
+        isSelf: isSelf,
+      ),
+    );
   }
 }
 

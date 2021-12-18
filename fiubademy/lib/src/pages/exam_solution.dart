@@ -30,7 +30,7 @@ class ExamSolutionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Exam'),
+        title: Text(exam.title),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -190,13 +190,19 @@ class _ExamSolutionFormState extends State<ExamSolutionForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _answerFormKey,
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
           //padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
           children: [
+            const SizedBox(height: 24.0),
             for (int i = 0; i < widget.exam.questions.length; i++)
               _buildQuestionCard(i),
             _buildSubmitButton(),
-          ]),
+            const SizedBox(height: 16.0),
+          ],
+        ),
+      ),
     );
   }
 }
