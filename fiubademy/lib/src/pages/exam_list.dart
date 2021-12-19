@@ -122,6 +122,8 @@ class _ExamListState extends State<ExamList> {
 
     if (_sortingRule == 'By Name') {
       exams.sort((a, b) => a.title.compareTo(b.title));
+    } else {
+      exams.sort((a, b) => a.creationDate.compareTo(b.creationDate));
     }
 
     return Future<List<Exam>>.value(exams);
@@ -261,7 +263,8 @@ class ExamCard extends StatelessWidget {
               },
         child: ListTile(
           title: Text(exam.title),
-          subtitle: Text(exam.creationDate.toString()),
+          subtitle: Text(
+              'Created ${exam.creationDay} ${exam.creationMonthName} ${exam.creationYear}'),
           trailing: course.role == CourseRole.owner
               ? Wrap(
                   children: [

@@ -265,7 +265,7 @@ class Server {
       case HttpStatus.notFound:
         return 'Failed to add collaborator. User does not exist';
       case HttpStatus.conflict:
-        return 'Failed to add collaborator. User is already a collaborator';
+        return 'Failed to add collaborator. User is already a collaborator or student';
       default:
         return 'Failed to add collaborator. Please try again in a few minutes';
     }
