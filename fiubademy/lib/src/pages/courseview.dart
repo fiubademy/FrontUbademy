@@ -206,7 +206,10 @@ class CourseViewPage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProfilePage(user: user),
+                builder: (context) => ProfilePage(
+                  user: user,
+                  isSelf: user.userID == auth.userID,
+                ),
               ),
             );
           },
@@ -246,6 +249,18 @@ class CourseViewPage extends StatelessWidget {
       IntrinsicHeight(
           child: Row(
         children: [
+          const Icon(Icons.category, color: Colors.grey),
+          const VerticalDivider(),
+          const SizedBox(width: 8.0),
+          Text(_course.category, style: Theme.of(context).textTheme.subtitle1),
+        ],
+      )),
+      const SizedBox(
+        height: 16.0,
+      ),
+      IntrinsicHeight(
+          child: Row(
+        children: [
           const Icon(Icons.calendar_today, color: Colors.grey),
           const VerticalDivider(),
           const SizedBox(width: 8.0),
@@ -257,7 +272,6 @@ class CourseViewPage extends StatelessWidget {
       const SizedBox(
         height: 16.0,
       ),
-      // TODO Add category in details
       IntrinsicHeight(
         child: Row(
           children: [

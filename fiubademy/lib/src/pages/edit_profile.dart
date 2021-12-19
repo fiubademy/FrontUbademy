@@ -85,13 +85,15 @@ class _ProfileChangeFormState extends State<ProfileChangeForm> {
       Auth auth = Provider.of<Auth>(context, listen: false);
       String? result =
           await Server.updateProfile(auth, _usernameController.text);
+
+      if (!mounted) return;
+
       if (result == null) {
         Provider.of<User>(context, listen: false).username =
             _usernameController.text;
         result = 'Your username has been successfully changed';
       }
       final snackBar = SnackBar(content: Text(result));
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
     setState(() {
@@ -329,6 +331,19 @@ class _AvatarChangeFormState extends State<AvatarChangeForm> {
     setState(() {
       _isLoading = true;
     });
+
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result = await Server.updateAvatar(auth, _selectedAvatar);
+
+    if (!mounted) return;
+
+    if (result == null) {
+      Provider.of<User>(context, listen: false).avatarID = _selectedAvatar;
+      result = 'Your avatar has been successfully updated';
+    }
+
+    final snackBar = SnackBar(content: Text(result));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
     setState(() {
       _isLoading = false;

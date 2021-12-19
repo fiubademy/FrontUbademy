@@ -781,6 +781,29 @@ class Server {
     }
   }
 
+  static Future<String?> updateAvatar(Auth auth, int newAvatarID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final response = await http.patch(
+      Uri.https(url, "/users/${auth.userToken}/set_avatar/$newAvatarID"),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      default:
+        return 'Failed to update avatar. Please try again in a few minutes';
+    }
+  }
+
   static Future<bool> isEnrolled(Auth auth, String courseID) async {
     if (auth.userToken == null) {
       return false;

@@ -69,4 +69,9 @@ class User extends ChangeNotifier {
   }
 
   int get avatarID => _avatarID;
+
+  set avatarID(int newAvatar) {
+    _avatarID = newAvatar;
+    notifyListeners();
+  }
 }
