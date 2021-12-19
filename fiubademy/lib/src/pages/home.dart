@@ -475,4 +475,10 @@ class _SearchAppBarState extends State<SearchAppBar> {
                 ),
         ]);
   }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 }

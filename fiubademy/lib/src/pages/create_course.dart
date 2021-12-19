@@ -130,6 +130,9 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
         user.latitude!,
         user.longitude!,
       );
+
+      if (!mounted) return;
+
       if (result == null) {
         Navigator.pop(context);
       } else {
@@ -137,6 +140,8 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
+
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;

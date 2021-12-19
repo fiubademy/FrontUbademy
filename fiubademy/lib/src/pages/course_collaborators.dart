@@ -1,5 +1,6 @@
 import 'package:fiubademy/src/pages/profile.dart';
 import 'package:fiubademy/src/services/user.dart';
+import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
@@ -70,6 +71,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
         // Keep only part past 'Exception: '. Yes, it's ugly.
         final snackBar =
             SnackBar(content: Text(error.toString().substring(11)));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
       if (!mounted) return;
@@ -90,9 +92,11 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
         _pagingController.refresh();
       } else {
         final snackBar = SnackBar(content: Text(result));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
+    if (!mounted) return;
     setState(() {
       _isLoadingAdd = false;
     });
@@ -106,6 +110,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
     Auth auth = Provider.of<Auth>(context, listen: false);
     String? result =
         await Server.removeCollaborator(auth, collaboratorID, widget._courseID);
+    if (!mounted) return;
     if (result == null) {
       _pagingController.refresh();
     } else {
@@ -173,6 +178,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
                     builderDelegate: PagedChildBuilderDelegate<User>(
                       itemBuilder: (context, item, index) => Card(
                         child: ListTile(
+                          leading: IconAvatar(avatarID: item.avatarID),
                           title: Text(item.username),
                           subtitle: Text(item.email),
                           trailing: _isLoadingRemove
@@ -204,6 +210,7 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
 
   @override
   void dispose() {
+    _newCollaboratorController.dispose();
     _pagingController.dispose();
     super.dispose();
   }

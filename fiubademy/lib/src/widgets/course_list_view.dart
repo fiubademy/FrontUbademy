@@ -47,6 +47,8 @@ class _CourseListViewState extends State<CourseListView> {
         // Keep only part past 'Exception: '. Yes, it's ugly.
         final snackBar =
             SnackBar(content: Text(error.toString().substring(11)));
+
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
       if (!mounted) return;

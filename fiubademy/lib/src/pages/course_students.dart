@@ -2,6 +2,7 @@ import 'package:fiubademy/src/pages/profile.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/user.dart';
+import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
@@ -63,6 +64,7 @@ class _CourseStudentsPageState extends State<CourseStudentsPage> {
         // Keep only part past 'Exception: '. Yes, it's ugly.
         final snackBar =
             SnackBar(content: Text(error.toString().substring(11)));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
       if (!mounted) return;
@@ -88,13 +90,16 @@ class _CourseStudentsPageState extends State<CourseStudentsPage> {
             builderDelegate: PagedChildBuilderDelegate<User>(
               itemBuilder: (context, item, index) => Card(
                 child: ListTile(
+                  leading: IconAvatar(avatarID: item.avatarID),
                   title: Text(item.username),
                   subtitle: Text(item.email),
                   onTap: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ProfilePage(user: item)));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfilePage(user: item),
+                      ),
+                    );
                   },
                 ),
               ),

@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/widgets/material_dropdown_button.dart';
 import 'package:flutter/material.dart';
 import 'package:material_tag_editor/tag_editor.dart';
 import 'package:provider/provider.dart';
@@ -26,10 +27,9 @@ class _CourseEditionPageState extends State<CourseEditionPage> {
       isLoading = true;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    Map<String, dynamic> result =
-        await Server.publishCourse(auth, widget._course.courseID);
-    if (result['error'] != null) {
-      final snackBar = SnackBar(content: Text('${result['error']}'));
+    String? result = await Server.publishCourse(auth, widget._course.courseID);
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
@@ -322,63 +322,4 @@ class _CourseEditionFormState extends State<CourseEditionForm> {
       ),
     );
   }
-}
-
-// TODO Move to widget folder
-class MaterialDropdownButton extends FormField<String> {
-  final List<String> options;
-  final String? hint;
-  final String? defaultOption;
-  final enabled;
-
-  MaterialDropdownButton({
-    Key? key,
-    required this.options,
-    this.hint,
-    this.defaultOption,
-    this.enabled = true,
-    String? initialValue,
-    FormFieldSetter<String>? onSaved,
-    FormFieldValidator<String>? validator,
-    AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
-  }) : super(
-          key: key,
-          onSaved: onSaved,
-          validator: validator,
-          initialValue: initialValue,
-          autovalidateMode: AutovalidateMode.disabled,
-          builder: (FormFieldState<String> state) {
-            return InputDecorator(
-              decoration: InputDecoration(
-                enabled: enabled,
-                errorText: state.errorText,
-                hintText: hint,
-                isDense: true,
-                border: const OutlineInputBorder(),
-              ),
-              isEmpty: state.value == null,
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: state.value,
-                  isDense: true,
-                  onChanged: enabled
-                      ? (String? newValue) {
-                          if (newValue != state.value) {
-                            state.didChange(newValue);
-                          }
-                        }
-                      : null,
-                  items: options.map(
-                    (String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    },
-                  ).toList(),
-                ),
-              ),
-            );
-          },
-        );
 }

@@ -3,6 +3,7 @@ import 'package:fiubademy/src/pages/course_content.dart';
 import 'package:fiubademy/src/pages/course_edition.dart';
 import 'package:fiubademy/src/pages/course_students.dart';
 import 'package:fiubademy/src/pages/courseview.dart';
+import 'package:fiubademy/src/pages/exam_list.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/models/course.dart';
 
@@ -39,6 +40,12 @@ class CourseCreatorMenu extends StatelessWidget {
             );
             break;
           case 2:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExamListPage(course: _course),
+              ),
+            );
             break;
           case 3:
             Navigator.push(
@@ -119,6 +126,12 @@ class CourseStudentMenu extends StatelessWidget {
                     builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExamListPage(course: _course),
+              ),
+            );
             break;
           case 2:
             break;
@@ -151,7 +164,7 @@ class CourseCollaboratorMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
+    return PopupMenuButton<int>(
       onSelected: (value) {
         switch (value) {
           case 0:
@@ -161,6 +174,12 @@ class CourseCollaboratorMenu extends StatelessWidget {
                     builder: (content) => CourseContentPage(course: _course)));
             break;
           case 1:
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExamListPage(course: _course),
+              ),
+            );
             break;
           case 2:
             break;
@@ -168,12 +187,15 @@ class CourseCollaboratorMenu extends StatelessWidget {
       },
       itemBuilder: (context) => [
         const PopupMenuItem(
+          value: 0,
           child: Text('View'),
         ),
         const PopupMenuItem(
+          value: 1,
           child: Text('Exams'),
         ),
         const PopupMenuItem(
+          value: 2,
           child: Text('Forum'),
         ),
       ],
