@@ -3,6 +3,7 @@ import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
 import 'package:fiubademy/src/pages/my_favourites.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
+import 'package:fiubademy/src/pages/payment.dart';
 import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/services/user.dart';
@@ -137,13 +138,26 @@ class _ProfileSubscriptionCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Subscription',
-                style: Theme.of(context).textTheme.headline6,
-              ),
+            padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Subscription',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentPage(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.payment_rounded),
+                ),
+              ],
             ),
           ),
           ListTile(title: Text(user.subscriptionName)),

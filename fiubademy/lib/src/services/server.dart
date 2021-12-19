@@ -1572,11 +1572,12 @@ class Server {
     };
 
     final response = await http.post(
-        Uri.https(url, "/exams/$examID/qualify/$userID", queryParams),
-        headers: <String, String>{
-          HttpHeaders.contentTypeHeader: 'application/json',
-        },
-        body: jsonEncode(body));
+      Uri.https(url, "/exams/$examID/qualify/$userID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
 
     switch (response.statusCode) {
       case HttpStatus.created:
@@ -1589,6 +1590,62 @@ class Server {
       default:
         return {
           'error': 'Failed to mark exam. Please try again in a few minutes'
+        };
+    }
+  }
+
+  static Future<Map<String, dynamic>> getWallet(Auth auth) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final response = await http.get(
+      Uri.https(url, '/payments/wallet/${auth.userToken}'),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return {'error': null, 'content': jsonDecode(response.body)};
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      case HttpStatus.notFound:
+        return {'error': 'Failed to get wallet. User has no wallet'};
+      default:
+        return {
+          'error': 'Failed to get wallet. Please try again in a few minutes'
+        };
+    }
+  }
+
+  static Future<Map<String, dynamic>> createWallet(Auth auth) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.post(
+      Uri.https(url, '/payments/wallet', queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return {'error': null, 'content': jsonDecode(response.body)};
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      default:
+        return {
+          'error': 'Failed to get wallet. Please try again in a few minutes'
         };
     }
   }
