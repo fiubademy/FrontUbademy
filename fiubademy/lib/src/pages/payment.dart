@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/user.dart';
@@ -7,22 +9,23 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class Wallet {
-  String _id;
-  String _address;
-  String _privateKey;
+  final String _address;
 
   Wallet.fromMap(Map<String, dynamic> walletData)
-      : _id = walletData['_id'] ?? walletData['id'],
-        _address = walletData['address'],
-        _privateKey = walletData['privateKey'];
+      : _address = walletData['address'];
 
   String get address => _address;
 }
 
-class PaymentPage extends StatelessWidget {
-  Wallet? _wallet;
+class PaymentPage extends StatefulWidget {
+  const PaymentPage({Key? key}) : super(key: key);
 
-  PaymentPage({Key? key}) : super(key: key);
+  @override
+  _PaymentPageState createState() => _PaymentPageState();
+}
+
+class _PaymentPageState extends State<PaymentPage> {
+  Wallet? _wallet;
 
   Future<void> _loadWallet(context) async {
     final _scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -50,7 +53,7 @@ class PaymentPage extends StatelessWidget {
   Widget _buildGiftMessage(context) {
     return Column(
       children: [
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 8.0),
         const Align(
           alignment: Alignment.centerLeft,
           child: Text(
@@ -65,7 +68,7 @@ class PaymentPage extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'We have deposited 0.0001 ETH into your virtual wallet for you to use freely.',
+            'We have deposited 0.001 ETH into your virtual wallet for you to use freely.',
             style: Theme.of(context).textTheme.subtitle1,
           ),
         ),
@@ -75,15 +78,53 @@ class PaymentPage extends StatelessWidget {
           child: Text('- Ubademy Team',
               style: Theme.of(context).textTheme.subtitle1),
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 8.0),
       ],
+    );
+  }
+
+  Widget _buildBalance(context) {
+    return FutureBuilder(
+      future: Server.getWalletBalance(_wallet!.address),
+      builder: (context, AsyncSnapshot<double?> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return const SizedBox.shrink();
+          default:
+            if (snapshot.hasError) {
+              return const SizedBox.shrink();
+            }
+            if (snapshot.data == null) {
+              return const SizedBox.shrink();
+            }
+
+            double balance = snapshot.data!;
+
+            return Column(children: [
+              const SizedBox(height: 24.0),
+              const Text('MY BALANCE',
+                  style: TextStyle(color: Colors.black54, fontSize: 20)),
+              const SizedBox(height: 16.0),
+              Center(
+                child: Text(
+                  '$balance'.substring(0, min('$balance'.length, 8)) + ' ETH',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondaryVariant,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+            ]);
+        }
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    Auth auth = Provider.of<Auth>(context, listen: false);
-    print(auth.userToken);
     return Scaffold(
       appBar: AppBar(title: const Text('Payment')),
       body: SafeArea(
@@ -95,150 +136,30 @@ class PaymentPage extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               default:
                 if (snapshot.hasError) {
-                  return const Center(
-                      child: Text('Failed to load user wallet'));
+                  return Center(
+                    child: Column(
+                      children: [
+                        const Text('Failed to load user wallet'),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {});
+                          },
+                          child: const Text('TRY AGAIN'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
-                User user = Provider.of<User>(context, listen: false);
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
                   children: [
                     WalletCard(wallet: _wallet!),
-                    const SizedBox(height: 16.0),
+                    _buildBalance(context),
                     const Divider(),
                     _buildGiftMessage(context),
                     const Divider(),
                     const SizedBox(height: 8.0),
-                    Text('Subscriptions',
-                        style: Theme.of(context).textTheme.headline6),
-                    Text('Current subscription: ${user.subscriptionName}'),
-                    const SizedBox(height: 16.0),
-                    LayoutBuilder(builder: (context, constraints) {
-                      return IntrinsicHeight(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: AspectRatio(
-                                aspectRatio: 1.0,
-                                child: Container(
-                                  child: ClipRect(
-                                    child: Stack(
-                                      alignment: Alignment(0, -0.30),
-                                      children: [
-                                        IconButton(
-                                          iconSize: constraints.maxWidth / 5,
-                                          onPressed: () {},
-                                          icon: Icon(
-                                              Icons.monetization_on_outlined,
-                                              color: Colors.grey[400]),
-                                        ),
-                                        Align(
-                                          alignment: Alignment(0, 0.8),
-                                          child: Text(
-                                            'Standard',
-                                            style: TextStyle(
-                                              color: Colors.grey[700],
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  constraints.maxWidth / 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondaryVariant,
-                                      width: 4,
-                                    ),
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                height: constraints.maxWidth / 2.5,
-                                width: 1,
-                                color: Colors.black12),
-                            Expanded(
-                              child: AspectRatio(
-                                aspectRatio: 1.0,
-                                child: Container(
-                                  child: ClipRect(
-                                    child: GestureDetector(
-                                      onTap: () {},
-                                      child: Stack(
-                                        alignment: const Alignment(0, -0.30),
-                                        children: [
-                                          IconButton(
-                                            iconSize: constraints.maxWidth / 5,
-                                            onPressed: () {},
-                                            icon: const Icon(
-                                                Icons.monetization_on_outlined,
-                                                color: Colors.amber),
-                                          ),
-                                          const Align(
-                                            alignment: Alignment.topRight,
-                                            child: Banner(
-                                              color: Colors.green,
-                                              location: BannerLocation.topEnd,
-                                              message: '20% OFF',
-                                            ),
-                                          ),
-                                          Align(
-                                            alignment: const Alignment(0, 0.8),
-                                            child: Text(
-                                              'Premium',
-                                              style: TextStyle(
-                                                color: Colors.amber[700],
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    constraints.maxWidth / 12,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .secondaryVariant,
-                                      width: 4,
-                                    ),
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        spreadRadius: 2,
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    })
+                    SubscriptionPayment(onPay: () => setState(() {})),
                   ],
                 );
             }
@@ -322,9 +243,299 @@ class WalletCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-            )
+            ),
           ],
         ),
+      );
+    });
+  }
+}
+
+class SubscriptionPayment extends StatefulWidget {
+  final VoidCallback onPay;
+
+  const SubscriptionPayment({Key? key, required this.onPay}) : super(key: key);
+
+  @override
+  _SubscriptionPaymentState createState() => _SubscriptionPaymentState();
+}
+
+class _SubscriptionPaymentState extends State<SubscriptionPayment> {
+  bool _isLoading = false;
+
+  void _paySubscription(int subscriptionLevel) async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    String? result = await Server.paySubscription(auth, subscriptionLevel);
+
+    if (!mounted) return;
+    if (result != null) {
+      final snackBar = SnackBar(
+        content: Text(result),
+      );
+      scaffoldMessenger.showSnackBar(snackBar);
+    } else {
+      await _updateSubscription(subscriptionLevel);
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _updateSubscription(int subscriptionLevel) async {
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    String? result = await Server.updateSubscription(auth, subscriptionLevel);
+
+    if (!mounted) return;
+    if (result != null) {
+      const snackBar = SnackBar(
+        content: Text(
+            'Failed to update subscription level. Please contact with the Ubademy developers'),
+      );
+      scaffoldMessenger.showSnackBar(snackBar);
+    } else {
+      Provider.of<User>(context, listen: false).subscriptionLevel =
+          subscriptionLevel;
+      Provider.of<User>(context, listen: false).subscriptionExpirationDate =
+          DateTime.now().add(const Duration(days: 30));
+      widget.onPay();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<User>(builder: (context, user, child) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Subscriptions', style: Theme.of(context).textTheme.headline6),
+          ListTile(
+            contentPadding: const EdgeInsets.all(0),
+            title: user.subscriptionLevel == 0
+                ? const Text('No subscription active')
+                : Text(user.subscriptionName),
+            subtitle: user.subscriptionLevel == 0
+                ? null
+                : Text(
+                    'Expires on ${user.expirationDay} ${user.expirationMonthName} ${user.expirationYear}'),
+          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    return IntrinsicHeight(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          if (user.subscriptionLevel < 1)
+                            SizedBox(
+                              width: constraints.maxWidth / 2.2,
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: Container(
+                                  child: ClipRect(
+                                    child: Stack(
+                                      alignment: const Alignment(0, -0.30),
+                                      children: [
+                                        IconButton(
+                                          iconSize: constraints.maxWidth / 5,
+                                          onPressed: () {
+                                            showDialog<String>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                  title: const Text(
+                                                      'Buy Standard Subscription'),
+                                                  content:
+                                                      const SingleChildScrollView(
+                                                    child: Text(
+                                                        'Are you sure you want to buy 30 days of a Standard Subscription? Price: 0.0001 ETH'
+                                                        '\n\n'
+                                                        'By doing so, you will gain access to all Standard Subscription courses.'
+                                                        'In the scenario that your subscription ends, don\'t worry, your progress is saved for the next time you meet the course requirements.'
+                                                        'But you can also pay in advance before the subscription ends to add 30 days more on top of your current subscription end date.'
+                                                        '\n\n'
+                                                        'Your subscription is at any moment the most expensive one with still time left. Be careful with buying both Premium and Standard Subscriptions, since you might lose days worth of them.'),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child:
+                                                          const Text('CANCEL'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () {
+                                                        _paySubscription(1);
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: const Text('BUY'),
+                                                    ),
+                                                  ]),
+                                            );
+                                          },
+                                          icon: Icon(
+                                              Icons.monetization_on_outlined,
+                                              color: Colors.grey[400]),
+                                        ),
+                                        Align(
+                                          alignment: const Alignment(0, 0.8),
+                                          child: Text(
+                                            'Standard',
+                                            style: TextStyle(
+                                              color: Colors.grey[700],
+                                              fontWeight: FontWeight.bold,
+                                              fontSize:
+                                                  constraints.maxWidth / 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryVariant,
+                                      width: 4,
+                                    ),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (user.subscriptionLevel < 1)
+                            Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                height: constraints.maxWidth / 2.5,
+                                width: 1,
+                                color: Colors.black12),
+                          if (user.subscriptionLevel < 2)
+                            SizedBox(
+                              width: constraints.maxWidth / 2.2,
+                              child: AspectRatio(
+                                aspectRatio: 1.0,
+                                child: Container(
+                                  child: ClipRect(
+                                    child: GestureDetector(
+                                      onTap: () {},
+                                      child: Stack(
+                                        alignment: const Alignment(0, -0.30),
+                                        children: [
+                                          IconButton(
+                                            iconSize: constraints.maxWidth / 5,
+                                            onPressed: () {
+                                              showDialog<String>(
+                                                context: context,
+                                                builder: (context) =>
+                                                    AlertDialog(
+                                                        title: const Text(
+                                                            'Buy Premium Subscription'),
+                                                        content:
+                                                            const SingleChildScrollView(
+                                                          child: Text(
+                                                              'Are you sure you want to buy 30 days of a Premium Subscription? Price: 0.00015 ETH'
+                                                              '\n\n'
+                                                              'By doing so, you will gain access to all Premium Subscription courses.'
+                                                              'In the scenario that your subscription ends, don\'t worry, your progress is saved for the next time you meet the course requirements.'
+                                                              'But you can also pay in advance before the subscription ends to add 30 days more on top of your current subscription end date.'
+                                                              '\n\n'
+                                                              'Your subscription is at any moment the most expensive one with still time left. Be careful with buying both Premium and Standard Subscriptions, since you might lose days worth of them.'),
+                                                        ),
+                                                        actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: const Text(
+                                                            'CANCEL'),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          _paySubscription(2);
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child:
+                                                            const Text('BUY'),
+                                                      ),
+                                                    ]),
+                                              );
+                                            },
+                                            icon: const Icon(
+                                                Icons.monetization_on_outlined,
+                                                color: Colors.amber),
+                                          ),
+                                          const Align(
+                                            alignment: Alignment.topRight,
+                                            child: Banner(
+                                              color: Colors.green,
+                                              location: BannerLocation.topEnd,
+                                              message: '20% OFF',
+                                            ),
+                                          ),
+                                          Align(
+                                            alignment: const Alignment(0, 0.8),
+                                            child: Text(
+                                              'Premium',
+                                              style: TextStyle(
+                                                color: Colors.amber[700],
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    constraints.maxWidth / 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryVariant,
+                                      width: 4,
+                                    ),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ],
       );
     });
   }

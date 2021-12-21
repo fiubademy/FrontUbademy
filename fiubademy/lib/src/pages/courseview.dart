@@ -69,7 +69,7 @@ class FavouriteIcon extends StatefulWidget {
   final void Function()? onToggle;
   final String courseID;
 
-  FavouriteIcon(
+  const FavouriteIcon(
       {Key? key,
       required this.isFavourite,
       this.onToggle,
@@ -127,7 +127,7 @@ class _FavouriteIconState extends State<FavouriteIcon> {
 class CourseViewPage extends StatelessWidget {
   final Course _course;
 
-  CourseViewPage({
+  const CourseViewPage({
     Key? key,
     required Course course,
   })  : _course = course,
