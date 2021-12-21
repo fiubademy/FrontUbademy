@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 
 class ExamView extends StatelessWidget {
   final Exam exam;
-  final Course course; // TODO Up to now, not used
+  final Course course;
 
   const ExamView({Key? key, required this.exam, required this.course})
       : super(key: key);

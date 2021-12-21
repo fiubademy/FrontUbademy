@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 
 import 'package:fiubademy/src/services/auth.dart';
@@ -197,6 +198,8 @@ class Server {
         return null;
       case HttpStatus.conflict:
         return 'Failed to enroll. Already enrolled. Please restart the app';
+      case HttpStatus.forbidden:
+        return 'Failed to enroll. Subscription level not high enough';
       case HttpStatus.notFound:
         return 'Failed to enroll. Please try again in a few minutes';
       case _invalidToken:
@@ -1154,8 +1157,6 @@ class Server {
       body: jsonEncode(body),
     );
 
-    print('${response.statusCode} + $questionDescription}');
-
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> map = {
@@ -1572,11 +1573,12 @@ class Server {
     };
 
     final response = await http.post(
-        Uri.https(url, "/exams/$examID/qualify/$userID", queryParams),
-        headers: <String, String>{
-          HttpHeaders.contentTypeHeader: 'application/json',
-        },
-        body: jsonEncode(body));
+      Uri.https(url, "/exams/$examID/qualify/$userID", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
 
     switch (response.statusCode) {
       case HttpStatus.created:
@@ -1590,6 +1592,152 @@ class Server {
         return {
           'error': 'Failed to mark exam. Please try again in a few minutes'
         };
+    }
+  }
+
+  static Future<Map<String, dynamic>> getWallet(Auth auth) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final response = await http.get(
+      Uri.https(url, '/payments/wallet/${auth.userToken}'),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return {'error': null, 'content': jsonDecode(response.body)};
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      case HttpStatus.notFound:
+        return {'error': 'Failed to get wallet. User has no wallet'};
+      default:
+        return {
+          'error': 'Failed to get wallet. Please try again in a few minutes'
+        };
+    }
+  }
+
+  static Future<Map<String, dynamic>> createWallet(Auth auth) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.post(
+      Uri.https(url, '/payments/wallet', queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return {'error': null, 'content': jsonDecode(response.body)};
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      default:
+        return {
+          'error': 'Failed to get wallet. Please try again in a few minutes'
+        };
+    }
+  }
+
+  static Future<String?> paySubscription(
+      Auth auth, int subscriptionLevel) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    // Wallet starts with 0.00100;
+    double price = 0;
+    if (subscriptionLevel == 1) {
+      price = 0.00010;
+    } else if (subscriptionLevel == 2) {
+      price = 0.00015;
+    }
+
+    final Map<String, dynamic> body = {
+      'amount_ether': price,
+    };
+
+    final response = await http.post(
+      Uri.https(url, '/payments/deposit', queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      default:
+        return 'Failed to pay for subscription. Please try again in a few minutes';
+    }
+  }
+
+  static Future<String?> updateSubscription(
+      Auth auth, int subscriptionLevel) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, dynamic> body = {
+      'sub_level': subscriptionLevel,
+    };
+
+    final response =
+        await http.post(Uri.https(url, '/users/${auth.userToken!}/pay_sub'),
+            headers: <String, String>{
+              HttpHeaders.contentTypeHeader: 'application/json',
+            },
+            body: jsonEncode(body));
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      default:
+        return 'Failed to pay for subscription. Please try again in a few minutes';
+    }
+  }
+
+  static Future<double?> getWalletBalance(String walletAddress) async {
+    final Map<String, String> queryParams = {
+      'module': 'account',
+      'action': 'balance',
+      'address': walletAddress,
+      'tag': 'latest',
+      'apiKey': 'RX87NMP9SGP3BUVPSWI3WTTUVUINRUS399',
+    };
+
+    final response = await http.get(
+      Uri.https('api-kovan.etherscan.io', '/api', queryParams),
+    );
+
+    if (response.statusCode == HttpStatus.ok) {
+      int digits = int.parse(jsonDecode(response.body)['result']);
+      return digits / pow(10, 18);
+    } else {
+      return null;
     }
   }
 }

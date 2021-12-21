@@ -23,7 +23,7 @@ class _CourseContentPageState extends State<CourseContentPage> {
   final PageController pageController = PageController();
   late List<Reference> fileNames;
   List<XFile> files = [];
-  Map<int, VideoPlayerController> _videoControllers = {};
+  final Map<int, VideoPlayerController> _videoControllers = {};
 
   Future<void> loadFileNames() async {
     fileNames = await Firebase.getFileNames(widget.course.courseID);

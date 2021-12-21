@@ -3,6 +3,7 @@ import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
 import 'package:fiubademy/src/pages/my_favourites.dart';
 import 'package:fiubademy/src/pages/my_inscriptions.dart';
+import 'package:fiubademy/src/pages/payment.dart';
 import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:fiubademy/src/services/user.dart';
@@ -100,25 +101,28 @@ class _ProfilePersonalDataCard extends StatelessWidget {
           ListTile(
             title: Text(user.email),
           ),
-          FutureBuilder(
-            future: placemarkFromCoordinates(user.latitude!, user.longitude!),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<Placemark>> snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return const ListTile(title: Text('Fetching location'));
-                default:
-                  if (snapshot.hasError) {
-                    return const ListTile(
-                        title: Text('Failed to fetch location'));
-                  }
-                  Placemark placemark = snapshot.data![0];
-                  return ListTile(
-                      title: Text(
-                          '${placemark.administrativeArea}, ${placemark.country}'));
-              }
-            },
-          ),
+          user.latitude != null
+              ? FutureBuilder(
+                  future:
+                      placemarkFromCoordinates(user.latitude!, user.longitude!),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<Placemark>> snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return const ListTile(title: Text('Fetching location'));
+                      default:
+                        if (snapshot.hasError) {
+                          return const ListTile(
+                              title: Text('Failed to fetch location'));
+                        }
+                        Placemark placemark = snapshot.data![0];
+                        return ListTile(
+                            title: Text(
+                                '${placemark.administrativeArea}, ${placemark.country}'));
+                    }
+                  },
+                )
+              : const ListTile(title: Text('Failed to fetch location')),
         ],
       ),
     );
@@ -137,17 +141,45 @@ class _ProfileSubscriptionCard extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Subscription',
-                style: Theme.of(context).textTheme.headline6,
-              ),
+            padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Subscription',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PaymentPage(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.payment_rounded),
+                ),
+              ],
             ),
           ),
-          ListTile(title: Text(user.subscriptionName)),
-          ListTile(title: Text('Expiration: 31/12/2021')),
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PaymentPage(),
+                ),
+              );
+            },
+            title: user.subscriptionLevel == 0
+                ? const Text('No subscription active')
+                : Text(user.subscriptionName),
+            subtitle: user.subscriptionLevel == 0
+                ? null
+                : Text(
+                    'Expires on ${user.expirationDay} ${user.expirationMonthName} ${user.expirationYear}'),
+          ),
         ],
       ),
     );
