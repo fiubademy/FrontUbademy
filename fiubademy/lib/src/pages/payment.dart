@@ -136,10 +136,14 @@ class _PaymentPageState extends State<PaymentPage> {
                 return const Center(child: CircularProgressIndicator());
               default:
                 if (snapshot.hasError) {
-                  return Center(
+                  return Align(
+                    alignment: Alignment.center,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Failed to load user wallet'),
+                        Text('Failed to load user wallet',
+                            style: Theme.of(context).textTheme.headline6),
+                        const SizedBox(height: 16.0),
                         ElevatedButton(
                           onPressed: () {
                             setState(() {});
@@ -150,6 +154,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     ),
                   );
                 }
+
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
                   children: [
