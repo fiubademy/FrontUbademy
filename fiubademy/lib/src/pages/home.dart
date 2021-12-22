@@ -30,22 +30,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late final _scaffoldMessenger;
   @override
   void initState() {
     super.initState();
+    _scaffoldMessenger = ScaffoldMessenger.of(context);
     FirebaseMessaging.instance.getToken().then((value) {
       print(value);
     });
     FirebaseMessaging.onMessage.listen((RemoteMessage event) {
       print("message recieved");
       print(event.notification!.body);
-      ScaffoldMessenger.of(context).showMaterialBanner(
+      _scaffoldMessenger.showMaterialBanner(
         MaterialBanner(
           content: Text(event.notification!.body!),
           actions: [
             TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+                _scaffoldMessenger.hideCurrentMaterialBanner();
               },
               child: Text('OK'),
             ),

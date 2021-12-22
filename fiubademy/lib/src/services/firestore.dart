@@ -23,18 +23,19 @@ class Firestore {
       'senderID': newMessage.senderID,
       'receiverID': newMessage.receiverID,
       'content': newMessage.content,
-      'timestamp': newMessage.timestamp.toIso8601String(),
+      'timestamp': newMessage.timestamp,
     });
   }
 
-  static Stream<QuerySnapshot> getChats(String userID) {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getChats(String userID) {
     return _firestore
         .collection('chats')
         .where('users', arrayContains: userID)
         .snapshots();
   }
 
-  static Stream<QuerySnapshot> getMessages(String chatID) {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(
+      String chatID) {
     return _firestore
         .collection('chats')
         .doc(chatID)

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Message {
   final String _senderID;
   final String _receiverID;
@@ -13,8 +15,7 @@ class Message {
   Message.from(Map<String, dynamic> messageData)
       : _senderID = messageData['senderID'],
         _receiverID = messageData['receiverID'],
-        _timestamp =
-            DateTime.parse(messageData['timestamp'].toDate().toString()),
+        _timestamp = messageData['timestamp'].toDate(),
         _content = messageData['content'];
 
   String get senderID => _senderID;
