@@ -1,8 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:fiubademy/src/models/message.dart';
 import 'package:fiubademy/src/pages/message_list.dart';
 import 'package:fiubademy/src/pages/my_favourites.dart';
-import 'package:fiubademy/src/services/firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -30,17 +28,19 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late final _scaffoldMessenger;
+  late final ScaffoldMessengerState _scaffoldMessenger;
+  late final NavigatorState _navigator;
+
   @override
   void initState() {
     super.initState();
-    _scaffoldMessenger = ScaffoldMessenger.of(context);
-    FirebaseMessaging.instance.getToken().then((value) {
-      print(value);
+    FirebaseMessaging.instance.getToken().then((token) {
+      if (token == null) return;
+      Auth auth = Provider.of<Auth>(context, listen: false);
+      Server.updateFCMToken(auth, token);
     });
+
     FirebaseMessaging.onMessage.listen((RemoteMessage event) {
-      print("message recieved");
-      print(event.notification!.body);
       _scaffoldMessenger.showMaterialBanner(
         MaterialBanner(
           content: Text(event.notification!.body!),
@@ -49,15 +49,40 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 _scaffoldMessenger.hideCurrentMaterialBanner();
               },
-              child: Text('OK'),
+              child: const Text('DISMISS'),
+            ),
+            TextButton(
+              onPressed: () {
+                _scaffoldMessenger.hideCurrentMaterialBanner();
+                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MessageListPage(),
+                  ),
+                );
+              },
+              child: const Text('GO'),
             ),
           ],
         ),
       );
     });
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      print('Message clicked!');
+      _navigator.popUntil((route) => route.isFirst);
+      _navigator.push(
+        MaterialPageRoute(
+          builder: (context) => const MessageListPage(),
+        ),
+      );
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scaffoldMessenger = ScaffoldMessenger.of(context);
+    _navigator = Navigator.of(context);
   }
 
   @override
@@ -210,7 +235,7 @@ Widget _buildDrawer(BuildContext context) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MessageListPage(),
+                      builder: (context) => const MessageListPage(),
                     ),
                   );
                 },

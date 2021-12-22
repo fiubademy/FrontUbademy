@@ -151,8 +151,9 @@ class Server {
 
   static Future<Map<String, dynamic>> getUserByEmail(
       Auth auth, String email) async {
-    if (auth.userToken == null)
+    if (auth.userToken == null) {
       return {'error': 'Invalid credentials. Please log in again'};
+    }
 
     final Map<String, String> queryParams = {
       'sessionToken': auth.userToken!,
@@ -166,13 +167,10 @@ class Server {
       },
     );
 
-    print(response.statusCode);
-    print(response.body);
-
     switch (response.statusCode) {
       case HttpStatus.ok:
         List<dynamic> body = jsonDecode(response.body)['content'];
-        if (body.length == 0) {
+        if (body.isEmpty) {
           return {'error': 'No users found with that email'};
         } else if (body.length > 1) {
           return {'error': 'Please enter a unique email'};
@@ -1780,6 +1778,35 @@ class Server {
       return digits / pow(10, 18);
     } else {
       return null;
+    }
+  }
+
+  // ignore: non_constant_identifier_names
+  static Future<bool> updateFCMToken(Auth auth, String FCMToken) async {
+    if (auth.userToken == null) return false;
+
+    final Map<String, dynamic> queryParams = {'sessionToken': auth.userToken!};
+
+    final Map<String, String> body = {
+      'fcm_token': FCMToken,
+    };
+
+    final response = await http.put(
+      Uri.https(url, "/consultas/update_fcm_token", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return true;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
     }
   }
 }

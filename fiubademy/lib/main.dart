@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,17 +9,12 @@ import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
 
-Future<void> _messageHandler(RemoteMessage message) async {
-  print(message.notification!.body);
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  FirebaseMessaging.onBackgroundMessage(_messageHandler);
   runApp(const FiubademyApp());
 }
 

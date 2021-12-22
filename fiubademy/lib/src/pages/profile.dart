@@ -51,7 +51,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 );
               },
-              child: Icon(Icons.message_rounded),
+              child: const Icon(Icons.message_rounded),
             ),
       body: _ProfileBody(
         user: user,

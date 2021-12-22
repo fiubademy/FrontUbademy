@@ -28,27 +28,24 @@ class MessageListPage extends StatelessWidget {
     } else {
       User user = User();
       user.updateData(userData['content']);
-      // TODO Remove this
-      Firestore.sendMessage(
-          Message(auth.userID!, user.userID!, "Hello World!"));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Messages')),
+      appBar: AppBar(title: const Text('Messages')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           final _mailController = TextEditingController();
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-                title: Text('New Chat'),
+                title: const Text('New Chat'),
                 content: TextField(
                   controller: _mailController,
                   autofocus: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                       labelText: 'Email', hintText: 'example@mail.com'),
                 ),
                 actions: [
@@ -68,12 +65,12 @@ class MessageListPage extends StatelessWidget {
                 ]),
           );
         },
-        child: Icon(Icons.message_rounded),
+        child: const Icon(Icons.message_rounded),
       ),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          children: const [
             MessageList(),
           ],
         ),
@@ -127,7 +124,8 @@ class _MessageListState extends State<MessageList> {
             return const Center(
                 child: Padding(
               padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
+              child: SizedBox(
+                  height: 48, width: 48, child: CircularProgressIndicator()),
             ));
           default:
             if (snapshot.hasError) {
