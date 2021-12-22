@@ -56,9 +56,8 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () {
                 _scaffoldMessenger.hideCurrentMaterialBanner();
-                Navigator.popUntil(context, (route) => route.isFirst);
-                Navigator.push(
-                  context,
+                _navigator.popUntil((route) => route.isFirst);
+                _navigator.push(
                   MaterialPageRoute(
                     builder: (context) => const MessageListPage(),
                   ),
