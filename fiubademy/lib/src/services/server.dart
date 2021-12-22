@@ -1878,13 +1878,6 @@ class Server {
       body: jsonEncode(body),
     );
 
-    print('notify');
-    print(auth.userToken);
-    print(auth.userID);
-    print(body);
-    print(response.statusCode);
-    print(response.body);
-
     switch (response.statusCode) {
       case HttpStatus.ok:
         return true;
@@ -1893,6 +1886,91 @@ class Server {
         return false;
       default:
         return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getCourseMark(
+      Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final response = await http.get(
+      Uri.https(url, "/exams/$courseID/student_state/${auth.userToken}"),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    print(response.statusCode);
+    print(response.body);
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': jsonDecode(response.body),
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      case HttpStatus.notFound:
+        return {'error': 'No exams in the course'};
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get student mark. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
+  /* Returns a list of reviews as a map on 'content'. Uses 'error' for reporting errors. */
+
+  static Future<Map<String, dynamic>> getReviews(
+      Auth auth, String courseID, int page,
+      {int? filter}) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+      'self': 'false',
+      'pagenum': page.toString(),
+    };
+    //if (filter != null) queryParams['filter'] = filter;
+
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/reviews", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    print(response.statusCode);
+    print(response.body);
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        body['error'] = null;
+        return body;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error': 'Failed to get courses. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 }

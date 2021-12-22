@@ -1,4 +1,6 @@
 import 'package:fiubademy/src/pages/profile.dart';
+import 'package:fiubademy/src/pages/review_course.dart';
+import 'package:fiubademy/src/pages/review_list.dart';
 import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,59 +12,6 @@ import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
 import 'package:fiubademy/src/models/course.dart';
-
-class NextPage extends StatelessWidget {
-  const NextPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Map<String, dynamic> courseData = {
-      'name': 'Course Title Here',
-      'ownerID': '1234234',
-      'ownerName': 'Owner Name Here',
-      'sub_level': 1,
-      'description': 'A small description of the course',
-      'category': 'Business',
-      'latitude': -34.6037,
-      'longitude': -58.3816,
-      'hashtags': ['Tag A', 'Tag B', 'Tag C'],
-      'time_created': '2021-11-29T15:19:57+0000',
-      'blocked': false,
-      'in_edition': false,
-      'ratingCount': 24,
-      'ratingAvg': 2.8,
-    };
-
-    Course myCourse = Course.fromMap(courseData);
-
-    return ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              /*
-              builder: (context) => FutureBuilder(
-                future: myCourse,
-                builder:
-                    (BuildContext context, AsyncSnapshot<Course> snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting:
-                      return Container();
-                    default:
-                      if (snapshot.hasError) {
-                        return Container();
-                      }
-                      return CourseViewPage(course: snapshot.data!);
-                  }
-                },
-              ),*/
-              builder: (context) => CourseViewPage(course: myCourse),
-            ),
-          );
-        },
-        child: const Text('Go!'));
-  }
-}
 
 class FavouriteIcon extends StatefulWidget {
   final bool isFavourite;
@@ -332,32 +281,93 @@ class CourseViewPage extends StatelessWidget {
     ];
   }
 
+  Future<Map<String, dynamic>> _getStudentMark(context) async {
+    final _scaffoldMessenger = ScaffoldMessenger.of(context);
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result =
+        await Server.getCourseMark(auth, _course.courseID);
+
+    if (result['error'] != null) {
+      if (result['error'] != 'No exams in the course') {
+        final snackBar = SnackBar(content: Text(result['error']));
+        _scaffoldMessenger.showSnackBar(snackBar);
+      }
+      throw Exception(result['error']);
+    } else {
+      return result['content'];
+    }
+  }
+
   List<Widget> _buildRatings(BuildContext context) {
     return [
       Text('Reviews and Ratings', style: Theme.of(context).textTheme.headline6),
       const SizedBox(height: 16.0),
       CourseRating(avg: _course.ratingAvg, count: _course.ratingCount),
       const SizedBox(height: 8.0),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          TextButton(
-            onPressed: _course.role != CourseRole.student
-                ? null
-                : () {
-                    if (true) {
-                      const snackBar = SnackBar(
-                          content: Text(
-                              'You need to finish the course to write a review'));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    } //else {
-                    //Navigator.push(context, route);
-                    //}
-                  },
-            child: const Text('Write a review'),
-          ),
-          TextButton(onPressed: () {}, child: const Text('See all reviews'))
-        ],
+      FutureBuilder(
+        future: _getStudentMark(context),
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(child: CircularProgressIndicator());
+            default:
+              bool isEnabled = true;
+
+              if (snapshot.hasError) {
+                isEnabled = false;
+              }
+
+              print(snapshot.data);
+
+              if (!snapshot.hasData) {
+                isEnabled = false;
+              } else if (snapshot.data!['status'] != 'Finished') {
+                isEnabled = false;
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: _course.role != CourseRole.student
+                          ? null
+                          : () {
+                              if (isEnabled) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ReviewCoursePage(),
+                                  ),
+                                );
+                              } else {
+                                const snackBar = SnackBar(
+                                    content: Text(
+                                        'You need to finish the course to write a review'));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
+                            },
+                      child: const Text('Write a review'),
+                    ),
+                  ),
+                  Expanded(
+                    child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ReviewListPage(course: _course),
+                            ),
+                          );
+                        },
+                        child: const Text('See all reviews')),
+                  )
+                ],
+              );
+          }
+        },
       ),
     ];
   }
