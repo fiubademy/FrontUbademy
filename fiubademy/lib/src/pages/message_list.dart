@@ -14,6 +14,7 @@ class MessageListPage extends StatelessWidget {
 
   void _openChat(context, String mail) async {
     final _scaffoldMessenger = ScaffoldMessenger.of(context);
+    final _navigator = Navigator.of(context);
     if (mail.isEmpty) {
       const snackBar =
           SnackBar(content: Text('No users found with that email'));
@@ -22,12 +23,18 @@ class MessageListPage extends StatelessWidget {
     Auth auth = Provider.of<Auth>(context, listen: false);
 
     Map<String, dynamic> userData = await Server.getUserByEmail(auth, mail);
+    print(userData);
     if (userData['error'] != null) {
       final snackBar = SnackBar(content: Text(userData['error']));
       _scaffoldMessenger.showSnackBar(snackBar);
     } else {
       User user = User();
       user.updateData(userData['content']);
+      _navigator.push(
+        MaterialPageRoute(
+          builder: (context) => ChatPage(user: user),
+        ),
+      );
     }
   }
 
