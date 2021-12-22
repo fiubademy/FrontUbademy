@@ -89,7 +89,8 @@ class _ExamListState extends State<ExamList> {
 
   Future<List<Exam>> onLoad(index) async {
     Auth auth = Provider.of<Auth>(context, listen: false);
-    String? stateFilter;
+    String? stateFilter =
+        widget.course.role != CourseRole.owner ? 'PUBLISHED' : null;
     if (_stateFilter == 'Published') {
       stateFilter = 'PUBLISHED';
     }

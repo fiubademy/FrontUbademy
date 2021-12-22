@@ -210,12 +210,15 @@ class _ExamsToCorrectState extends State<ExamsToCorrect> {
                   );
                 },
                 noItemsFoundIndicatorBuilder: (_) {
-                  return const SizedBox(
+                  return SizedBox(
                     height: 110,
                     child: Center(
                       child: ListTile(
-                        leading: Icon(Icons.info_outline_rounded),
-                        title: Text('No exams waiting for correction'),
+                        leading: const Icon(Icons.info_outline_rounded),
+                        title: const Text('No exams waiting for correction'),
+                        subtitle: widget.exam.inEdition
+                            ? Text('The exam hasn\'t been published yet')
+                            : null,
                       ),
                     ),
                   );

@@ -93,6 +93,16 @@ class ExamSolutionPage extends StatelessWidget {
                                 labelText: 'Mark',
                               ),
                             ),
+                            const SizedBox(height: 8.0),
+                            const Center(
+                              child: Text(
+                                'You may submit a new response if you wish to increase your mark or make corrections.',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16.0),
                               child: Divider(),
