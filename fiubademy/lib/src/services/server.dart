@@ -1798,9 +1798,44 @@ class Server {
       },
       body: jsonEncode(body),
     );
+    print('update');
+    print(response.statusCode);
 
     switch (response.statusCode) {
-      case HttpStatus.accepted:
+      case HttpStatus.ok:
+        return true;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  static Future<bool> notifyUser(
+      Auth auth, String userID, String message) async {
+    if (auth.userToken == null) return false;
+
+    final Map<String, dynamic> queryParams = {'sessionToken': auth.userToken!};
+
+    final Map<String, String> body = {'user_id': userID, 'message': message};
+
+    final response = await http.post(
+      Uri.https(url, "/consultas/notify_user", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    print('notify');
+    print(auth.userToken);
+    print(body);
+    print(response.statusCode);
+    print(response.body);
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
         return true;
       case _invalidToken:
         auth.deleteAuth();

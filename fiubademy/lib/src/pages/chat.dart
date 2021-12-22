@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fiubademy/src/models/message.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/firestore.dart';
+import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ class ChatPage extends StatelessWidget {
           Message(auth.userID!, user.userID!, _messageController.text.trim());
       _messageController.clear();
       Firestore.sendMessage(newMessage);
+      Server.notifyUser(auth, user.userID!,
+          'New message from ${Provider.of<User>(context, listen: false).username}');
       if (_listScrollController.hasClients) {
         _listScrollController.animateTo(0.0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
