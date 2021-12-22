@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fiubademy/src/models/message.dart';
+import 'package:fiubademy/src/pages/chat.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/firestore.dart';
 import 'package:fiubademy/src/services/server.dart';
@@ -145,6 +146,12 @@ class _MessageListState extends State<MessageList> {
               title: Text(otherUser.username),
               subtitle: Text(lastMessage.content),
               trailing: Text(timestampAsString),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChatPage(user: otherUser)));
+              },
             );
         }
       },

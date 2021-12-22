@@ -5,7 +5,9 @@ class Firestore {
   static final _firestore = FirebaseFirestore.instance;
 
   static Future<void> sendMessage(Message newMessage) async {
-    String chatID = [newMessage.senderID, newMessage.receiverID].join('.');
+    List userIDs = [newMessage.senderID, newMessage.receiverID];
+    userIDs.sort();
+    String chatID = userIDs.join('.');
     DocumentReference chat = _firestore.collection('chats').doc(chatID);
 
     await chat.set({
