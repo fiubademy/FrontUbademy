@@ -510,6 +510,9 @@ class Server {
       },
     );
 
+    print(response.statusCode);
+    print(response.body);
+
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);
@@ -1513,6 +1516,53 @@ class Server {
     }
   }
 
+  static Future<Map<String, dynamic>> getExamMark(
+      Auth auth, String courseID, String examID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'courseId': courseID,
+      'sessionToken': auth.userToken!,
+      'student_id': auth.userID!,
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/exams/$examID/students_with_qualification", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> body = jsonDecode(response.body);
+        if (body.isEmpty) {
+          return {'error': 'No correction found'};
+        }
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': body[0],
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      case HttpStatus.notFound:
+        return {'error': 'No correction found'};
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get exam correction. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
   static Future<String?> submitQuestionAnswer(Auth auth, String courseID,
       String examID, String questionID, String questionAnswer) async {
     if (auth.userToken == null) {
@@ -1830,6 +1880,7 @@ class Server {
 
     print('notify');
     print(auth.userToken);
+    print(auth.userID);
     print(body);
     print(response.statusCode);
     print(response.body);

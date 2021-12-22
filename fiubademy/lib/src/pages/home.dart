@@ -36,7 +36,9 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     FirebaseMessaging.instance.getToken().then((token) {
       if (token == null) return;
+      print(token);
       Auth auth = Provider.of<Auth>(context, listen: false);
+      print(auth.userID);
       Server.updateFCMToken(auth, token);
     });
 

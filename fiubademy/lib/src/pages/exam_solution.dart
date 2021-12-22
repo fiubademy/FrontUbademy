@@ -26,6 +26,11 @@ class ExamSolutionPage extends StatelessWidget {
   const ExamSolutionPage({Key? key, required this.exam, required this.course})
       : super(key: key);
 
+  Future<Map<String, dynamic>> _loadExamMark(context) async {
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    return Server.getExamMark(auth, course.courseID, exam.examID);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +39,83 @@ class ExamSolutionPage extends StatelessWidget {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: ExamSolutionForm(exam: exam, course: course),
+          child: Column(
+            children: [
+              FutureBuilder(
+                future: _loadExamMark(context),
+                builder:
+                    (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return const SizedBox.shrink();
+                    default:
+                      if (snapshot.hasError) {
+                        return const SizedBox.shrink();
+                      }
+                      if (snapshot.data!['error'] != null) {
+                        return const SizedBox.shrink();
+                      }
+
+                      print(snapshot.data!);
+
+                      return Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
+                        child: Column(
+                          children: [
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('Feedback from Last Attempt',
+                                  style: Theme.of(context).textTheme.headline6),
+                            ),
+                            const SizedBox(height: 16.0),
+                            TextField(
+                              enabled: false,
+                              controller: TextEditingController(
+                                  text: snapshot.data!['content']['comments']),
+                              minLines: 3,
+                              maxLines: null,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            const SizedBox(height: 16.0),
+                            TextField(
+                              enabled: false,
+                              controller: TextEditingController(
+                                  text: '${snapshot.data!['content']['mark']}'),
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                  horizontal: 16.0,
+                                ),
+                                border: OutlineInputBorder(),
+                                labelText: 'Mark',
+                              ),
+                            ),
+                            const SizedBox(height: 8.0),
+                            const Center(
+                              child: Text(
+                                'You may submit a new response if you wish to increase your mark or make corrections.',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Divider(),
+                            ),
+                          ],
+                        ),
+                      );
+                  }
+                },
+              ),
+              ExamSolutionForm(exam: exam, course: course),
+            ],
+          ),
         ),
       ),
     );
