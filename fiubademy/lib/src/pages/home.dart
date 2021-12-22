@@ -1,4 +1,8 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fiubademy/src/models/message.dart';
+import 'package:fiubademy/src/pages/message_list.dart';
 import 'package:fiubademy/src/pages/my_favourites.dart';
+import 'package:fiubademy/src/services/firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -26,6 +30,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    FirebaseMessaging.instance.getToken().then((value) {
+      print(value);
+    });
+    FirebaseMessaging.onMessage.listen((RemoteMessage event) {
+      print("message recieved");
+      print(event.notification!.body);
+      ScaffoldMessenger.of(context).showMaterialBanner(
+        MaterialBanner(
+          content: Text(event.notification!.body!),
+          actions: [
+            TextButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('Message clicked!');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
@@ -173,6 +205,12 @@ Widget _buildDrawer(BuildContext context) {
                 title: const Text('Messages'),
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MessageListPage(),
+                    ),
+                  );
                 },
               ),
             ],

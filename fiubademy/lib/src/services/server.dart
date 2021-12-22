@@ -147,6 +147,48 @@ class Server {
     }
   }
 
+  /* Gets a user given his emiail, given my permissions */
+
+  static Future<Map<String, dynamic>> getUserByEmail(
+      Auth auth, String email) async {
+    if (auth.userToken == null)
+      return {'error': 'Invalid credentials. Please log in again'};
+
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+      'emailFilter': email,
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/users/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    print(response.statusCode);
+    print(response.body);
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> body = jsonDecode(response.body)['content'];
+        if (body.length == 0) {
+          return {'error': 'No users found with that email'};
+        } else if (body.length > 1) {
+          return {'error': 'Please enter a unique email'};
+        } else {
+          return {'error': null, 'content': body[0]};
+        }
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      default:
+        return {
+          'error': 'Failed to fetch user. Please try again in a few minutes'
+        };
+    }
+  }
+
   /* Updates self's position. Returns true on success, false otherwise. */
 
   static Future<bool> updatePosition(
