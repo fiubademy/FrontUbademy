@@ -1,4 +1,6 @@
+import 'package:fiubademy/src/pages/chat.dart';
 import 'package:fiubademy/src/pages/edit_profile.dart';
+import 'package:fiubademy/src/pages/message_list.dart';
 import 'package:fiubademy/src/pages/my_collaborations.dart';
 import 'package:fiubademy/src/pages/my_courses.dart';
 import 'package:fiubademy/src/pages/my_favourites.dart';
@@ -31,6 +33,26 @@ class ProfilePage extends StatelessWidget {
               child: IconAvatar(avatarID: user.avatarID, height: 48, width: 48),
             ),
           ]),
+      floatingActionButton: isSelf
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                Navigator.popUntil(context, (route) => route.isFirst);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MessageListPage(),
+                  ),
+                );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatPage(user: user),
+                  ),
+                );
+              },
+              child: const Icon(Icons.message_rounded),
+            ),
       body: _ProfileBody(
         user: user,
         isSelf: isSelf,

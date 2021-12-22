@@ -147,6 +147,46 @@ class Server {
     }
   }
 
+  /* Gets a user given his emiail, given my permissions */
+
+  static Future<Map<String, dynamic>> getUserByEmail(
+      Auth auth, String email) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+      'emailFilter': email,
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/users/1", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> body = jsonDecode(response.body)['content'];
+        if (body.isEmpty) {
+          return {'error': 'No users found with that email'};
+        } else if (body.length > 1) {
+          return {'error': 'Please enter a unique email'};
+        } else {
+          return {'error': null, 'content': body[0]};
+        }
+      case _invalidToken:
+        auth.deleteAuth();
+        return {'error': 'Invalid credentials. Please log in again'};
+      default:
+        return {
+          'error': 'Failed to fetch user. Please try again in a few minutes'
+        };
+    }
+  }
+
   /* Updates self's position. Returns true on success, false otherwise. */
 
   static Future<bool> updatePosition(
@@ -1738,6 +1778,70 @@ class Server {
       return digits / pow(10, 18);
     } else {
       return null;
+    }
+  }
+
+  // ignore: non_constant_identifier_names
+  static Future<bool> updateFCMToken(Auth auth, String FCMToken) async {
+    if (auth.userToken == null) return false;
+
+    final Map<String, dynamic> queryParams = {'sessionToken': auth.userToken!};
+
+    final Map<String, String> body = {
+      'fcm_token': FCMToken,
+    };
+
+    final response = await http.put(
+      Uri.https(url, "/consultas/update_fcm_token", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+    print('update');
+    print(response.statusCode);
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return true;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  static Future<bool> notifyUser(
+      Auth auth, String userID, String message) async {
+    if (auth.userToken == null) return false;
+
+    final Map<String, dynamic> queryParams = {'sessionToken': auth.userToken!};
+
+    final Map<String, String> body = {'user_id': userID, 'message': message};
+
+    final response = await http.post(
+      Uri.https(url, "/consultas/notify_user", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    print('notify');
+    print(auth.userToken);
+    print(body);
+    print(response.statusCode);
+    print(response.body);
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        return true;
+      case _invalidToken:
+        auth.deleteAuth();
+        return false;
+      default:
+        return false;
     }
   }
 }
