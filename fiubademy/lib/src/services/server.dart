@@ -308,6 +308,9 @@ class Server {
       case HttpStatus.notFound:
         return 'Failed to add collaborator. User does not exist';
       case HttpStatus.conflict:
+        if (jsonDecode(response.body) == 'User already invited.') {
+          return 'Failed to add collaborator. User is already invited';
+        }
         return 'Failed to add collaborator. User is already a collaborator or student';
       default:
         return 'Failed to add collaborator. Please try again in a few minutes';
@@ -444,7 +447,8 @@ class Server {
     switch (response.statusCode) {
       case HttpStatus.ok:
         Map<String, dynamic> body = jsonDecode(response.body);
-        List<Map<String, dynamic>> courses = body["content"];
+        List<Map<String, dynamic>> courses =
+            List<Map<String, dynamic>>.from(body["content"]);
         if (courses.length == 1) {
           return courses[0];
         } else {
@@ -509,9 +513,6 @@ class Server {
         HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
-
-    print(response.statusCode);
-    print(response.body);
 
     switch (response.statusCode) {
       case HttpStatus.ok:
@@ -677,6 +678,101 @@ class Server {
               'Failed to get collaborators. Please try again in a few minutes'
         };
         return map;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getMyCollaborationInvitations(
+      Auth auth) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+    final response = await http.get(
+      Uri.https(
+          url, "/courses/pending_collaborations/${auth.userID}", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        List<dynamic> mapBody = jsonDecode(response.body);
+        List<String> body = List<String>.generate(
+            mapBody.length, (index) => mapBody[index]['courseId']);
+        Map<String, dynamic> map = {'error': null, 'content': body};
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get invitations to collaborate. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
+  static Future<String?> acceptCollaborationInvitation(
+      Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.post(
+      Uri.https(url, "/courses/id/$courseID/accept_collaborator", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.created:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      default:
+        return 'Failed to accept collaboration. Please try again in a few minutes';
+    }
+  }
+
+  static Future<String?> rejectCollaborationInvitation(
+      Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, String> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final response = await http.delete(
+      Uri.https(url, "/courses/id/$courseID/deny_collaboration", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      default:
+        return 'Failed to reject collaboration. Please try again in a few minutes';
     }
   }
 
@@ -1848,8 +1944,6 @@ class Server {
       },
       body: jsonEncode(body),
     );
-    print('update');
-    print(response.statusCode);
 
     switch (response.statusCode) {
       case HttpStatus.ok:
@@ -1878,13 +1972,6 @@ class Server {
       body: jsonEncode(body),
     );
 
-    print('notify');
-    print(auth.userToken);
-    print(auth.userID);
-    print(body);
-    print(response.statusCode);
-    print(response.body);
-
     switch (response.statusCode) {
       case HttpStatus.ok:
         return true;
@@ -1893,6 +1980,158 @@ class Server {
         return false;
       default:
         return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getCourseMark(
+      Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final response = await http.get(
+      Uri.https(url, "/exams/$courseID/student_state/${auth.userToken}"),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> map = {
+          'error': null,
+          'content': jsonDecode(response.body),
+        };
+        return map;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      case HttpStatus.notFound:
+        return {'error': 'No exams in the course'};
+      default:
+        Map<String, dynamic> map = {
+          'error':
+              'Failed to get student mark. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
+  static Future<String?> submitReview(
+      Auth auth, String courseID, int rating, String description) async {
+    if (auth.userToken == null) {
+      return 'Invalid credentials. Please log in again';
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+    };
+
+    final Map<String, dynamic> body = {
+      'rating': rating,
+      'description': description,
+    };
+
+    final response = await http.put(
+      Uri.https(url, "/courses/id/$courseID/add_review", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.accepted:
+        return null;
+      case _invalidToken:
+        auth.deleteAuth();
+        return 'Invalid credentials. Please log in again';
+      case HttpStatus.forbidden:
+        return 'Failed to submit exam answer. Already submitted';
+      default:
+        return 'Failed to submit exam answer. Please try again in a few minutes';
+    }
+  }
+
+  /* Returns a list of reviews as a map on 'content'. Uses 'error' for reporting errors. */
+
+  static Future<Map<String, dynamic>> getReviews(
+      Auth auth, String courseID, int page,
+      {int? filter}) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+      'self': 'false',
+      'pagenum': page.toString(),
+    };
+    if (filter != null) queryParams['ratingFilter'] = filter.toString();
+
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/reviews", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        body['error'] = null;
+        return body;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error': 'Failed to get courses. Please try again in a few minutes'
+        };
+        return map;
+    }
+  }
+
+  static Future<Map<String, dynamic>> getMyReview(
+      Auth auth, String courseID) async {
+    if (auth.userToken == null) {
+      return {'error': 'Invalid credentials. Please log in again'};
+    }
+
+    final Map<String, dynamic> queryParams = {
+      'sessionToken': auth.userToken!,
+      'self': 'true',
+    };
+
+    final response = await http.get(
+      Uri.https(url, "/courses/id/$courseID/reviews", queryParams),
+      headers: <String, String>{
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+    );
+
+    switch (response.statusCode) {
+      case HttpStatus.ok:
+        Map<String, dynamic> body = jsonDecode(response.body);
+        body['error'] = null;
+        return body;
+      case _invalidToken:
+        auth.deleteAuth();
+        Map<String, dynamic> map = {
+          'error': 'Invalid credentials. Please log in again'
+        };
+        return map;
+      default:
+        Map<String, dynamic> map = {
+          'error': 'Failed to get courses. Please try again in a few minutes'
+        };
+        return map;
     }
   }
 }

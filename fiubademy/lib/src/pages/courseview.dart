@@ -1,4 +1,6 @@
 import 'package:fiubademy/src/pages/profile.dart';
+import 'package:fiubademy/src/pages/review_course.dart';
+import 'package:fiubademy/src/pages/review_list.dart';
 import 'package:fiubademy/src/services/location.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -10,59 +12,6 @@ import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
 import 'package:fiubademy/src/models/course.dart';
-
-class NextPage extends StatelessWidget {
-  const NextPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    Map<String, dynamic> courseData = {
-      'name': 'Course Title Here',
-      'ownerID': '1234234',
-      'ownerName': 'Owner Name Here',
-      'sub_level': 1,
-      'description': 'A small description of the course',
-      'category': 'Business',
-      'latitude': -34.6037,
-      'longitude': -58.3816,
-      'hashtags': ['Tag A', 'Tag B', 'Tag C'],
-      'time_created': '2021-11-29T15:19:57+0000',
-      'blocked': false,
-      'in_edition': false,
-      'ratingCount': 24,
-      'ratingAvg': 2.8,
-    };
-
-    Course myCourse = Course.fromMap(courseData);
-
-    return ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              /*
-              builder: (context) => FutureBuilder(
-                future: myCourse,
-                builder:
-                    (BuildContext context, AsyncSnapshot<Course> snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting:
-                      return Container();
-                    default:
-                      if (snapshot.hasError) {
-                        return Container();
-                      }
-                      return CourseViewPage(course: snapshot.data!);
-                  }
-                },
-              ),*/
-              builder: (context) => CourseViewPage(course: myCourse),
-            ),
-          );
-        },
-        child: const Text('Go!'));
-  }
-}
 
 class FavouriteIcon extends StatefulWidget {
   final bool isFavourite;
@@ -167,12 +116,7 @@ class CourseViewPage extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 8.0),
               ..._buildRatings(context),
-              if (_course.role == CourseRole.notStudent ||
-                  _course.role == CourseRole.student) ...[
-                const SizedBox(height: 8.0),
-                const Divider(),
-                CourseToggleEnrollButton(course: _course),
-              ]
+              CourseButtons(course: _course),
             ],
           ),
         ),
@@ -223,8 +167,12 @@ class CourseViewPage extends StatelessWidget {
         ),
         const SizedBox(width: 8.0),
         Icon(
-          Icons.monetization_on_rounded,
-          color: Colors.green[700],
+          Icons.monetization_on,
+          color: _course.minSubscription == 0
+              ? Colors.brown
+              : (_course.minSubscription == 1
+                  ? Colors.grey[400]
+                  : Colors.amber),
         ),
       ],
     );
@@ -332,56 +280,113 @@ class CourseViewPage extends StatelessWidget {
     ];
   }
 
+  Future<Map<String, dynamic>> _getStudentMark(context) async {
+    final _scaffoldMessenger = ScaffoldMessenger.of(context);
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result =
+        await Server.getCourseMark(auth, _course.courseID);
+
+    if (result['error'] != null) {
+      if (result['error'] != 'No exams in the course') {
+        final snackBar = SnackBar(content: Text(result['error']));
+        _scaffoldMessenger.showSnackBar(snackBar);
+      }
+      throw Exception(result['error']);
+    } else {
+      return result['content'];
+    }
+  }
+
   List<Widget> _buildRatings(BuildContext context) {
     return [
       Text('Reviews and Ratings', style: Theme.of(context).textTheme.headline6),
       const SizedBox(height: 16.0),
       CourseRating(avg: _course.ratingAvg, count: _course.ratingCount),
       const SizedBox(height: 8.0),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          TextButton(
-            onPressed: _course.role != CourseRole.student
-                ? null
-                : () {
-                    if (true) {
-                      const snackBar = SnackBar(
-                          content: Text(
-                              'You need to finish the course to write a review'));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    } //else {
-                    //Navigator.push(context, route);
-                    //}
-                  },
-            child: const Text('Write a review'),
-          ),
-          TextButton(onPressed: () {}, child: const Text('See all reviews'))
-        ],
+      FutureBuilder(
+        future: _getStudentMark(context),
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const Center(child: CircularProgressIndicator());
+            default:
+              bool isEnabled = true;
+
+              if (snapshot.hasError) {
+                isEnabled = false;
+              }
+
+              if (!snapshot.hasData || snapshot.data == null) {
+                isEnabled = false;
+              } else if (snapshot.data!['status'] != 'Finished') {
+                isEnabled = false;
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: _course.role != CourseRole.student
+                          ? null
+                          : () {
+                              if (isEnabled) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ReviewCoursePage(course: _course),
+                                  ),
+                                );
+                              } else {
+                                const snackBar = SnackBar(
+                                    content: Text(
+                                        'You need to finish the course to write a review'));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
+                            },
+                      child: const Text('Write a review'),
+                    ),
+                  ),
+                  Expanded(
+                    child: TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ReviewListPage(course: _course),
+                            ),
+                          );
+                        },
+                        child: const Text('See all reviews')),
+                  )
+                ],
+              );
+          }
+        },
       ),
     ];
   }
 }
 
-class CourseToggleEnrollButton extends StatefulWidget {
-  final Course _course;
-
-  const CourseToggleEnrollButton({Key? key, required Course course})
-      : _course = course,
-        super(key: key);
+class CourseButtons extends StatefulWidget {
+  final Course course;
+  const CourseButtons({Key? key, required this.course}) : super(key: key);
 
   @override
-  _CourseToggleEnrollButtonState createState() =>
-      _CourseToggleEnrollButtonState();
+  _CourseButtonsState createState() => _CourseButtonsState();
 }
 
-class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
-  late bool _isEnrolled;
+class _CourseButtonsState extends State<CourseButtons> {
+  late Course course;
+
   bool _isLoading = false;
 
   @override
   void initState() {
-    _isEnrolled = widget._course.role == CourseRole.student;
+    course = widget.course;
     super.initState();
   }
 
@@ -390,7 +395,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       _isLoading = true;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    String? result = await Server.enrollToCourse(auth, widget._course.courseID);
+    String? result = await Server.enrollToCourse(auth, widget.course.courseID);
 
     if (!mounted) return;
 
@@ -399,8 +404,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       setState(() {
-        _isEnrolled = true;
-        widget._course.role = CourseRole.student;
+        course.role = CourseRole.student;
       });
     }
 
@@ -414,8 +418,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       _isLoading = true;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    String? result =
-        await Server.unsubscribeFromCourse(auth, widget._course.courseID);
+    String? result = await Server.unsubscribeFromCourse(auth, course.courseID);
 
     if (!mounted) return;
 
@@ -424,8 +427,31 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       setState(() {
-        _isEnrolled = false;
-        widget._course.role = CourseRole.notStudent;
+        course.role = CourseRole.notStudent;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _stopCollaborating() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.unsubscribeCollaborator(auth, course.courseID);
+
+    if (!mounted) return;
+
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        course.role = CourseRole.notStudent;
       });
     }
 
@@ -436,65 +462,126 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: _isLoading
-          ? const CircularProgressIndicator()
-          : (_isEnrolled
-              ? ElevatedButton(
-                  onPressed: () {
-                    showDialog<String>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                          title: const Text('Unsubscribe from Course'),
-                          content: Text(
-                              'Are you sure you want to leave ${widget._course.title}?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('CANCEL'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                _unsubscribeFromCourse();
-                                Navigator.pop(context);
-                              },
-                              child: const Text('UNSUBSCRIBE'),
-                            ),
-                          ]),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(primary: Colors.red[700]),
-                  child: const Text('UNSUBSCRIBE FROM COURSE'),
-                )
-              : ElevatedButton(
-                  onPressed: () {
-                    showDialog<String>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                          title: const Text('Enroll to Course'),
-                          content: Text(
-                              'Are you sure you want to enroll to ${widget._course.title}?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('CANCEL'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                _enrollToCourse();
-                                Navigator.pop(context);
-                              },
-                              child: const Text('ENROLL'),
-                            ),
-                          ]),
-                    );
-                  },
-                  child: const Text('ENROLL TO COURSE'),
-                )),
-    );
+    switch (course.role) {
+      case CourseRole.student:
+        return Column(
+          children: [
+            const Divider(),
+            Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Unsubscribe from Course'),
+                            content: Text(
+                                'Are you sure you want to leave "${course.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CANCEL'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _unsubscribeFromCourse();
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('UNSUBSCRIBE'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(primary: Colors.red[700]),
+                      child: const Text('UNSUBSCRIBE FROM COURSE'),
+                    ),
+            ),
+          ],
+        );
+
+      case CourseRole.notStudent:
+        return Column(
+          children: [
+            const Divider(),
+            Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Enroll to Course'),
+                            content: Text(
+                                'Are you sure you want to enroll to "${course.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CANCEL'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _enrollToCourse();
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('ENROLL'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text('ENROLL TO COURSE'),
+                    ),
+            ),
+          ],
+        );
+      case CourseRole.collaborator:
+        return Column(
+          children: [
+            const Divider(),
+            Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Stop Collaborating'),
+                            content: Text(
+                                'Are you sure you want to stop collaborating in "${course.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CANCEL'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _stopCollaborating();
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CONFIRM'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(primary: Colors.red[700]),
+                      child: const Text('STOP COLLABORATING'),
+                    ),
+            ),
+          ],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

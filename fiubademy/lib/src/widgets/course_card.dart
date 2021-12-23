@@ -71,7 +71,14 @@ class CourseCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.subtitle1,
                   ),
                   const SizedBox(width: 8.0),
-                  Icon(Icons.monetization_on, color: Colors.green[700]),
+                  Icon(
+                    Icons.monetization_on,
+                    color: _course.minSubscription == 0
+                        ? Colors.brown
+                        : (_course.minSubscription == 1
+                            ? Colors.grey[400]
+                            : Colors.amber),
+                  ),
                 ],
               ),
             ),

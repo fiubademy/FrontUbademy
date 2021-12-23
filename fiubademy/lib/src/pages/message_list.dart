@@ -23,7 +23,6 @@ class MessageListPage extends StatelessWidget {
     Auth auth = Provider.of<Auth>(context, listen: false);
 
     Map<String, dynamic> userData = await Server.getUserByEmail(auth, mail);
-    print(userData);
     if (userData['error'] != null) {
       final snackBar = SnackBar(content: Text(userData['error']));
       _scaffoldMessenger.showSnackBar(snackBar);
