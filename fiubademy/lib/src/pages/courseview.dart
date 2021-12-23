@@ -172,8 +172,12 @@ class CourseViewPage extends StatelessWidget {
         ),
         const SizedBox(width: 8.0),
         Icon(
-          Icons.monetization_on_rounded,
-          color: Colors.green[700],
+          Icons.monetization_on,
+          color: _course.minSubscription == 0
+              ? Colors.brown
+              : (_course.minSubscription == 1
+                  ? Colors.grey[400]
+                  : Colors.amber),
         ),
       ],
     );

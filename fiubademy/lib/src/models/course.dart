@@ -107,6 +107,8 @@ class Course {
     }
   }
 
+  int get minSubscription => _minSubscription;
+
   String get stateName {
     if (_blocked) return 'Blocked';
     if (_open) return 'Open';

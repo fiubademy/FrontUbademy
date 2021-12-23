@@ -89,7 +89,10 @@ class _CourseCollaboratorsPageState extends State<CourseCollaboratorsPage> {
       String? result = await Server.addCollaborator(
           auth, _newCollaboratorController.text, widget._courseID);
       if (result == null) {
-        _pagingController.refresh();
+        const snackBar = SnackBar(content: Text('Invitation sent!'));
+        if (!mounted) return;
+        _newCollaboratorController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       } else {
         final snackBar = SnackBar(content: Text(result));
         if (!mounted) return;
