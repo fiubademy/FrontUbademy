@@ -1,10 +1,10 @@
-import 'package:fiubademy/src/pages/courseview.dart';
+import 'package:ubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/widgets/course_menu.dart';
-import 'package:fiubademy/src/widgets/course_rating.dart';
-import 'package:fiubademy/src/widgets/course_tags.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/widgets/course_menu.dart';
+import 'package:ubademy/src/widgets/course_rating.dart';
+import 'package:ubademy/src/widgets/course_tags.dart';
 
 class CourseCard extends StatelessWidget {
   final Course _course;

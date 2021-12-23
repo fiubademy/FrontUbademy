@@ -1,24 +1,24 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:fiubademy/src/pages/message_list.dart';
-import 'package:fiubademy/src/pages/my_favourites.dart';
+import 'package:ubademy/src/pages/message_list.dart';
+import 'package:ubademy/src/pages/my_favourites.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
-import 'package:fiubademy/src/models/course.dart';
+import 'package:ubademy/src/models/course.dart';
 
-import 'package:fiubademy/src/services/user.dart';
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/google_auth.dart';
-import 'package:fiubademy/src/services/location.dart';
-import 'package:fiubademy/src/services/server.dart';
+import 'package:ubademy/src/services/user.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/google_auth.dart';
+import 'package:ubademy/src/services/location.dart';
+import 'package:ubademy/src/services/server.dart';
 
-import 'package:fiubademy/src/pages/profile.dart';
-import 'package:fiubademy/src/pages/my_inscriptions.dart';
-import 'package:fiubademy/src/pages/my_courses.dart';
-import 'package:fiubademy/src/pages/my_collaborations.dart';
+import 'package:ubademy/src/pages/profile.dart';
+import 'package:ubademy/src/pages/my_inscriptions.dart';
+import 'package:ubademy/src/pages/my_courses.dart';
+import 'package:ubademy/src/pages/my_collaborations.dart';
 
-import 'package:fiubademy/src/widgets/course_card.dart';
+import 'package:ubademy/src/widgets/course_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);

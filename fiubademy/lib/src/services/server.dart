@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 
-import 'package:fiubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/auth.dart';
 
 class Server {
   static const int _invalidToken = 498;

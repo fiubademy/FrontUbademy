@@ -1,12 +1,12 @@
-import 'package:fiubademy/src/pages/profile.dart';
-import 'package:fiubademy/src/services/user.dart';
-import 'package:fiubademy/src/widgets/icon_avatar.dart';
+import 'package:ubademy/src/pages/profile.dart';
+import 'package:ubademy/src/services/user.dart';
+import 'package:ubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/server.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/server.dart';
 
 class CourseCollaboratorsPage extends StatefulWidget {
   final String _courseID;

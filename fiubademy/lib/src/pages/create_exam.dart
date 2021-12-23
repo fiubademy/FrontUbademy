@@ -1,7 +1,7 @@
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/models/question.dart';
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/server.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/models/question.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/server.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

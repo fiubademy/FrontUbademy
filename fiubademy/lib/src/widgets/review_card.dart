@@ -1,6 +1,6 @@
-import 'package:fiubademy/src/widgets/icon_avatar.dart';
+import 'package:ubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
-import 'package:fiubademy/src/models/review.dart';
+import 'package:ubademy/src/models/review.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class ReviewCard extends StatelessWidget {

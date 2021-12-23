@@ -1,14 +1,14 @@
-import 'package:fiubademy/src/pages/chat.dart';
-import 'package:fiubademy/src/pages/edit_profile.dart';
-import 'package:fiubademy/src/pages/message_list.dart';
-import 'package:fiubademy/src/pages/my_collaborations.dart';
-import 'package:fiubademy/src/pages/my_courses.dart';
-import 'package:fiubademy/src/pages/my_favourites.dart';
-import 'package:fiubademy/src/pages/my_inscriptions.dart';
-import 'package:fiubademy/src/pages/payment.dart';
-import 'package:fiubademy/src/widgets/icon_avatar.dart';
+import 'package:ubademy/src/pages/chat.dart';
+import 'package:ubademy/src/pages/edit_profile.dart';
+import 'package:ubademy/src/pages/message_list.dart';
+import 'package:ubademy/src/pages/my_collaborations.dart';
+import 'package:ubademy/src/pages/my_courses.dart';
+import 'package:ubademy/src/pages/my_favourites.dart';
+import 'package:ubademy/src/pages/my_inscriptions.dart';
+import 'package:ubademy/src/pages/payment.dart';
+import 'package:ubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
-import 'package:fiubademy/src/services/user.dart';
+import 'package:ubademy/src/services/user.dart';
 import 'package:geocoding/geocoding.dart';
 
 class ProfilePage extends StatelessWidget {

@@ -1,9 +1,9 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/user.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/server.dart';
+import 'package:ubademy/src/services/user.dart';
 
 Future<Position> getLocation() async {
   bool serviceEnabled;

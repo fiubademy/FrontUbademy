@@ -1,12 +1,12 @@
-import 'package:fiubademy/src/widgets/material_dropdown_button.dart';
+import 'package:ubademy/src/widgets/material_dropdown_button.dart';
 import 'package:flutter/material.dart';
 import 'package:material_tag_editor/tag_editor.dart';
 import 'package:provider/provider.dart';
 
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/widgets/course_media_picker.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/server.dart';
+import 'package:ubademy/src/widgets/course_media_picker.dart';
 
 class CourseEditionPage extends StatefulWidget {
   final Course _course;

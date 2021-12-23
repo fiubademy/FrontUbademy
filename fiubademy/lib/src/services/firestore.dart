@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fiubademy/src/models/message.dart';
+import 'package:ubademy/src/models/message.dart';
 
 class Firestore {
   static final _firestore = FirebaseFirestore.instance;

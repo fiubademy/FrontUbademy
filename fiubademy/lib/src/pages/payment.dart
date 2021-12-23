@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/user.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/server.dart';
+import 'package:ubademy/src/services/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';

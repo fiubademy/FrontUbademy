@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/widgets/course_card.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/widgets/course_card.dart';
 
 class CourseListView extends StatefulWidget {
   final Future<List<Course>> Function(int index) onLoad;
