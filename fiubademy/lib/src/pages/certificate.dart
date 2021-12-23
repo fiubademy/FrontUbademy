@@ -194,6 +194,7 @@ class _CertificatePageState extends State<CertificatePage> {
         children: [
           Expanded(
             child: PdfPreview(
+              pdfFileName: 'certificate.pdf',
               canDebug: false,
               canChangePageFormat: false,
               build: (_) {
