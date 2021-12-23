@@ -145,29 +145,22 @@ class _CourseContentPageState extends State<CourseContentPage> {
                       children: [
                         IconButton(
                             icon: const Icon(Icons.navigate_before),
-                            onPressed: pageController.page == 0
-                                ? null
-                                : () {
-                                    pageController.previousPage(
-                                        duration:
-                                            const Duration(milliseconds: 500),
-                                        curve: Curves.easeIn);
-                                  }),
+                            onPressed: () {
+                              pageController.previousPage(
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeIn);
+                            }),
                         IconButton(
                           icon: const Icon(Icons.navigate_next),
-                          onPressed:
-                              pageController.page == (fileNames.length - 1)
-                                  ? null
-                                  : () {
-                                      pageController.nextPage(
-                                          duration:
-                                              const Duration(milliseconds: 500),
-                                          curve: Curves.easeIn);
-                                    },
+                          onPressed: () {
+                            pageController.nextPage(
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn);
+                          },
                         ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               );
           }
