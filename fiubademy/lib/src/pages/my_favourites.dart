@@ -6,21 +6,21 @@ import 'package:fiubademy/src/models/course.dart';
 import 'package:fiubademy/src/widgets/course_list_view.dart';
 import 'package:fiubademy/src/services/server.dart';
 
-class MyInscriptionsPage extends StatelessWidget {
-  const MyInscriptionsPage({Key? key}) : super(key: key);
+class MyFavouritesPage extends StatelessWidget {
+  const MyFavouritesPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Inscriptions'),
+        title: const Text('My Favourites'),
       ),
       body: SafeArea(
         child: CourseListView(
           onLoad: (index) async {
             Auth auth = Provider.of<Auth>(context, listen: false);
             int page = (index ~/ 5) + 1;
-            final result = await Server.getMyEnrolledCourses(auth, page);
+            final result = await Server.getMyFavouriteCourses(auth, page);
             if (result['error'] != null) {
               throw Exception(result['error']);
             }
@@ -38,7 +38,16 @@ class MyInscriptionsPage extends StatelessWidget {
                 idsToNameMapping[ownerID] = userQuery['username'];
               }
               courseData['ownerName'] = idsToNameMapping[ownerID];
-              courseData['role'] = CourseRole.student;
+              // Order is by speed and then probability
+              if (ownerID == auth.userID) {
+                courseData['role'] = CourseRole.owner;
+              } else if (await Server.isEnrolled(auth, courseData['id'])) {
+                courseData['role'] = CourseRole.student;
+              } else if (await Server.isCollaborator(auth, courseData['id'])) {
+                courseData['role'] = CourseRole.collaborator;
+              } else {
+                courseData['role'] = CourseRole.notStudent;
+              }
 
               if (await Server.isFavourite(auth, courseData['id'])) {
                 courseData['isFavourite'] = true;

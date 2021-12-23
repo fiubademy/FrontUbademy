@@ -2,7 +2,7 @@ import 'package:fiubademy/src/pages/courseview.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/widgets/course_creator_menu.dart';
+import 'package:fiubademy/src/widgets/course_menu.dart';
 import 'package:fiubademy/src/widgets/course_rating.dart';
 import 'package:fiubademy/src/widgets/course_tags.dart';
 
@@ -13,6 +13,19 @@ class CourseCard extends StatelessWidget {
       : _course = course,
         super(key: key);
 
+  Widget _buildMenu() {
+    switch (_course.role) {
+      case CourseRole.notStudent:
+        return CourseNotStudentMenu(course: _course);
+      case CourseRole.student:
+        return CourseStudentMenu(course: _course);
+      case CourseRole.owner:
+        return CourseCreatorMenu(course: _course);
+      case CourseRole.collaborator:
+        return CourseCollaboratorMenu(course: _course);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -21,8 +34,7 @@ class CourseCard extends StatelessWidget {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => CourseViewPage(
-                      course: _course, isFavorite: false, isEnrolled: false)));
+                  builder: (context) => CourseViewPage(course: _course)));
         },
         child: Column(
           children: [
@@ -38,7 +50,7 @@ class CourseCard extends StatelessWidget {
                             maxLines: 2,
                             style: Theme.of(context).textTheme.headline6),
                       ),
-                      const CourseCreatorMenu(),
+                      _buildMenu(),
                     ],
                   ),
                   const Divider(),
@@ -59,7 +71,14 @@ class CourseCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.subtitle1,
                   ),
                   const SizedBox(width: 8.0),
-                  Icon(Icons.monetization_on, color: Colors.green[700]),
+                  Icon(
+                    Icons.monetization_on,
+                    color: _course.minSubscription == 0
+                        ? Colors.brown
+                        : (_course.minSubscription == 1
+                            ? Colors.grey[400]
+                            : Colors.amber),
+                  ),
                 ],
               ),
             ),

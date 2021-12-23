@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:material_tag_editor/tag_editor.dart';
+import 'package:provider/provider.dart';
+
 import 'package:fiubademy/src/models/course.dart';
+
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/services/server.dart';
-import 'package:provider/provider.dart';
 
 class CreateCoursePage extends StatelessWidget {
   const CreateCoursePage({Key? key}) : super(key: key);
@@ -35,6 +37,7 @@ class MaterialDropdownButton extends FormField<String> {
   final String? defaultOption;
 
   MaterialDropdownButton({
+    Key? key,
     required this.options,
     this.hint,
     this.defaultOption,
@@ -43,6 +46,7 @@ class MaterialDropdownButton extends FormField<String> {
     FormFieldValidator<String>? validator,
     AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
   }) : super(
+          key: key,
           onSaved: onSaved,
           validator: validator,
           initialValue: initialValue,
@@ -92,9 +96,9 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
   final _formKey = GlobalKey<FormState>();
   String? _courseTitle;
   String? _courseDescription;
-  String? _courseType;
+  String? _courseCategory;
   String? _courseMinSubscriptionLevel;
-  List<String> _tags = [];
+  final List<String> _tags = [];
 
   void _create() async {
     setState(() {
@@ -120,11 +124,15 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
         auth,
         _courseTitle!,
         _courseDescription!,
+        _courseCategory!,
         _tags,
         minSubLevel,
         user.latitude!,
         user.longitude!,
       );
+
+      if (!mounted) return;
+
       if (result == null) {
         Navigator.pop(context);
       } else {
@@ -132,6 +140,8 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     }
+
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
@@ -188,7 +198,7 @@ class _CourseCreateFormState extends State<CourseCreateForm> {
                 return 'Please select a course type';
               }
             },
-            onSaved: (value) => _courseType = value,
+            onSaved: (value) => _courseCategory = value,
           ),
           const SizedBox(height: 16.0),
           MaterialDropdownButton(

@@ -1,46 +1,49 @@
-import 'package:fiubademy/src/services/server.dart';
+enum CourseRole { owner, collaborator, student, notStudent }
 
 class Course {
   // General data
-  String _courseID;
-  String _title;
-  int _minSubscription;
-  String _description;
-  String _category;
-  double _latitude;
-  double _longitude;
-  List<String> _tags;
-  DateTime _creationDate;
+  final String _courseID;
+  final String _title;
+  final int _minSubscription;
+  final String _description;
+  final String _category;
+  final double _latitude;
+  final double _longitude;
+  final List<String> _tags;
+  final DateTime _creationDate;
 
   // Flags
-  bool _blocked;
+  final bool _blocked;
   bool _open;
+  final bool isFavourite;
+  CourseRole role;
 
   // Owner data
-  String _ownerID;
-  String _ownerName;
+  final String _ownerID;
+  final String _ownerName;
 
   // Rating data
-  int _ratingCount;
-  double _ratingAvg;
+  final int _ratingCount;
+  final double _ratingAvg;
 
   Course.fromMap(Map<String, dynamic> courseData)
-      : _courseID = courseData['id'], //
-        _title = courseData['name'], //
-        _ownerID = courseData['ownerId'], //
-        _ownerName = 'Hardcoded String', //
-        _minSubscription = courseData['sub_level'], //
-        _description = courseData['description'], //
-        _category = 'Hardcoded Category', //
-        _latitude = courseData['latitude'], //
-        _longitude = courseData['longitude'], //
-        _tags = List<String>.from(courseData['hashtags']), //
-        _creationDate = DateTime.parse(courseData['time_created']), //
-        _blocked = courseData['blocked'], //
-        _open = !(courseData['in_edition']), //
-        _ratingCount = courseData['ratingCount'], //
-        _ratingAvg = courseData['ratingAvg'] ?? 0; //
-
+      : _courseID = courseData['id'],
+        _title = courseData['name'],
+        _ownerID = courseData['ownerId'],
+        _ownerName = courseData['ownerName'],
+        _minSubscription = courseData['sub_level'],
+        _description = courseData['description'],
+        _category = courseData['category'],
+        _latitude = courseData['latitude'],
+        _longitude = courseData['longitude'],
+        _tags = List<String>.from(courseData['hashtags']),
+        _creationDate = DateTime.parse(courseData['time_created']),
+        _blocked = courseData['blocked'],
+        _open = !(courseData['in_edition']),
+        _ratingCount = courseData['ratingCount'],
+        _ratingAvg = courseData['ratingAvg'] ?? 0,
+        role = courseData['role'],
+        isFavourite = courseData['isFavourite'];
 /*
   static Course create2(String courseID, Map<String, dynamic> courseData) {
     /*
@@ -62,8 +65,8 @@ class Course {
         'Business',
         'Economics & Finance',
         'Health & Fitness',
-        'Humanities'
-            'Languages',
+        'Humanities',
+        'Languages',
         'Music',
         'Office Productivity',
         'Personal Development',
@@ -72,9 +75,25 @@ class Course {
         'Technology & Software',
       ];
 
+  static List<String> subscriptionNames() => ['Free', 'Standard', 'Premium'];
+  static int? subscriptionLevelFromName(String subName) {
+    switch (subName) {
+      case 'Free':
+        return 0;
+      case 'Standard':
+        return 1;
+      case 'Premium':
+        return 2;
+      default:
+        return null;
+    }
+  }
+
+  String get courseID => _courseID;
   String get title => _title;
   String get description => _description;
   String get category => _category;
+  String get ownerID => _ownerID;
   String get ownerName => _ownerName;
 
   String get minSubscriptionName {
@@ -88,11 +107,15 @@ class Course {
     }
   }
 
+  int get minSubscription => _minSubscription;
+
   String get stateName {
     if (_blocked) return 'Blocked';
     if (_open) return 'Open';
     return 'To be published';
   }
+
+  set open(bool openness) => _open = openness;
 
   List<String> get tags => _tags;
 
