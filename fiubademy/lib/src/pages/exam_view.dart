@@ -206,7 +206,7 @@ class _ExamsToCorrectState extends State<ExamsToCorrect> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.person),
+                        icon: const Icon(Icons.account_circle),
                       ),
                     ),
                   );
