@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/services/firebase.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/services/firebase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';

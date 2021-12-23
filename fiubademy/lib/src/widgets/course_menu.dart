@@ -1,11 +1,11 @@
-import 'package:fiubademy/src/pages/course_collaborators.dart';
-import 'package:fiubademy/src/pages/course_content.dart';
-import 'package:fiubademy/src/pages/course_edition.dart';
-import 'package:fiubademy/src/pages/course_students.dart';
-import 'package:fiubademy/src/pages/courseview.dart';
-import 'package:fiubademy/src/pages/exam_list.dart';
+import 'package:ubademy/src/pages/course_collaborators.dart';
+import 'package:ubademy/src/pages/course_content.dart';
+import 'package:ubademy/src/pages/course_edition.dart';
+import 'package:ubademy/src/pages/course_students.dart';
+import 'package:ubademy/src/pages/courseview.dart';
+import 'package:ubademy/src/pages/exam_list.dart';
 import 'package:flutter/material.dart';
-import 'package:fiubademy/src/models/course.dart';
+import 'package:ubademy/src/models/course.dart';
 
 enum CourseMenu {
   creator,

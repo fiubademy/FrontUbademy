@@ -1,4 +1,4 @@
-import 'package:fiubademy/src/models/question.dart';
+import 'package:ubademy/src/models/question.dart';
 
 class Exam {
   final String _examID;

@@ -3,10 +3,10 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:fiubademy/src/pages/signup.dart';
-import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/google_auth.dart';
+import 'package:ubademy/src/pages/signup.dart';
+import 'package:ubademy/src/services/server.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/google_auth.dart';
 
 class LogInPage extends StatelessWidget {
   const LogInPage({Key? key}) : super(key: key);
