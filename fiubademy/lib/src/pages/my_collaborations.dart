@@ -135,6 +135,7 @@ class _InvitationsListState extends State<InvitationsList> {
       _isLoading = false;
     } else {
       _isLoading = false;
+      if (!mounted) return;
       setState(() {});
     }
   }
@@ -153,6 +154,7 @@ class _InvitationsListState extends State<InvitationsList> {
       _isLoading = false;
     } else {
       _isLoading = false;
+      if (!mounted) return;
       setState(() {});
     }
   }

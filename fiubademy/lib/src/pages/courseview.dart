@@ -116,12 +116,7 @@ class CourseViewPage extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 8.0),
               ..._buildRatings(context),
-              if (_course.role == CourseRole.notStudent ||
-                  _course.role == CourseRole.student) ...[
-                const SizedBox(height: 8.0),
-                const Divider(),
-                CourseToggleEnrollButton(course: _course),
-              ]
+              CourseButtons(course: _course),
             ],
           ),
         ),
@@ -321,7 +316,7 @@ class CourseViewPage extends StatelessWidget {
                 isEnabled = false;
               }
 
-              if (!snapshot.hasData) {
+              if (!snapshot.hasData || snapshot.data == null) {
                 isEnabled = false;
               } else if (snapshot.data!['status'] != 'Finished') {
                 isEnabled = false;
@@ -376,25 +371,22 @@ class CourseViewPage extends StatelessWidget {
   }
 }
 
-class CourseToggleEnrollButton extends StatefulWidget {
-  final Course _course;
-
-  const CourseToggleEnrollButton({Key? key, required Course course})
-      : _course = course,
-        super(key: key);
+class CourseButtons extends StatefulWidget {
+  final Course course;
+  const CourseButtons({Key? key, required this.course}) : super(key: key);
 
   @override
-  _CourseToggleEnrollButtonState createState() =>
-      _CourseToggleEnrollButtonState();
+  _CourseButtonsState createState() => _CourseButtonsState();
 }
 
-class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
-  late bool _isEnrolled;
+class _CourseButtonsState extends State<CourseButtons> {
+  late Course course;
+
   bool _isLoading = false;
 
   @override
   void initState() {
-    _isEnrolled = widget._course.role == CourseRole.student;
+    course = widget.course;
     super.initState();
   }
 
@@ -403,7 +395,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       _isLoading = true;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    String? result = await Server.enrollToCourse(auth, widget._course.courseID);
+    String? result = await Server.enrollToCourse(auth, widget.course.courseID);
 
     if (!mounted) return;
 
@@ -412,8 +404,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       setState(() {
-        _isEnrolled = true;
-        widget._course.role = CourseRole.student;
+        course.role = CourseRole.student;
       });
     }
 
@@ -427,8 +418,7 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       _isLoading = true;
     });
     Auth auth = Provider.of<Auth>(context, listen: false);
-    String? result =
-        await Server.unsubscribeFromCourse(auth, widget._course.courseID);
+    String? result = await Server.unsubscribeFromCourse(auth, course.courseID);
 
     if (!mounted) return;
 
@@ -437,8 +427,31 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     } else {
       setState(() {
-        _isEnrolled = false;
-        widget._course.role = CourseRole.notStudent;
+        course.role = CourseRole.notStudent;
+      });
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _stopCollaborating() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    String? result =
+        await Server.unsubscribeCollaborator(auth, course.courseID);
+
+    if (!mounted) return;
+
+    if (result != null) {
+      final snackBar = SnackBar(content: Text(result));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } else {
+      setState(() {
+        course.role = CourseRole.notStudent;
       });
     }
 
@@ -449,65 +462,126 @@ class _CourseToggleEnrollButtonState extends State<CourseToggleEnrollButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: _isLoading
-          ? const CircularProgressIndicator()
-          : (_isEnrolled
-              ? ElevatedButton(
-                  onPressed: () {
-                    showDialog<String>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                          title: const Text('Unsubscribe from Course'),
-                          content: Text(
-                              'Are you sure you want to leave ${widget._course.title}?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('CANCEL'),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                _unsubscribeFromCourse();
-                                Navigator.pop(context);
-                              },
-                              child: const Text('UNSUBSCRIBE'),
-                            ),
-                          ]),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(primary: Colors.red[700]),
-                  child: const Text('UNSUBSCRIBE FROM COURSE'),
-                )
-              : ElevatedButton(
-                  onPressed: () {
-                    showDialog<String>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                          title: const Text('Enroll to Course'),
-                          content: Text(
-                              'Are you sure you want to enroll to ${widget._course.title}?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('CANCEL'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                _enrollToCourse();
-                                Navigator.pop(context);
-                              },
-                              child: const Text('ENROLL'),
-                            ),
-                          ]),
-                    );
-                  },
-                  child: const Text('ENROLL TO COURSE'),
-                )),
-    );
+    switch (course.role) {
+      case CourseRole.student:
+        return Column(
+          children: [
+            const Divider(),
+            Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Unsubscribe from Course'),
+                            content: Text(
+                                'Are you sure you want to leave "${course.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CANCEL'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _unsubscribeFromCourse();
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('UNSUBSCRIBE'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(primary: Colors.red[700]),
+                      child: const Text('UNSUBSCRIBE FROM COURSE'),
+                    ),
+            ),
+          ],
+        );
+
+      case CourseRole.notStudent:
+        return Column(
+          children: [
+            const Divider(),
+            Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Enroll to Course'),
+                            content: Text(
+                                'Are you sure you want to enroll to "${course.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CANCEL'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _enrollToCourse();
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('ENROLL'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text('ENROLL TO COURSE'),
+                    ),
+            ),
+          ],
+        );
+      case CourseRole.collaborator:
+        return Column(
+          children: [
+            const Divider(),
+            Center(
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () {
+                        showDialog<String>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Stop Collaborating'),
+                            content: Text(
+                                'Are you sure you want to stop collaborating in "${course.title}"?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CANCEL'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _stopCollaborating();
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('CONFIRM'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(primary: Colors.red[700]),
+                      child: const Text('STOP COLLABORATING'),
+                    ),
+            ),
+          ],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }
