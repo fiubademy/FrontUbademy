@@ -1,3 +1,4 @@
+import 'package:fiubademy/src/pages/certificate.dart';
 import 'package:fiubademy/src/pages/profile.dart';
 import 'package:fiubademy/src/pages/review_course.dart';
 import 'package:fiubademy/src/pages/review_list.dart';
@@ -125,9 +126,15 @@ class CourseViewPage extends StatelessWidget {
   }
 
   Widget _buildTitle(BuildContext context) {
-    return Text(
-      _course.title,
-      style: Theme.of(context).textTheme.headline5,
+    return Row(
+      children: [
+        Text(
+          _course.title,
+          style: Theme.of(context).textTheme.headline5,
+        ),
+        const Spacer(),
+        CertificateButton(course: _course),
+      ],
     );
   }
 
@@ -583,5 +590,67 @@ class _CourseButtonsState extends State<CourseButtons> {
       default:
         return const SizedBox.shrink();
     }
+  }
+}
+
+class CertificateButton extends StatefulWidget {
+  final Course course;
+  const CertificateButton({Key? key, required this.course}) : super(key: key);
+
+  @override
+  _CertificateButtonState createState() => _CertificateButtonState();
+}
+
+class _CertificateButtonState extends State<CertificateButton> {
+  Future<Map<String, dynamic>> _getStudentMark() async {
+    Auth auth = Provider.of<Auth>(context, listen: false);
+    Map<String, dynamic> result =
+        await Server.getCourseMark(auth, widget.course.courseID);
+
+    if (result['error'] != null) {
+      throw Exception(result['error']);
+    } else {
+      return result['content'];
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: _getStudentMark(),
+        builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return const SizedBox.shrink();
+            default:
+              if (snapshot.hasError ||
+                  snapshot.data == null ||
+                  snapshot.data!['status'] != 'Finished') {
+                return const SizedBox.shrink();
+              }
+
+              return Center(
+                child: CircleAvatar(
+                  backgroundColor: Colors.amber,
+                  child: Center(
+                    child: IconButton(
+                      icon: const Icon(Icons.article_rounded,
+                          size: 24, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CertificatePage(
+                                mark: snapshot.data!['average_mark'],
+                                courseTitle: widget.course.title),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+          }
+        });
   }
 }
