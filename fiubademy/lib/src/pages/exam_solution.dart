@@ -56,8 +56,6 @@ class ExamSolutionPage extends StatelessWidget {
                         return const SizedBox.shrink();
                       }
 
-                      print(snapshot.data!);
-
                       return Padding(
                         padding:
                             const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),

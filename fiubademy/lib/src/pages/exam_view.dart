@@ -7,6 +7,7 @@ import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:fiubademy/src/widgets/exam_cards.dart';
+import 'package:fiubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
@@ -181,6 +182,7 @@ class _ExamsToCorrectState extends State<ExamsToCorrect> {
                 itemBuilder: (context, item, index) {
                   return Card(
                     child: ListTile(
+                      leading: IconAvatar(avatarID: item.avatarID),
                       title: Text(item.username),
                       subtitle: Text(item.email),
                       onTap: () {
@@ -217,7 +219,7 @@ class _ExamsToCorrectState extends State<ExamsToCorrect> {
                         leading: const Icon(Icons.info_outline_rounded),
                         title: const Text('No exams waiting for correction'),
                         subtitle: widget.exam.inEdition
-                            ? Text('The exam hasn\'t been published yet')
+                            ? const Text('The exam hasn\'t been published yet')
                             : null,
                       ),
                     ),

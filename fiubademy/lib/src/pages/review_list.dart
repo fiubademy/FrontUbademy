@@ -1,25 +1,12 @@
 import 'package:fiubademy/src/models/course.dart';
+import 'package:fiubademy/src/models/review.dart';
 import 'package:fiubademy/src/services/auth.dart';
 import 'package:fiubademy/src/services/server.dart';
 import 'package:fiubademy/src/services/user.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
-
-class Review {
-  final User _author;
-  final int _rating;
-  final String _description;
-
-  Review.fromMap(Map<String, dynamic> reviewData)
-      : _author = reviewData['author'],
-        _rating = reviewData['rating'],
-        _description = reviewData['description'];
-
-  User get author => _author;
-  int get rating => _rating;
-  String get description => _description;
-}
+import 'package:fiubademy/src/widgets/review_card.dart';
 
 class ReviewListPage extends StatelessWidget {
   final Course course;
@@ -48,7 +35,7 @@ class _ReviewListState extends State<ReviewList> {
   final int _pageSize = 5;
   final PagingController<int, Review> _pagingController =
       PagingController(firstPageKey: 0);
-  String _filter = 'All';
+  int? _filter;
 
   @override
   void initState() {
@@ -93,7 +80,7 @@ class _ReviewListState extends State<ReviewList> {
       auth,
       widget.course.courseID,
       page,
-      filter: _filter == 'All' ? null : int.parse(_filter),
+      filter: _filter,
     );
     if (result['error'] != null) {
       throw Exception(result['error']);
@@ -120,37 +107,224 @@ class _ReviewListState extends State<ReviewList> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [],
-        ),
-        const SizedBox(height: 16.0),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => Future.sync(
-              () => _pagingController.refresh(),
+    return Padding(
+      padding: const EdgeInsets.only(top: 24.0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 32,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              children: [
+                InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _filter = null;
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 64),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      color: _filter == null ? Colors.blue[100] : null,
+                    ),
+                    child: Text('All',
+                        style: Theme.of(context).textTheme.subtitle1),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _filter = 5;
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 64),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                      color: _filter == 5 ? Colors.blue[100] : null,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Text('5', style: Theme.of(context).textTheme.subtitle1),
+                        const Icon(Icons.star_rounded,
+                            size: 16, color: Colors.black87),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _filter = 4;
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 64),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      color: _filter == 4 ? Colors.blue[100] : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Text('4', style: Theme.of(context).textTheme.subtitle1),
+                        const Icon(Icons.star_rounded,
+                            size: 16, color: Colors.black87),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _filter = 3;
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 64),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      color: _filter == 3 ? Colors.blue[100] : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Text('3', style: Theme.of(context).textTheme.subtitle1),
+                        const Icon(Icons.star_rounded,
+                            size: 16, color: Colors.black87),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _filter = 2;
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 64),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      color: _filter == 2 ? Colors.blue[100] : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Text('2', style: Theme.of(context).textTheme.subtitle1),
+                        const Icon(Icons.star_rounded,
+                            size: 16, color: Colors.black87),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16.0),
+                InkWell(
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _filter = 1;
+                    });
+                    if (!mounted) return;
+                    _pagingController.refresh();
+                  },
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 64),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black38,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      color: _filter == 1 ? Colors.blue[100] : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Text('1', style: Theme.of(context).textTheme.subtitle1),
+                        const Icon(Icons.star_rounded,
+                            size: 16, color: Colors.black87),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: PagedListView<int, Review>(
-              pagingController: _pagingController,
-              builderDelegate: PagedChildBuilderDelegate<Review>(
-                itemBuilder: (context, item, index) => ReviewCard(review: item),
+          ),
+          const SizedBox(height: 16.0),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => Future.sync(
+                () => _pagingController.refresh(),
+              ),
+              child: PagedListView<int, Review>(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                pagingController: _pagingController,
+                builderDelegate: PagedChildBuilderDelegate<Review>(
+                  itemBuilder: (context, item, index) =>
+                      ReviewCard(review: item),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
-  }
-}
-
-class ReviewCard extends StatelessWidget {
-  final Review review;
-  const ReviewCard({Key? key, required this.review}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container();
   }
 }

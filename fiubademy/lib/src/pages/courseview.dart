@@ -317,8 +317,6 @@ class CourseViewPage extends StatelessWidget {
                 isEnabled = false;
               }
 
-              print(snapshot.data);
-
               if (!snapshot.hasData) {
                 isEnabled = false;
               } else if (snapshot.data!['status'] != 'Finished') {
@@ -337,7 +335,8 @@ class CourseViewPage extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ReviewCoursePage(),
+                                    builder: (context) =>
+                                        ReviewCoursePage(course: _course),
                                   ),
                                 );
                               } else {
