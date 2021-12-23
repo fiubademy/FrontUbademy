@@ -94,14 +94,6 @@ class CourseCreatorMenu extends StatelessWidget {
           value: 4,
           child: Text('Students'),
         ),
-        const PopupMenuItem(
-          value: 5,
-          child: Text('Metrics'),
-        ),
-        const PopupMenuItem(
-          value: 6,
-          child: Text('Forum'),
-        ),
       ],
     );
   }
@@ -146,10 +138,6 @@ class CourseStudentMenu extends StatelessWidget {
           value: 1,
           child: Text('Exams'),
         ),
-        const PopupMenuItem(
-          value: 2,
-          child: Text('Forum'),
-        ),
       ],
     );
   }
@@ -193,10 +181,6 @@ class CourseCollaboratorMenu extends StatelessWidget {
         const PopupMenuItem(
           value: 1,
           child: Text('Exams'),
-        ),
-        const PopupMenuItem(
-          value: 2,
-          child: Text('Forum'),
         ),
       ],
     );
