@@ -397,6 +397,7 @@ class Server {
 
     final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
+      'inEdition': 'false',
     };
     if (title != null) queryParams['name'] = title;
     if (subLevel != null) queryParams['sub_level'] = subLevel.toString();
