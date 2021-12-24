@@ -108,9 +108,12 @@ class _ReviewCoursePageState extends State<ReviewCoursePage> {
                           return const SizedBox.shrink();
                         }
 
-                        if (snapshot.data!['error'] != null) {
+                        if (snapshot.data!['error'] != null ||
+                            snapshot.data!['rating'] == null) {
                           return const SizedBox.shrink();
                         }
+
+                        print(snapshot.data);
 
                         final myReview = Review(
                             Provider.of<User>(context, listen: false),

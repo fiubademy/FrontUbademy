@@ -129,11 +129,12 @@ class CourseViewPage extends StatelessWidget {
   Widget _buildTitle(BuildContext context) {
     return Row(
       children: [
-        Text(
-          _course.title,
-          style: Theme.of(context).textTheme.headline5,
+        Expanded(
+          child: Text(
+            _course.title,
+            style: Theme.of(context).textTheme.headline5,
+          ),
         ),
-        const Spacer(),
         CertificateButton(course: _course),
       ],
     );
@@ -329,6 +330,8 @@ class CourseViewPage extends StatelessWidget {
               } else if (snapshot.data!['status'] != 'Finished') {
                 isEnabled = false;
               }
+
+              print(snapshot.data);
 
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
