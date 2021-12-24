@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fiubademy/src/models/message.dart';
-import 'package:fiubademy/src/pages/chat.dart';
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/firestore.dart';
-import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/user.dart';
-import 'package:fiubademy/src/widgets/icon_avatar.dart';
+import 'package:ubademy/src/models/message.dart';
+import 'package:ubademy/src/pages/chat.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/firestore.dart';
+import 'package:ubademy/src/services/server.dart';
+import 'package:ubademy/src/services/user.dart';
+import 'package:ubademy/src/widgets/icon_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

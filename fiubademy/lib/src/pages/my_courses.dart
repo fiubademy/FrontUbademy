@@ -1,11 +1,11 @@
-import 'package:fiubademy/src/pages/create_course.dart';
-import 'package:fiubademy/src/services/auth.dart';
+import 'package:ubademy/src/pages/create_course.dart';
+import 'package:ubademy/src/services/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/widgets/course_list_view.dart';
-import 'package:fiubademy/src/services/server.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/widgets/course_list_view.dart';
+import 'package:ubademy/src/services/server.dart';
 
 class MyCoursesPage extends StatelessWidget {
   const MyCoursesPage({Key? key}) : super(key: key);

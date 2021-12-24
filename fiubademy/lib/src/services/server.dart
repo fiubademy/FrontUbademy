@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 
-import 'package:fiubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/auth.dart';
 
 class Server {
   static const int _invalidToken = 498;
@@ -397,6 +397,7 @@ class Server {
 
     final Map<String, dynamic> queryParams = {
       'sessionToken': auth.userToken!,
+      'inEdition': 'false',
     };
     if (title != null) queryParams['name'] = title;
     if (subLevel != null) queryParams['sub_level'] = subLevel.toString();

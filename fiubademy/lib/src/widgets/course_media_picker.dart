@@ -6,8 +6,8 @@ import 'package:video_player/video_player.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/services/firebase.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/services/firebase.dart';
 
 class CourseMultimediaPicker extends StatefulWidget {
   final Course course;

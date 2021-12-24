@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:material_tag_editor/tag_editor.dart';
 import 'package:provider/provider.dart';
 
-import 'package:fiubademy/src/models/course.dart';
+import 'package:ubademy/src/models/course.dart';
 
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/user.dart';
-import 'package:fiubademy/src/services/server.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/user.dart';
+import 'package:ubademy/src/services/server.dart';
 
 class CreateCoursePage extends StatelessWidget {
   const CreateCoursePage({Key? key}) : super(key: key);

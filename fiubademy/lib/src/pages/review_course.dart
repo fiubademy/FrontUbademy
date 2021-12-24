@@ -1,9 +1,9 @@
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/models/review.dart';
-import 'package:fiubademy/src/services/auth.dart';
-import 'package:fiubademy/src/services/server.dart';
-import 'package:fiubademy/src/services/user.dart';
-import 'package:fiubademy/src/widgets/review_card.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/models/review.dart';
+import 'package:ubademy/src/services/auth.dart';
+import 'package:ubademy/src/services/server.dart';
+import 'package:ubademy/src/services/user.dart';
+import 'package:ubademy/src/widgets/review_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';

@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:fiubademy/src/models/course.dart';
-import 'package:fiubademy/src/services/firebase.dart';
+import 'package:ubademy/src/models/course.dart';
+import 'package:ubademy/src/services/firebase.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -72,6 +72,7 @@ class _CourseContentPageState extends State<CourseContentPage> {
                 children: [
                   Expanded(
                     child: PhotoViewGallery.builder(
+                      pageController: pageController,
                       backgroundDecoration: const BoxDecoration(
                         color: Colors.white,
                       ),
@@ -136,6 +137,28 @@ class _CourseContentPageState extends State<CourseContentPage> {
                           ),
                         );
                       },
+                    ),
+                  ),
+                  Builder(
+                    builder: (context) => Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        IconButton(
+                            icon: const Icon(Icons.navigate_before),
+                            onPressed: () {
+                              pageController.previousPage(
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeIn);
+                            }),
+                        IconButton(
+                          icon: const Icon(Icons.navigate_next),
+                          onPressed: () {
+                            pageController.nextPage(
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeIn);
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],

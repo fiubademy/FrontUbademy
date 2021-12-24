@@ -1,4 +1,4 @@
-import 'package:fiubademy/src/services/user.dart';
+import 'package:ubademy/src/services/user.dart';
 
 class Review {
   final User _author;
