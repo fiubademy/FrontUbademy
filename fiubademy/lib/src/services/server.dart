@@ -1622,7 +1622,6 @@ class Server {
     final Map<String, dynamic> queryParams = {
       'courseId': courseID,
       'sessionToken': auth.userToken!,
-      'student_id': auth.userID!,
     };
 
     final response = await http.get(
@@ -1631,6 +1630,8 @@ class Server {
         HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
+
+    print(response.body);
 
     switch (response.statusCode) {
       case HttpStatus.ok:
@@ -1996,6 +1997,10 @@ class Server {
         HttpHeaders.contentTypeHeader: 'application/json',
       },
     );
+    print("/exams/$courseID/student_state/${auth.userToken}");
+
+    print(response.statusCode);
+    print(response.body);
 
     switch (response.statusCode) {
       case HttpStatus.ok:
